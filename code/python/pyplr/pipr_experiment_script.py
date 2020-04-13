@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # a more precise and long term time synchronization
     time_fn = time  # Use the appropriate time function here
 
-    # Set Pupil Capture's time base to this scripts time. (Should be done before
+    # Set Pupil Capture's time base to this scripts time. (Shoulnd be done before
     # starting the recording)
     pupil_remote.send_string("T {}".format(time_fn()))
     print(pupil_remote.recv_string())

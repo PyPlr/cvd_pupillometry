@@ -4,22 +4,39 @@ Created on Mon Mar 30 17:05:47 2020
 
 @author: engs2242
 """
-
+import os
+import shutil
+import os.path as op
 import pandas as pd
 import numpy as np
 from copy import deepcopy
 
+
 # functions to load data
+def init_subject_analysis(subjdir, out_dir_nm="analysis"):
+    subjid = op.basename(subjdir)
+    print("{}\n{:*^60s}\n{}".format("*"*60,subjid,"*"*60,))
+    pl_data_dir = op.join(subjdir, "exports\\000")
+    out_dir = op.join(subjdir, out_dir_nm)
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+    os.mkdir(out_dir)
+    return subjid, pl_data_dir, out_dir
+
 def load_annotations(data_dir):
-    events = pd.read_csv(data_dir + "annotations.csv")
+    events = pd.read_csv(data_dir + "\\annotations.csv")
+    print("Loaded {} events".format(len(events)))
     return events
    
-def load_pupil(data_dir):
-    samples = pd.read_csv(data_dir + "pupil_positions.csv", index_col="pupil_timestamp")
-    return samples
+def load_pupil(data_dir, cols):
+    samps = pd.read_csv(data_dir + "\\pupil_positions.csv", usecols=cols)
+    samps.set_index("pupil_timestamp", inplace=True)
+    print("Loaded {} samples".format(len(samps)))
+    return samps
 
 def load_blinks(data_dir):
-    blinks = pd.read_csv(data_dir + "blinks.csv")
+    blinks = pd.read_csv(data_dir + "\\blinks.csv")
+    print("{} blinks detected by Pupil Labs, average duration {:.3f} s".format(len(blinks), blinks.duration.mean()))
     return blinks    
 
 # functions to clean data
@@ -35,7 +52,7 @@ def ev_row_idxs(samples, blinks):
     """
     idxs = []
     for start, end in zip(blinks["start_timestamp"],blinks["end_timestamp"]):
-        print(start, end)
+        #print(start, end)
         idxs.extend(list(samples.loc[start:end].index))
     idxs = np.unique(idxs)
     idxs = np.intersect1d(idxs, samples.index.tolist())
@@ -69,9 +86,11 @@ def mask_blinks(samples, blinks, mask_cols=["diameter"]):
     samps = samples.copy(deep=True)
     indices = get_mask_idxs(samps, blinks)
     samps.loc[indices, mask_cols] = float('nan')
+    samps["interpolated"] = 0
+    samps.loc[indices, "interpolated"] = 1
     return samps
 
-def interpolate_blinks(samples, blinks, interp_cols=["diameter"]):
+def interpolate_blinks(samples, blinks, fields=["diameter"]):
     """
     Reconstructs Pupil Labs eye blinks with linear interpolation.
     
@@ -86,13 +105,52 @@ def interpolate_blinks(samples, blinks, interp_cols=["diameter"]):
     Returns
     -------
     samps : DataFrame
-        blink-interpolate data
+        blink-interpolated data
     """
-    samps = mask_blinks(samples, blinks, mask_cols=interp_cols)
+    samps = mask_blinks(samples, blinks, mask_cols=fields)
     samps = samps.interpolate(method="linear", axis=0, inplace=False)
-    return samps
     
-def butterworth_series(samples, fields=["diameter"], filt_order=5, cutoff_freq=.01, inplace=False):
+    print("{} samples ({:.3f} %) reconstructed with linear interpolation".format(
+        len(samps.loc[samps["interpolated"]==1]), 
+        samps.loc[:,"interpolated"].value_counts(normalize=True)[1]*100))
+    
+    return samps
+
+def mask_zeros(samples, mask_cols=["diameter"]):
+    """ 
+    Sets any 0 values in columns in mask_cols to NaN
+    
+    Parameters
+    ----------
+    samples : DataFrame
+        The samples you'd like to search for 0 values.
+    mask_fields (list of strings)
+        The columns in you'd like to search for 0 values.
+    """
+    samps = samples.copy(deep=True)
+    for f in mask_cols:
+        samps[samps[f] == 0] = float("nan")
+    return samps
+
+def interpolate_zeros(samples, fields=["diameter"]):
+    """ 
+    Replace 0s in 'samples' with linearly interpolated data.
+    Parameters
+    ----------
+    samples : DataFrame
+        The samples in which you'd like to replace 0s
+    interp_cols : list
+        The column names from samples in which you'd like to replace 0s.
+    """
+    samps = mask_zeros(samples, mask_cols=fields)
+    samps = samps.interpolate(method="linear", axis=0, inplace=False)
+    # since interpolate doesn't handle the start/finish, bfill the ffill to
+    # take care of NaN's at the start/finish samps.
+    samps.fillna(method="bfill", inplace=True)
+    samps.fillna(method="ffill", inplace=True)
+    return samps  
+
+def butterworth_series(samples, fields=["diameter"], filt_order=3, cutoff_freq=.01, inplace=False):
     """
     Applies a butterworth filter to the given fields
     See documentation on scipy's butter method FMI.
@@ -104,12 +162,24 @@ def butterworth_series(samples, fields=["diameter"], filt_order=5, cutoff_freq=.
         lambda x: signal.filtfilt(B, A, x), axis=0)
     return samps
 
-# def downsample(samples):
+def savgol_series(samples, fields=["diameter"], window_length=51, filt_order=7, inplace=False): # this doesn't work right now
+    """
+    Applies a savitsky-golay filter to the given fields
+    See documentation on scipy's savgol_filter method FMI.
+    """
+    import scipy.signal as signal
+    samps = samples if inplace else samples.copy(deep=True)
+    samps[fields] = samps[fields].apply(
+        lambda x: signal.savgol_filter(x, window_length, filt_order), axis=0)
+    return samps
+    
+    
+# def downsample(samples, sample_ratesamples
+#                ):
 #     return samps
 
 # function to extract events
-def extract_events(samples, events, offset=0, duration=0,
-                   borrow_attributes=[], return_count=False):
+def extract(samples, events, offset=0, duration=0, borrow_attributes=[]):
     """
     Extracts ranges from samples based on event timing and sample count.
     """
@@ -141,8 +211,25 @@ def extract_events(samples, events, offset=0, duration=0,
         df = pd.concat([df, new_df])
         idx += 1
     df.index = midx
+    
+    print("Extracted ranges for {} events".format(len(events)))
+    
     return df
 
+# this doesn't work at the moment
+def reject_bad_trials(ranges, interp_thresh=20, drop=False):
+    pct_interp = ranges.groupby(by="event").agg(
+        {'interpolated':lambda x: float(x.sum())/len(x)*100})
+    print("Percentage of data interpolated for each trial (mean = {:.2f}): \n".format(
+        pct_interp.mean()[0]), pct_interp)
+    reject_idxs = pct_interp.loc[pct_interp["interpolated"] > interp_thresh].index.to_list()
+    ranges["reject"] = 0
+    if reject_idxs:
+        ranges.loc[reject_idxs, "reject"] = 1
+    if drop:
+        ranges = ranges.drop(index=reject_idxs)
+    return ranges
+    
 # functions for plr metrics
 def baseline(s, onset_idx):
     """
@@ -165,6 +252,7 @@ def latency_idx(s, sample_rate, onset_idx, pc=None):
     elif isinstance(pc, int):
         threshold = b-pc
         lidx = np.argmax(s[onset_idx:]<threshold)
+    lidx += onset_idx
     return lidx
 
 def latency_to_constriction(s, sample_rate, onset_idx, pc=None):
@@ -173,7 +261,7 @@ def latency_to_constriction(s, sample_rate, onset_idx, pc=None):
     sample where constriction exceeds a percentage of the baseline.
     """
     lidx = latency_idx(s, sample_rate, onset_idx, pc=pc)
-    latency = lidx / (sample_rate/1000)
+    latency = (lidx-onset_idx) / (sample_rate/1000)
     return latency  
 
 def time_to_peak_constriction(s, sample_rate, onset_idx):
