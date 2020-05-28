@@ -2,8 +2,15 @@
 """
 Created on Mon Mar 30 17:05:47 2020
 
-@author: engs2242
+@author: JTM
+
+note: credit to Acland BT, Braver TS (2014) for some of this code
+https://github.com/beOn/cili
+
+Acland BT, Braver TS (2014). Cili (v0.5.4) [Software] 
+Available from http://doi.org/10.5281/zenodo.48843. doi:10.5281/zenodo.48843
 """
+
 import os
 import shutil
 import os.path as op
@@ -11,12 +18,34 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 
+##########################
+# FUNCTIONS TO LOAD DATA #
+##########################
 
-# functions to load data
 def init_subject_analysis(subjdir, out_dir_nm="analysis"):
+    """
+    Initiate data analysis for a given subject.
+    
+    Parameters
+    ----------
+    subjdir : str
+        Path to subject directory
+    out_dir_nm : str, optional
+        Name for the new directory where analysis results will be saved. 
+        The default is "analysis".
+
+    Returns
+    -------
+    subjid : str
+        id of the current subject
+    pl_data_dir : str
+        Directory where the Pupil Labs data exists
+    out_dir : str
+        New directory to save results of current analysis
+    """
     subjid = op.basename(subjdir)
     print("{}\n{:*^60s}\n{}".format("*"*60,subjid,"*"*60,))
-    pl_data_dir = op.join(subjdir, "exports\\000")
+    pl_data_dir = op.join(subjdir, "exports\\000") # default for data exported from pupil player
     out_dir = op.join(subjdir, out_dir_nm)
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
@@ -24,22 +53,69 @@ def init_subject_analysis(subjdir, out_dir_nm="analysis"):
     return subjid, pl_data_dir, out_dir
 
 def load_annotations(data_dir):
+    """
+    Loads annotations (a.k.a. "triggers", "events", etc.) exported 
+    from Pupil Player.
+
+    Parameters
+    ----------
+    data_dir : str
+        Directory where the Pupil Labs "annotations" data exists.
+
+    Returns
+    -------
+    events : DataFrame
+        Pandas DataFrame containing events.
+    """
     events = pd.read_csv(data_dir + "\\annotations.csv")
     print("Loaded {} events".format(len(events)))
     return events
    
-def load_pupil(data_dir, cols):
+def load_pupil(data_dir, cols=["pupil_timestamp","diameter"]):
+    """
+    Loads "pupil_positions" data exported from Pupil Player.
+
+    Parameters
+    ----------
+    data_dir : str
+        Directory where the Pupil Labs "annotations" data exists.
+    cols : list
+        Columns to load from the file, e.g. ["pupil_timestamp","diameter","diameter_3d"]
+        (check file for options). The default is ["pupil_timestamp","diameter"].
+
+    Returns
+    -------
+    samps : DataFrame
+        Pandas DataFrame containing requested samples.
+    """
     samps = pd.read_csv(data_dir + "\\pupil_positions.csv", usecols=cols)
     samps.set_index("pupil_timestamp", inplace=True)
     print("Loaded {} samples".format(len(samps)))
     return samps
 
 def load_blinks(data_dir):
+    """
+    Loads "blinks" data exported from Pupil Player.
+
+    Parameters
+    ----------
+    data_dir : str
+        Directory where the Pupil Labs "blinks" data exists.
+
+    Returns
+    -------
+    blinks : DataFrame
+        Pandas DataFrame containing blink events.
+
+    """
     blinks = pd.read_csv(data_dir + "\\blinks.csv")
     print("{} blinks detected by Pupil Labs, average duration {:.3f} s".format(len(blinks), blinks.duration.mean()))
     return blinks    
 
-# functions to clean data
+###########################
+# FUNCTIONS TO CLEAN DATA #
+###########################
+    
 def ev_row_idxs(samples, blinks):
     """ 
     Returns the indices in 'samples' contained in events from 'events.'
@@ -113,12 +189,11 @@ def interpolate_blinks(samples, blinks, fields=["diameter"]):
     print("{} samples ({:.3f} %) reconstructed with linear interpolation".format(
         len(samps.loc[samps["interpolated"]==1]), 
         samps.loc[:,"interpolated"].value_counts(normalize=True)[1]*100))
-    
     return samps
 
 def mask_zeros(samples, mask_cols=["diameter"]):
     """ 
-    Sets any 0 values in columns in mask_cols to NaN
+    Sets any 0 values in columns in mask_cols to NaN.
     
     Parameters
     ----------
@@ -162,7 +237,7 @@ def butterworth_series(samples, fields=["diameter"], filt_order=3, cutoff_freq=.
         lambda x: signal.filtfilt(B, A, x), axis=0)
     return samps
 
-def savgol_series(samples, fields=["diameter"], window_length=51, filt_order=7, inplace=False): # this doesn't work right now
+def savgol_series(samples, fields=["diameter"], window_length=51, filt_order=7, inplace=False): 
     """
     Applies a savitsky-golay filter to the given fields
     See documentation on scipy's savgol_filter method FMI.
@@ -173,15 +248,38 @@ def savgol_series(samples, fields=["diameter"], window_length=51, filt_order=7, 
         lambda x: signal.savgol_filter(x, window_length, filt_order), axis=0)
     return samps
     
+###########
+# extract #
+###########
     
-# def downsample(samples, sample_ratesamples
-#                ):
-#     return samps
-
-# function to extract events
 def extract(samples, events, offset=0, duration=0, borrow_attributes=[]):
     """
     Extracts ranges from samples based on event timing and sample count.
+
+    Parameters
+    ----------
+    samples : DataFrame
+        The samples to extract from. Index must be timestamp.
+    events : DataFrame
+        The events to extract. Index must be timestamp.
+    offset : int, optional
+        Number of samples to offset from baseline. The default is 0.
+    duration : int, optional
+        Duration of all events in terms of the number of samples. Currently 
+        this has to be the same for all events, but could use a "duration" 
+        column in events DataFrame if needs be. The default is 0.
+    borrow_attributes : list of str, optional
+        List of column names in the events DataFrame whose values should be
+        copied to the respective ranges. For each item in the list, a
+        column will be created in the ranges dataframe - if the column does
+        not exist in the events dataframe, the values in the each
+        corresponding range will be set to float('nan'). This is uesful for 
+        marking conditions, grouping variables, etc. The default is [].
+
+    Returns
+    -------
+    df : DataFrame
+        Extracted events complete with hierarchical multi-index.
     """
     # negative duration should raise an exception
     if duration <= 0:
@@ -213,11 +311,32 @@ def extract(samples, events, offset=0, duration=0, borrow_attributes=[]):
     df.index = midx
     
     print("Extracted ranges for {} events".format(len(events)))
-    
     return df
 
-# this doesn't work at the moment
 def reject_bad_trials(ranges, interp_thresh=20, drop=False):
+    """
+    Drop or markup trials which exceed a threshold of interpolated data.
+
+    Parameters
+    ----------
+    ranges : DataFrame
+        Extracted event ranges with hierarchical pd.MultiIndex.
+    interp_thresh : int, optional
+        Percentage of interpolated data permitted before trials are marked for
+        rejection / dropped. The default is 20.
+    drop : bool, optional
+        Whether to drop the trials from the ranges. The default is False.
+
+    Returns
+    -------
+    ranges : DataFrame
+        Same as ranges but with a column identifying trials marked for
+        rejection (drop = False) or with those trials dropped from the 
+        DataFrame (drop = True).
+    """
+    if not isinstance(ranges.index, pd.MultiIndex):
+        raise ValueError("Index of ranges must be pd.MultiIndex")
+        
     pct_interp = ranges.groupby(by="event").agg(
         {'interpolated':lambda x: float(x.sum())/len(x)*100})
     print("Percentage of data interpolated for each trial (mean = {:.2f}): \n".format(
@@ -229,8 +348,11 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
     if drop:
         ranges = ranges.drop(index=reject_idxs)
     return ranges
-    
-# functions for plr metrics
+
+#########################################
+# FUNCTIONS FOR CALCULATING PLR METRICS #
+#########################################
+
 def baseline(s, onset_idx):
     """
     Return the average pupil size between the start of s and onset_idx
@@ -312,3 +434,11 @@ def constriction_time(s, sample_rate, onset_idx, pc=None):
 
 # def get_plr_metrics(averages, group_level, pupil_col, onset_time, sample_rate, pc):
 #     return metrics
+    
+# def plot_pupil_samples(samples, pupil_cols=["diameter"], out=None, save=False):
+    
+#     fig = plt.figure(figsize=(14,4))
+#     ax = fig.add_subplot(111)
+#     samples[pupil_cols].plot(ax=ax)
+#     #ax.
+#     return fig

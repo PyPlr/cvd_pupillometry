@@ -2,21 +2,25 @@
 """
 Created on Thu Mar 26 09:20:38 2020
 
-@author: - jtm
+@author: - JTM
 
 A python wrapper for some of the ledmotive RESTful API. 
 See the "LIGHT HUB RESTful API" manuel for further functions and more info.
 
-Make code simple, clear and without side-effects. Organise code sensibly. 
-Use functions. 
+Contains additional functions for working with the STLAB.
 """
 import requests
 import random
 from time import time, sleep
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
-def setup_device(username, identity, password):
+########################################
+# WRAPPER FOR FUNCTIONS IN RESTFUL API #
+########################################
+
+def setup_device(username='admin', identity=1, password='83e47941d9e930f6'):
     '''
     Establish a connection to the device and return a device handle.
 
@@ -68,13 +72,13 @@ def set_spectrum_a(device, intensity_values):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     data = {"arg":intensity_values}
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/command/SET_SPECTRUM_A"
     requests.post(cmd_url, cookies=device['cookiejar'], json=data, verify=False)
-    t2 = time()
-    print("set_spectrum_a exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("set_spectrum_a exec time: {}".format(t2-t1))
 
 def spectruma(device, intensity_values):
     '''
@@ -94,13 +98,13 @@ def spectruma(device, intensity_values):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/spectruma/" + spec
     requests.get(cmd_url, cookies=device['cookiejar'], verify=False)
-    t2 = time()
-    print("spectruma exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("spectruma exec time: {}".format(t2-t1))
     
 def color_xy(device, intensity_values, x, y):
     '''
@@ -122,13 +126,13 @@ def color_xy(device, intensity_values, x, y):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/spectruma/" + spec + "/color/" + str(x) + "/" + str(y)
     requests.get(cmd_url, cookies=device['cookiejar'], verify=False)
-    t2 = time()
-    print("color_xy exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("color_xy exec time: {}".format(t2-t1))
     
 def set_color(device, x, y, flux=None):
     '''
@@ -154,7 +158,7 @@ def set_color(device, x, y, flux=None):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     if flux:
         data = {"arg":[x, y, flux]}
     else:
@@ -162,8 +166,8 @@ def set_color(device, x, y, flux=None):
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/command/SET_COLOR"
     requests.post(cmd_url, cookies=device['cookiejar'], json=data, verify=False)
-    t2 = time()
-    print("set_color exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("set_color exec time: {}".format(t2-t1))
 
 def turn_off(device):
     '''
@@ -178,12 +182,12 @@ def turn_off(device):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/command/TURN_OFF"
     requests.post(cmd_url, cookies=device['cookiejar'], verify=False) 
-    t2 = time()
-    print("turn_off exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("turn_off exec time: {}".format(t2-t1))
 
 def set_blink(device, blink=1):
     '''
@@ -201,13 +205,13 @@ def set_blink(device, blink=1):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     data = {"arg":blink}
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/command/SET_BLINK"
     requests.post(cmd_url, cookies=device['cookiejar'], json=data, verify=False) 
-    t2 = time()
-    print("set_blink exec time: {}".format(t2-t1))
+    #t2 = time()
+    #print("set_blink exec time: {}".format(t2-t1))
 
 def get_pcb_temperature(device):
     '''
@@ -314,12 +318,15 @@ def load_video_file(device, video):
     -------
     None.
     '''
-    t1 = time()
+    #t1 = time()
     args = [('file', (video, open(video, 'rb'), 'application/json'))]
     cmd_url = "http://" + device['url'] + ":8181/api/gateway/video" 
-    requests.post(cmd_url, files=args, cookies=device['cookiejar'], verify=False)
-    t2 = time()
-    print("load_video_file exec time: {}".format(t2-t1))
+    response = requests.post(cmd_url, files=args, cookies=device['cookiejar'], verify=False)
+    if "data" not in response.json():
+        raise "Upload file error"
+    #t2 = time()
+    #print("load_video_file exec time: {}".format(t2-t1))
+    return response.json()
 
 def play_video_file(device, stop=False):
     '''
@@ -342,7 +349,7 @@ def play_video_file(device, stop=False):
     None.
 
     '''
-    t1 = time()
+    #t1 = time()
     if stop:
         data = {'arg': None}
     else:
@@ -350,8 +357,12 @@ def play_video_file(device, stop=False):
     cmd_url = "http://" + device['url'] + ":8181/api/luminaire/" + str(device['id']) + \
         "/command/PLAY_VIDEO_FILE"
     requests.post(cmd_url, json=data, cookies=device['cookiejar'], verify=False)
-    t2 = time()
-    print("play_video_file exec time {}".format(t2-t1))
+    #t2 = time()
+    #print("play_video_file exec time {}".format(t2-t1))
+    
+###################################################
+# ADDITIONAL FUNCTIONS FOR WORKING WITH THE STLAB #
+###################################################
     
 def random_disco(device, nlights=10, blink=0):
     '''
@@ -382,11 +393,83 @@ def plot_spectrum(spectrum, color):
     bins = np.linspace(380,780,81)
     plt.plot(bins, spectrum, color=color)
 
-    
-    
-    
+def sample_leds(device, leds=[0], minmax=[0,4095], n_samples=3, wait_time=.2):
+    """
+    Sample each LED in turn a specified number of times at equidistant 
+    steps for a given intensity range
 
+    Parameters
+    ----------
+    device : dict
+        device handle returned by setup_device().
+    leds : list, optional
+        list of leds to sample. The default is [0].
+    minmax : list, optional
+        The minimum and maximum intensities to sample between. Maximum intensity 
+        must be evenly divisible by n_samples to be included in the range. 
+        The default is [0,4095].
+    n_samples : int, optional
+        Number of equidistant samples in the intensity range. The default is 3.
+    wait_time : float, optional
+        Time in seconds to wait after setting each spectrum before acquiring 
+        measurement from spectrometer. The default is .2.
 
-    
+    Returns
+    -------
+    df : DataFram
+        The resulting DataFrame with hierarchial pd.MultiIndex and columns "flux"
+        and "intensity".
 
+    """
+    step = int((minmax[1]-minmax[0])/n_samples)
+    vals = [val for val in range(minmax[0], minmax[1], step)]
+    print("Sampling {} leds at the following intensities: {}".format(len(leds), vals))
+    bins = np.linspace(380,780,81)
+    leds_off = [0]*10
     
+    # dict to store data
+    df = pd.DataFrame()
+    midx = pd.MultiIndex.from_product([list(range(len(leds))), list(range(len(vals))), bins], 
+                                       names=['led', 'intensity', 'bins'])
+    for i, led in enumerate(leds):
+        set_spectrum_a(device, leds_off)
+        sleep(wait_time)
+        for val in vals:
+            print("Led: {}, intensity: {}".format(led, val))
+            spec = [0]*10
+            spec[led] = val
+            set_spectrum_a(device, spec)
+            sleep(wait_time)
+            data = get_spectrometer_spectrum(device, norm=False)
+            data = pd.DataFrame(data)
+            data.rename(columns={0:'flux'}, inplace=True)
+            data["step"] = step
+            df = pd.concat([df, pd.DataFrame(data)])
+    
+    turn_off(device)
+    df.index = midx
+    return df    
+
+def STLAB_predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not working atm
+    """
+    Predict the spectral power distribution for a given list of led 
+    intensities using linear interpolation.
+
+    Parameters
+    ----------
+    intensity : list
+        List of intensity values for each led. The default is [0,0,0,0,0,0,0,0,0,0].
+    lkp_table : DataFrame
+        A wide-format DataFrame with hierarchichal pd.MultIndex [led, intensity] 
+        and a column for each of 81 5-nm wavelength bins.
+
+    Returns
+    -------
+    spectrum : np.array
+        Predicted spectrum for given intensities.
+
+    """
+    spectrum = np.zeros(81)
+    for led , val in enumerate(intensity):
+        spectrum += lkp_table.loc[(led,val)].to_numpy()
+    return spectrum
