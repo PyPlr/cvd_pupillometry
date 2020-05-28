@@ -113,7 +113,6 @@ for subjdir in subjdirs:
         ax.set_xlabel("Time (s)")
         ax.set_xticks(range(600, 8400, 1200))
         ax.set_xticklabels([str(xtl) for xtl in range(0,65,10)])
-        lims = ax.axis()
         ax.axvspan(600,800,0,1,color='k', alpha=.2) 
         
     for ax in axs[1:]:

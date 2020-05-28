@@ -9,6 +9,7 @@ import os
 import pyplr as plr
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 # useful strings
 exp_dir = "..\\..\\..\\data\\red_vs_blue_2s_pulse_3trials_each"
@@ -23,22 +24,39 @@ for subdir in subdirs:
     subject = subdir[-6:]
     ranges = pd.read_hdf(store, key=subject)
     ranges["subject"] = subject
-    ranges.diameter_3d.plot()
     combined = combined.append(ranges)
 
-# plot grand averages    
-ax = sns.lineplot(x="onset", y="diameter_3dpc", hue='color', data=combined,
-             n_boot=10, ci=95, palette=['red','blue'])
-ax.set_xlabel('Time (s)')
-ax.set_ylabel('Pupil Diameter (%-Change)')
-ax.set_xticks(range(0, 8400, 600))
-ax.set_xticklabels([str(xtl) for xtl in range(-5,65,5)])
-ax.axhspan(-60,-62, color='k', alpha=.3)
-ax.hlines((-60.5,-61,-61.5,-62), 600,840, color='k')
-ax.hlines(0, 0, 7600, color='k', ls=':', lw=1)
-ax.vlines(600, -62, 10, color='k', ls=':', lw=1)
-sns.despine(offset=10, trim=True)
+combined.reset_index(inplace=True)
 
+# plot grand averages    
+fig, axs = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=True, figsize=(14,8))
+axs = [item for sublist in axs for item in sublist]
+p = 0
+for sub, df in combined.groupby('subject'):
+    averages = df.groupby(by=["color","onset"], as_index=True).mean()
+
+    axs[p].plot(averages.loc['red', "diameter_3dpc"], color='red')
+    axs[p].plot(averages.loc['blue', "diameter_3dpc"], color='blue')
+    axs[p].set_title(sub)
+    p+=1
+sns.lineplot(x="onset", y="diameter_3dpc", hue='color', data=combined,
+             n_boot=10, ci=95, palette=['red','blue'], ax=axs[p], legend=False)
+
+for ax in axs[3:]:
+    ax.set_xlabel("Time (s)")
+    
+for ax in [axs[0], axs[3]]:
+    ax.set_ylabel("Pupil modulation (%)")
+
+for ax in axs:
+    ax.set_xticks(range(600, 8400, 1200))
+    ax.set_xticklabels([str(xtl) for xtl in range(0,65,10)])
+    ax.axvspan(600,800,0,1,color='k', alpha=.2) 
+    ax.hlines(0, 0, 7600, color='k', ls=':', lw=1.5)
+    ax.set_ylim((-60,40))
+axs[-1].set_title("Grand averages")
+fig.savefig(exp_dir + "\\subject_and_grand_averages.png")
+    
 # some parameters
 sample_rate = 120
 duration = 7600

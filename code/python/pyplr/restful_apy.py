@@ -429,7 +429,7 @@ def sample_leds(device, leds=[0], minmax=[0,4095], n_samples=3, wait_time=.2):
     
     # dict to store data
     df = pd.DataFrame()
-    midx = pd.MultiIndex.from_product([list(range(len(leds))), list(range(len(vals))), bins], 
+    midx = pd.MultiIndex.from_product([list(range(len(leds))), vals, bins], 
                                        names=['led', 'intensity', 'bins'])
     for i, led in enumerate(leds):
         set_spectrum_a(device, leds_off)
@@ -473,3 +473,9 @@ def STLAB_predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not 
     for led , val in enumerate(intensity):
         spectrum += lkp_table.loc[(led,val)].to_numpy()
     return spectrum
+
+def get_STLAB_colors():
+    colors = ['blueviolet', 'royalblue', 'darkblue',
+              'blue', 'cyan', 'green', 'lime',
+              'orange','red','darkred']
+    return colors
