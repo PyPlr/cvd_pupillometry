@@ -51,6 +51,7 @@ def setup_device(username='admin', identity=1, password='83e47941d9e930f6'):
             'id':identity,
             'cookiejar':cookiejar
             }
+        print("STLAB device setup complete.")
     except requests.RequestException as err:
         print('login error: ', err)
     
@@ -393,10 +394,10 @@ def plot_spectrum(spectrum, color):
     bins = np.linspace(380,780,81)
     plt.plot(bins, spectrum, color=color)
 
-def sample_leds(device, leds=[0], minmax=[0,4095], n_samples=3, wait_time=.2):
+def sample_leds(device, leds=[0], intensity=[4095], wait_before_sample=.2):
     """
-    Sample each LED in turn a specified number of times at equidistant 
-    steps for a given intensity range
+    Sample each LED in turn a specified number of times for a given list of 
+    intensities.
 
     Parameters
     ----------
@@ -404,14 +405,10 @@ def sample_leds(device, leds=[0], minmax=[0,4095], n_samples=3, wait_time=.2):
         device handle returned by setup_device().
     leds : list, optional
         list of leds to sample. The default is [0].
-    minmax : list, optional
-        The minimum and maximum intensities to sample between. Maximum intensity 
-        must be evenly divisible by n_samples to be included in the range. 
-        The default is [0,4095].
-    n_samples : int, optional
-        Number of equidistant samples in the intensity range. The default is 3.
-    wait_time : float, optional
-        Time in seconds to wait after setting each spectrum before acquiring 
+    intensity : list, optional
+        The intensity values to use for the sampling. The default is [4095].
+    wait_before_sample : float, optional
+        Time in seconds to wait after setting a spectrum before acquiring 
         measurement from spectrometer. The default is .2.
 
     Returns
@@ -421,36 +418,60 @@ def sample_leds(device, leds=[0], minmax=[0,4095], n_samples=3, wait_time=.2):
         and "intensity".
 
     """
-    step = int((minmax[1]-minmax[0])/n_samples)
-    vals = [val for val in range(minmax[0], minmax[1], step)]
-    print("Sampling {} leds at the following intensities: {}".format(len(leds), vals))
+        
+    print("Sampling {} leds at the following intensities: {}".format(len(leds), intensity))
     bins = np.linspace(380,780,81)
     leds_off = [0]*10
     
     # dict to store data
     df = pd.DataFrame()
-    midx = pd.MultiIndex.from_product([list(range(len(leds))), vals, bins], 
-                                       names=['led', 'intensity', 'bins'])
-    for i, led in enumerate(leds):
+    midx = pd.MultiIndex.from_product([leds, intensity, bins], names=['led', 'intensity', 'bins'])
+
+    # turn stlab off if it's on
+    set_spectrum_a(device, leds_off)
+
+    for led in leds:
         set_spectrum_a(device, leds_off)
-        sleep(wait_time)
-        for val in vals:
+        sleep(wait_before_sample)
+        for val in intensity:
             print("Led: {}, intensity: {}".format(led, val))
             spec = [0]*10
             spec[led] = val
             set_spectrum_a(device, spec)
-            sleep(wait_time)
+            sleep(wait_before_sample)
             data = get_spectrometer_spectrum(device, norm=False)
             data = pd.DataFrame(data)
             data.rename(columns={0:'flux'}, inplace=True)
-            data["step"] = step
             df = pd.concat([df, pd.DataFrame(data)])
     
     turn_off(device)
     df.index = midx
-    return df    
+    return df  
 
-def STLAB_predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not working atm
+#
+# def interp_spectra(spectra, add_rows):
+    
+#     lkp = spectra.unstack(level=2)
+#     lkp.columns = [val[1] for val in lkp.columns]
+    
+#     interp_rows = np.empty((add_rows,81))
+#     interp_rows[:] = np.NaN
+#     interp_rows = pd.DataFrame(interp_rows)
+    
+#     lkp.reset_index(inplace=True, drop=True)
+#     lkp.columns = range(lkp.shape[1])
+#     new_df = pd.DataFrame()
+#     for i, row in lkp.iterrows():
+#         new_df = new_df.append(row)
+#         if not i+1 == len(lkp):
+#            new_df = new_df.append(add) 
+    
+#     new_df.reset_index(inplace=True, drop=True)
+#     new_df = new_df.interpolate(axis=0)
+    
+#     return
+
+def predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not working atm
     """
     Predict the spectral power distribution for a given list of led 
     intensities using linear interpolation.
@@ -461,7 +482,8 @@ def STLAB_predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not 
         List of intensity values for each led. The default is [0,0,0,0,0,0,0,0,0,0].
     lkp_table : DataFrame
         A wide-format DataFrame with hierarchichal pd.MultIndex [led, intensity] 
-        and a column for each of 81 5-nm wavelength bins.
+        and a column for each of 81 5-nm wavelength bins. 4096*10 rows, containing
+        predicted for each led at all possible intensities.
 
     Returns
     -------
@@ -474,8 +496,29 @@ def STLAB_predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not 
         spectrum += lkp_table.loc[(led,val)].to_numpy()
     return spectrum
 
-def get_STLAB_colors():
+def get_led_colors():
     colors = ['blueviolet', 'royalblue', 'darkblue',
               'blue', 'cyan', 'green', 'lime',
               'orange','red','darkred']
     return colors
+
+
+def spec_to_xyz(spec):
+    """Convert a spectrum to an xyz point.
+
+    The spectrum must be on the same grid of points as the colour-matching
+    function, self.cmf: 380-780 nm in 5 nm steps.
+
+    """
+    from CIE import get_CIE_CMF
+    
+    cmf = get_CIE_CMF()[1:]
+    cmf = cmf.T
+    XYZ = np.sum(spec[:, np.newaxis] * cmf, axis=0)
+    den = np.sum(XYZ)
+    if den == 0.:
+        return XYZ
+    return XYZ / den
+
+# def plot_spectra(spectra):
+    
