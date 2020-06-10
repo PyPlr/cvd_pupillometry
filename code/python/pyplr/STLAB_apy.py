@@ -15,6 +15,8 @@ from time import time, sleep
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from datetime import datetime
+import json
 
 ########################################
 # WRAPPER FOR FUNCTIONS IN RESTFUL API #
@@ -360,7 +362,71 @@ def play_video_file(device, stop=False):
     requests.post(cmd_url, json=data, cookies=device['cookiejar'], verify=False)
     #t2 = time()
     #print("play_video_file exec time {}".format(t2-t1))
+
+#################################
+# FUNCTIONS TO MAKE VIDEO FILES #
+#################################
+
+def get_header(df, repeats=1):
     
+    header_dict = {
+            "version":"1",
+            "model":"VEGA10",
+            "channels":10,
+            "spectracount":len(df),
+            "transitionsCount":len(df),
+            "fluxReference":0,
+            "repeats":repeats
+            }
+
+    return header_dict
+
+def get_metadata(df, creator='jtm'):
+    
+    meta_dict = {
+            "creationTime":str(datetime.now()),
+            "creator":creator
+            }
+
+    return meta_dict
+
+def get_spectra(df):
+    
+    light_cols = df.columns[1:]
+    return df[light_cols].values.tolist()
+
+def get_transitions(df):
+    
+    list_of_dicts = []
+    
+    for index , row in df.iterrows():
+        
+        list_of_dicts.append({
+            "spectrum":index,
+            "power":100,
+            "time":int(row['time']),
+            "flags":0})
+    
+    return list_of_dicts
+
+def make_video_file(df, video_nm, repeats=1):
+    ''' 
+    Reads in a CSV file with columns 'time' , 'primary-1'...'primary-10'
+    and returns a json file compatible with spectratune lab device
+    '''
+      
+    d = {
+        "header":get_header(df, repeats),
+        "metadata":get_metadata(df),
+        "spectra":get_spectra(df),
+        "transitions":get_transitions(df)
+        }
+    
+    with open(video_nm + '.dsf', 'w') as outfile:
+        json.dump(d, outfile)
+        
+    return json.dumps(d)
+
 ###################################################
 # ADDITIONAL FUNCTIONS FOR WORKING WITH THE STLAB #
 ###################################################
@@ -396,8 +462,7 @@ def plot_spectrum(spectrum, color):
 
 def sample_leds(device, leds=[0], intensity=[4095], wait_before_sample=.2):
     """
-    Sample each LED in turn a specified number of times for a given list of 
-    intensities.
+    Sample each of the given LEDs at the specified intensity settings.
 
     Parameters
     ----------
@@ -414,8 +479,7 @@ def sample_leds(device, leds=[0], intensity=[4095], wait_before_sample=.2):
     Returns
     -------
     df : DataFram
-        The resulting DataFrame with hierarchial pd.MultiIndex and columns "flux"
-        and "intensity".
+        The resulting DataFrame with hierarchial pd.MultiIndex and column "flux".
 
     """
         
@@ -425,7 +489,7 @@ def sample_leds(device, leds=[0], intensity=[4095], wait_before_sample=.2):
     
     # dict to store data
     df = pd.DataFrame()
-    midx = pd.MultiIndex.from_product([leds, intensity, bins], names=['led', 'intensity', 'bins'])
+    midx = pd.MultiIndex.from_product([leds, intensity, bins], names=['led', 'intensity', 'wavelength'])
 
     # turn stlab off if it's on
     set_spectrum_a(device, leds_off)
@@ -448,28 +512,39 @@ def sample_leds(device, leds=[0], intensity=[4095], wait_before_sample=.2):
     df.index = midx
     return df  
 
-#
-# def interp_spectra(spectra, add_rows):
+def interp_spectra(spectra):
+    """
+    This function needs generalising.
+
+    Parameters
+    ----------
+    spectra : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    intp_tbl : TYPE
+        DESCRIPTION.
+
+    """
     
-#     lkp = spectra.unstack(level=2)
-#     lkp.columns = [val[1] for val in lkp.columns]
+    tbl = spectra.unstack(level=2)
+    tbl.columns = [val[1] for val in tbl.columns]
     
-#     interp_rows = np.empty((add_rows,81))
-#     interp_rows[:] = np.NaN
-#     interp_rows = pd.DataFrame(interp_rows)
-    
-#     lkp.reset_index(inplace=True, drop=True)
-#     lkp.columns = range(lkp.shape[1])
-#     new_df = pd.DataFrame()
-#     for i, row in lkp.iterrows():
-#         new_df = new_df.append(row)
-#         if not i+1 == len(lkp):
-#            new_df = new_df.append(add) 
-    
-#     new_df.reset_index(inplace=True, drop=True)
-#     new_df = new_df.interpolate(axis=0)
-    
-#     return
+    intp_tbl = pd.DataFrame()
+    for led, df in tbl.groupby(["led"]):
+        intensities = df.index.get_level_values('intensity')
+        new_intensities = np.linspace(intensities.min(), intensities.max(), 4096)
+        new_intensities = new_intensities.astype('int')
+        df.reset_index(inplace=True, drop=True)
+        df.columns = range(0, df.shape[1])
+        df.index = df.index * 63
+        n = df.reindex(new_intensities).interpolate(method='linear')
+        n['intensity'] = n.index
+        n['led'] = led
+        intp_tbl = intp_tbl.append(n)
+    intp_tbl.set_index(['led','intensity'], inplace=True)
+    return intp_tbl
 
 def predicted_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None): # not working atm
     """
@@ -507,7 +582,7 @@ def spec_to_xyz(spec):
     """Convert a spectrum to an xyz point.
 
     The spectrum must be on the same grid of points as the colour-matching
-    function, self.cmf: 380-780 nm in 5 nm steps.
+    function, cmf: 380-780 nm in 5 nm steps.
 
     """
     from CIE import get_CIE_CMF
@@ -520,5 +595,138 @@ def spec_to_xyz(spec):
         return XYZ
     return XYZ / den
 
-# def plot_spectra(spectra):
+def spectra_to_xyz(spectra):
+    """
+    Calculate the CIE 1931 xy chromaticity coordinates for a collection of
+    spectra. The DataFrame must have columns (or multi index) with names
+
+    Parameters
+    ----------
+    spectra : DataFrame
+        As output by stlab.sample_leds
+
+    Returns
+    -------
+    xyz : DataFrame
+        The xyz values for each spectrum.
+    """
     
+    idx = []    
+    xyz = []
+    for i, spec in spectra.groupby(by=["led","intensity"]):
+        idx.append(i)
+        xyz.append(spec_to_xyz(spec["flux"].to_numpy()))
+    xyz = pd.DataFrame(xyz, columns=["X","Y","Z"])
+    xyz.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
+    return xyz
+
+def spectra_to_peak_wavelengths(spectra):
+    """
+    Calculate the peak wavelengths for a given set of spectra.
+
+    Parameters
+    ----------
+    spectra : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    pwl : TYPE
+        DESCRIPTION.
+
+    """
+    idx = []    
+    pwl = []
+    for i, spec in spectra.groupby(by=["led","intensity"]):
+        idx.append(i)
+        pwl.append(spec.loc[spec["flux"]==spec["flux"].max(), "wavelength"].to_numpy()) 
+    pwl = pd.DataFrame(pwl, columns=["wavelength"])
+    pwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
+    
+    return pwl
+
+def spectra_to_dominant_wavelength(spectra, ref_white=[0.3333, 0.3333]):
+    from colour.colorimetry.dominant import dominant_wavelength
+    
+    xyz = spectra_to_xyz(spectra)
+    idx = []
+    dwl = []
+    for i, row in xyz.iterrows():
+        result = dominant_wavelength((row.X, row.Y), ref_white)
+        dwl.append(result[0])
+        idx.append(i)
+    dwl = pd.DataFrame(dwl, columns=["wavelength"])
+    dwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
+    return dwl
+
+def spectra_to_melanopic_irradiance(spectra):
+    from CIE import get_CIES026
+    
+    # get melanopsin sensitivity
+    _ , sss = get_CIES026(asdf=True)
+    mel = sss["Mel"]
+    mel = mel[::5]
+    
+    # aggregate to melanopic irradiance
+    mi = spectra.groupby(by=['led','intensity'])['flux'].agg(lambda x: x.dot(mel.values.T))
+    return mi
+
+def explore_spectra(spectra):
+    """
+    This function takes a DataFrame of spectra and plots them, along with other
+    useful info.
+    """
+    from colour.plotting import plot_chromaticity_diagram_CIE1931
+    import seaborn as sns
+    
+    # get xy chromaticities
+    xyz = spectra_to_xyz(spectra)
+    
+    # get peak wavelength
+    pwl = spectra_to_peak_wavelengths(spectra)
+    
+    # get dominant wavelength
+    dwl = spectra_to_dominant_wavelength(spectra)
+    
+    # get malanopic irradiances
+    mi = spectra_to_melanopic_irradiance(spectra)
+
+    # set up figure
+    fig , ax = plt.subplots(10, 4, figsize=(16,36))
+    colors = get_led_colors()
+
+    for i, led in enumerate(ax):
+    
+        # plot spectra
+        sns.lineplot(x='wavelength', y='flux', data=spectra[spectra.led==i], color=colors[i], units='intensity',ax=ax[i, 0], lw=.1, estimator=None)
+        ax[i, 0].set_ylim((0,3500))
+        ax[i, 0].set_xlabel("Wavelength $\lambda$ (nm)")
+        ax[i, 0].set_ylabel("Flux (mW)")
+    
+        # plot color coordinates
+        plot_chromaticity_diagram_CIE1931(standalone=False, axes=ax[i, 1], title=False, show_spectral_locus=False)
+        ax[i, 1].set_xlim((-.15,.9))
+        ax[i, 1].set_ylim((-.1,1))
+        ax[i, 1].scatter(xyz.loc[i,"X"], xyz.loc[i,"Y"], c='k', s=3)
+        
+        # plot peak and dominant wavelength as a function of input
+        inpt = spectra["intensity"] / 4095
+        inpt = np.linspace(0, 1, len(spectra.intensity.unique()))
+        ax[i, 2].plot(inpt, pwl.loc[i, 'wavelength'], color=colors[i], lw=1, label='Peak')
+        ax[i, 2].set_xlabel("Input")
+        
+        ax[i, 2].plot(inpt, dwl.loc[i, 'wavelength'], color=colors[i], lw=3, label='Dominant')
+        ax[i, 2].set_xlabel("Input")
+        ax[i, 2].set_ylabel("$\lambda$ (nm)")
+        low  = dwl.loc[i, 'wavelength'].min()-dwl.loc[i, 'wavelength'].min()*0.1
+        high = dwl.loc[i, 'wavelength'].max()+dwl.loc[i, 'wavelength'].max()*0.1
+        ax[i, 2].set_ylim((low, high))
+        ax[i, 2].legend()
+        
+        # plot melanopic irradience
+        ax[i, 3].plot(inpt, mi.loc[i], color=colors[i])
+        ax[i, 3].set_ylim((0,14000))
+        ax[i, 3].set_xlabel("Input")
+        ax[i, 3].set_ylabel("Melanopic irradiance (mW)")
+    
+    return fig    

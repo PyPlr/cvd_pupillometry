@@ -347,6 +347,9 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         ranges.loc[reject_idxs, "reject"] = 1
     if drop:
         ranges = ranges.drop(index=reject_idxs)
+        print("{} trials were dropped from the DataFrame".format(len(reject_idxs)))
+    else:
+        print("{} trials were marked for rejection".format(len(reject_idxs)))
     return ranges
 
 #########################################
