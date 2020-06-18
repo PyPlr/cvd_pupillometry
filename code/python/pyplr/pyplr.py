@@ -366,7 +366,8 @@ def baseline(s, onset_idx):
 def latency_idx(s, sample_rate, onset_idx, pc=None):
     """
     Return the index of the first sample following stimulus onset where 
-    constriction exceeds a percentage of the baseline.
+    constriction exceeds a percentage of the baseline. pc should be int or
+    float for data already expressed as pc (e.g. pc=1 == pc=.01)
     """
     if pc is None:
         raise ValueError("Must specify int or float for pc")
@@ -397,12 +398,19 @@ def time_to_peak_constriction(s, sample_rate, onset_idx):
     ttpc = (np.argmin(s)-onset_idx)/(sample_rate/1000)
     return ttpc
 
+def peak_constriction_idx(s):
+    """
+    Return the index of the sample with peak constriction.
+    """
+    pidx = np.argmin(s)
+    return pidx
+
 def peak_constriction(s, onset_idx):
     """
     Return the peak constriction value.
     """
-    peak = np.min(s[onset_idx:])
-    return peak
+    peakcon = np.min(s)
+    return peakcon
 
 def maximum_constriction_amplitude(s, onset_idx):
     """
@@ -419,8 +427,15 @@ def maximum_constriction_velocity(s, sample_rate):
     """
     t = 1/sample_rate
     v = s.diff()/t
-    mcv = v.max()
+    mcv = v.min() # minimum of velocity profile for constriction
     return mcv
+
+def maximum_constriction_acceleration(s, sample_rate):
+    t = 1/sample_rate
+    v = s.diff()/t
+    acc = v.diff()/t
+    mcacc = acc.min() # minimum of acceleration profile for constriction
+    return mcacc
 
 def constriction_time(s, sample_rate, onset_idx, pc=None):
     """
@@ -431,17 +446,64 @@ def constriction_time(s, sample_rate, onset_idx, pc=None):
     ct = ttpc-latency
     return ct
 
+def maximum_redilation_velocity(s, sample_rate):
+    """
+    Return the maximum_dilation_velocity.
+    """
+    t = 1/sample_rate
+    v = s.diff()/t
+    mcv = v.max() # maximum of velocity profile for redilation
+    return mcv
+
+def maximum_redilation_acceleration(s, sample_rate):
+    t = 1/sample_rate
+    v = s.diff()/t
+    acc = v.diff()/t
+    mcacc = acc.max() # maximum of acceleration profile for redilation
+    return mcacc
+
 # def pipr(s, onset_idx, duration):
 #     pipr = s[onset_idx+duration:].mean()
 #     return pipr
 
-# def get_plr_metrics(averages, group_level, pupil_col, onset_time, sample_rate, pc):
-#     return metrics
+def get_plr_metrics(s, sample_rate, onset_idx, pc):
+    """
+    Collapse a PLR into descriptive parameters.
+
+    Parameters
+    ----------
+    s : pd.Series
+        data representing a pupil's response to light.
+    sample_rate : int
+        sampling rate of the measurement system.
+    onset_idx : int
+        index of the onset of the light stimulus.
+    pc : int, float
+        the percentage of constriction from baseline to use in calculating
+        constriction latency. Use float (e.g. pc=0.01) or int (e.g. pc=1)
+        for data already expressed as %-modulation from baseline.
+
+    Returns
+    -------
+    metrics : pd.DataFrame
+        DataFrame containins the metrics.
+    """
     
-# def plot_pupil_samples(samples, pupil_cols=["diameter"], out=None, save=False):
+    metrics = {
+               "B"     : [baseline(s, onset_idx)],
+               "LTC"   : [latency_to_constriction(s, sample_rate, onset_idx, pc)],
+               "TTPC"  : [time_to_peak_constriction(s, sample_rate, onset_idx)],
+               "PC"    : [peak_constriction(s, onset_idx)],
+               "MCAmp" : [maximum_constriction_amplitude(s, onset_idx)],
+               "MCVel" : [maximum_constriction_velocity(s, sample_rate)],
+               "MCAcc" : [maximum_constriction_acceleration(s, sample_rate)],
+               "CT"    : [constriction_time(s, sample_rate, onset_idx, pc)],
+               "MRVel" : [maximum_redilation_velocity(s, sample_rate)],
+               "MRAcc" : [maximum_redilation_acceleration(s, sample_rate)]
+               }
+    metrics = pd.DataFrame.from_dict(metrics, orient='columns')
+    return metrics
+
+
     
-#     fig = plt.figure(figsize=(14,4))
-#     ax = fig.add_subplot(111)
-#     samples[pupil_cols].plot(ax=ax)
-#     #ax.
-#     return fig
+
