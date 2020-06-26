@@ -4,15 +4,15 @@ Created on Fri Mar 27 11:16:51 2020
 
 @author: -
 """
-import restful_apy as apy
+import STLAB_apy as stlab
 import zmq
 import msgpack as serializer
 # import numpy as np
 
-# apy.set_spectrum_a(device,red)
-# red_spec = apy.get_spectrometer_spectrum(device)
-# apy.set_spectrum_a(device,blue)
-# blue_spec = apy.get_spectrometer_spectrum(device)
+# stlab.set_spectrum_a(device,red)
+# red_spec = stlab.get_spectrometer_spectrum(device)
+# stlab.set_spectrum_a(device,blue)
+# blue_spec = stlab.get_spectrometer_spectrum(device)
 # bins = np.linspace(380,780,81)
 # plt.plot(bins,red_spec, color='red')
 # plt.plot(bins, blue_spec, color='blue')
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     from time import sleep, time
 
     # set up light device
-    device = apy.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
+    device = stlab.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
     
     # red and blue lights
     blue = [0, 0, 4095, 4000, 1000, 0, 0, 0, 0, 0]
@@ -109,14 +109,15 @@ if __name__ == "__main__":
         sleep(10.) 
         on_trigger  = new_trigger(label_on, duration_on, trial[1]) # make on trigger
         send_trigger(on_trigger) # send on trigger
-        apy.set_spectrum_a(device, trial[0]) # turn on the light
+        stlab.set_spectrum_a(device, trial[0]) # turn on the light
         sleep(2.) # two second light pulse
         off_trigger = new_trigger(label_off, duration_off, trial[1]) # make off trigger
         send_trigger(off_trigger) # send off trigger
-        apy.turn_off(device) # turn off the light
+        stlab.turn_off(device) # turn off the light
 
         sleep(60.) # give it a minute
 
     # stop recording
     pupil_remote.send_string("r")
     pupil_remote.recv_string()
+

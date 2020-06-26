@@ -373,9 +373,7 @@ class Device():
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #
 #################################
-
-def get_header(df, repeats=1):
-    
+def _get_header(df, repeats=1):
     header_dict = {
             "version":"1",
             "model":"VEGA10",
@@ -387,20 +385,18 @@ def get_header(df, repeats=1):
             }
     return header_dict
 
-def get_metadata(df, creator='jtm'):
+def _get_metadata(df, creator='jtm'):
     meta_dict = {
             "creationTime":str(datetime.now()),
             "creator":creator
             }
     return meta_dict
 
-def get_spectra(df):
-    
+def _get_spectra(df):
     light_cols = df.columns[1:]
     return df[light_cols].values.tolist()
 
-def get_transitions(df):
-    
+def _get_transitions(df):
     list_of_dicts = []
     for index , row in df.iterrows():
         list_of_dicts.append({
@@ -410,21 +406,119 @@ def get_transitions(df):
             "flags":0})
     return list_of_dicts
 
-def make_video_file(df, video_nm, repeats=1):
+def get_video_cols():
+    cols = ["primary-" + str(val) for val in range(10)]
+    cols.insert(0, 'time')
+    return cols
+
+def make_video_file(df, video_nm="our_video_file", repeats=1):
     ''' 
     Takes a DataFrame with columns 'time', 'primary-1'...'primary-10'
-    and returns a json file compatible with spectratune lab device
+    and save it as a .dsf ('dynamic sequence file') in the current
+    working directory. The .dsf file can be loaded and played as a video stream
+    with the STLAB.
     '''
     d = {
-        "header":get_header(df, repeats),
-        "metadata":get_metadata(df),
-        "spectra":get_spectra(df),
-        "transitions":get_transitions(df)
+        "header":_get_header(df, repeats),
+        "metadata":_get_metadata(df),
+        "spectra":_get_spectra(df),
+        "transitions":_get_transitions(df)
         }
     with open(video_nm + '.dsf', 'w') as outfile:
         json.dump(d, outfile)
-    return json.dumps(d)
+    print("'{}' saved in the current working directory.".format(video_nm+'.dsf'))
 
+def _video_file_row(time=0, spec=[0,0,0,0,0,0,0,0,0,0]):
+    fields = [time]+spec
+    row = pd.DataFrame(fields).T
+    cols = get_video_cols()
+    row.columns = cols
+    return row
+
+def _video_file_end(end_time):
+    df = pd.DataFrame()
+    df = df.append(_video_file_row(time=end_time))     # two extra dummy rows ensure the light 
+    df = df.append(_video_file_row(time=end_time+100)) # turns off when video file finishes
+    return df
+
+def make_video_pulse(pulse_spec, pulse_duration, video_nm='our_video_file', 
+                     return_df=False):
+    """
+    Generate a video file to deliver a pulse of light.
+
+    Parameters
+    ----------
+    pulse_spec : list
+        Sprectrum to use for the pulse of light.
+    pulse_duration : int
+        Duration of the pulse.
+    video_nm : str
+        Name for the video file.
+    return_df : bool
+        Whether to return the DataFrame used to create the video file.
+        
+    Returns
+    -------
+    df : pd.DataFrame
+        The DataFrame passed to make_video_file (if requested).
+
+    """
+    df = pd.DataFrame()
+    df = df.append(_video_file_row(0, pulse_spec))
+    df = df.append(_video_file_row(pulse_duration, pulse_spec))
+    df = df.append(_video_file_end(pulse_duration))     
+    df.reset_index(inplace=True, drop=True)
+    make_video_file(df, video_nm)
+    if return_df:
+        return df
+    
+def make_video_pulse_background(background_spec, pre_background_duration, 
+                     pulse_spec, pulse_duration, post_background_duration, 
+                     video_nm='our_video_file', return_df=False):
+    """
+    Generate a video file to deliver a pulse of light against a background
+    of light. Clunky but works well.
+
+    Parameters
+    ----------
+    background_spec : list
+        The background spectrum.
+    pre_background_duration : int
+        Duration of the background prior to pulse.
+    pulse_spec : list
+        The pulse spectrum..
+    pulse_duration : int
+        Duration of the pulse.
+    post_background_duration : int
+        Duration of the background after the pulse..
+    return_df : bool, optional
+        Whether to return the DataFrame. The default is False.
+    video_nm : str, optional
+        Name for the video file. The default is 'our_video_file'.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        The DataFrame passed to make_video_file (if requested).
+
+    """
+    
+    df = pd.DataFrame()
+    onset  = pre_background_duration
+    offset = onset+pulse_duration
+    end    = offset+post_background_duration
+    df = df.append(_video_file_row(0, background_spec))
+    df = df.append(_video_file_row(pre_background_duration, background_spec))
+    df = df.append(_video_file_row(pre_background_duration, pulse_spec))
+    df = df.append(_video_file_row(pre_background_duration+pulse_duration, pulse_spec))
+    df = df.append(_video_file_row(pre_background_duration+pulse_duration, background_spec))
+    df = df.append(_video_file_row(end, background_spec))
+    df = df.append(_video_file_end(end))
+    df.reset_index(inplace=True, drop=True)
+    make_video_file(df, video_nm)
+    if return_df:
+        return df
+                 
 ###################################################
 # ADDITIONAL FUNCTIONS FOR WORKING WITH THE STLAB #
 ###################################################
@@ -655,3 +749,13 @@ def explore_spectra(spectra):
         ax[i, 3].set_ylabel("Melanopic irradiance (mW)")
     
     return fig    
+
+# pulse_spec=[300,300,300,300,300,3000,3000,3000,300,300]
+# pulse_duration =1000
+# background_spec = [300,300,300,300,300,300,300,300,300,300]
+# pre_background_duration=3000
+# post_background_duration=3000
+# df = make_video_pulse_background(pulse_spec=pulse_spec, pulse_duration=pulse_duration,
+#                       return_df=True,
+#                       pre_background_duration=pre_background_duration,
+#                       post_background_duration=post_background_duration, background_spec=background_spec)
