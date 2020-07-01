@@ -16,7 +16,7 @@ spectrum     = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
 spectrum_off = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # make a video file from csv
-mvf.make_video_file('led_test_sinusoid.csv', repeats=15)
+mvf.make_video_file('test_mod.csv')
 
 # set up device - strange how it doesn't seem to work first time
 device = apy.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
@@ -34,10 +34,10 @@ apy.set_blink(device, 0)
 apy.turn_off(device)
 
 # random disco
-apy.random_disco(device, nlights=100, blink=20)
+apy.random_disco(device, nlights=10, blink=20)
 
 # load video file
-apy.load_video_file(device, 'led_test_sinusoid.dsf')
+r = apy.load_video_file(device, 'f1duration60.dsf')
 
 # play video file and stop prematurely
 apy.play_video_file(device)

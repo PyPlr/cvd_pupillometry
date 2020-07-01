@@ -11,8 +11,12 @@ Receive world camera data from Pupil using ZMQ.
 Make sure the frame publisher plugin is loaded and confugured to gray or rgb
 """
 import zmq
+import msgpack
 from msgpack import unpackb, packb
 import numpy as np
+import threading
+import restful_apy as apy
+
 
 context = zmq.Context()
 # open a req port to talk to pupil
@@ -64,13 +68,51 @@ def recv_from_sub():
     return topic, payload
 
 
-recent_world = None
-recent_world_ts = None
+def send_trigger(trigger):
+    payload = msgpack.dumps(trigger, use_bin_type=True)
+    pub_socket.send_string(trigger["topic"], flags=zmq.SNDMORE)
+    pub_socket.send(payload)
+        
+def detect_light_onset(trigger):
+    recent_world = None
+    recent_world_m1 = None
+    recent_world_ts = None
+    detected = False
+    while not detected:
+        topic, msg = recv_from_sub()
+        if topic == 'frame.world':
+            recent_world = np.frombuffer(msg['__raw_data__'][0], dtype=np.uint8).reshape(msg['height'], msg['width'], 3)
+            recent_world_ts = msg['timestamp']
+        if recent_world is not None and recent_world_m1 is not None:
+            diff = recent_world.mean() - recent_world_m1.mean()
+            print(recent_world_ts, recent_world.mean())
+            if diff > 20:
+                print("Light detected at {}".format(recent_world_ts))
+                send_trigger(trigger)
+                break
+        recent_world_m1 = recent_world    
+                  
+                  
+                        #print("Light detected at: {}".format(recent_world_ts))
+            #print(recent_world_ts, recent_world.mean())
 
-while True:
-    topic, msg = recv_from_sub()
-    if topic == 'frame.world':
-        recent_world = np.frombuffer(msg['__raw_data__'][0], dtype=np.uint8).reshape(msg['height'], msg['width'], 3)
-        recent_world_ts = msg['timestamp']
-    if recent_world is not None:
-        print(recent_world_ts, recent_world.mean())
+def new_trigger(label, duration, ts):
+    return {
+        "topic": "annotation",
+        "label": label,
+        "timestamp": ts,
+        "duration": duration
+    }
+
+spectrum     = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
+spectrum_off = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+# set up device
+device = apy.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
+
+        
+for i in range(10):
+    t = threading.Thread(target=detect_light_onset)
+    t.start()
+    apy.set_spectrum_a(device, spectrum)
+    
