@@ -89,7 +89,7 @@ def recv_from_subscriber(subscriber):
         payload['__raw_data__'] = extra_frames
     return topic, payload
 
-def detect_light_onset(subscriber, pub_socket, trigger, threshold):
+def detect_light_onset(subscriber, pub_socket, trigger, threshold, wait_time):
     '''
     Use the Pupil Core World Camera to detect the onset of a light and send 
     an annotation (a.k.a 'trigger') to Pupil Capture with the associated 
@@ -126,7 +126,9 @@ def detect_light_onset(subscriber, pub_socket, trigger, threshold):
     recent_world_ts = None
     detected = False
     print('Waiting for the light...')
-    while not detected:
+    t1 = time()
+    t2 = time()
+    while detected == False or (t2 - t1) < wait_time:
         topic, msg = recv_from_subscriber(subscriber)
         if topic == 'frame.world':
             recent_world = np.frombuffer(msg['__raw_data__'][0], dtype=np.uint8).reshape(
@@ -134,13 +136,15 @@ def detect_light_onset(subscriber, pub_socket, trigger, threshold):
             recent_world_ts = msg['timestamp']
         if recent_world is not None and recent_world_minus_one is not None:
             diff = recent_world.mean() - recent_world_minus_one.mean()
+            print(diff)
             if diff > threshold:
                 print('Light change detected at {}'.format(recent_world_ts))
                 trigger['timestamp'] = recent_world_ts # change trigger timestamp
                 send_trigger(pub_socket, trigger)
-                detected=True
+                detected = True
                 break
         recent_world_minus_one = recent_world
+        t2 = time()
 
 # def find_threshold():
 # while True:

@@ -45,7 +45,7 @@ class Device():
             a = requests.post(cmd_url, 
                               json={'username': username,
                                     'password': password}, 
-                verify=False)
+                              verify=False)
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
@@ -55,7 +55,11 @@ class Device():
                 }
             more_info = self.get_device_info()
             self.info = {**self.info, **more_info}
-            self.spectruma([0,0,0,0,0,0,0,0,100,100]) # there's a reason for this!
+            # for some reason, after first turning on the STLAB, video files 
+            # won't play unless you first do something in synchronous mode. A 
+            # default flash of red light at startup gets around this issue, but 
+            # it might be a good idea to ask Ledmotive about this.
+            self.spectruma([0,0,0,0,0,0,0,0,100,100]) 
             sleep(.2)
             self.turn_off()
             print('STLAB device setup complete...')
@@ -482,23 +486,21 @@ class Device():
 # FUNCTIONS TO MAKE VIDEO FILES #
 #################################
 def _get_header(df, repeats=1):
-    header_dict = {
-            'version':'1',
-            'model':'VEGA10',
-            'channels':10,
-            'spectracount':len(df),
-            'transitionsCount':len(df),
-            'fluxReference':0,
-            'repeats':repeats
-            }
-    return header_dict
+    return {
+        'version':'1',
+        'model':'VEGA10',
+        'channels':10,
+        'spectracount':len(df),
+        'transitionsCount':len(df),
+        'fluxReference':0,
+        'repeats':repeats
+        }
 
 def _get_metadata(df, creator='jtm'):
-    meta_dict = {
-            'creationTime':str(datetime.now()),
-            'creator':creator
-            }
-    return meta_dict
+    return {
+        'creationTime':str(datetime.now()),
+        'creator':creator
+        }
 
 def _get_spectra(df):
     light_cols = df.columns[1:]
@@ -549,7 +551,9 @@ def _video_file_end(end_time):
     df = df.append(_video_file_row(time=end_time+100)) # turns off when video file finishes
     return df
 
-def make_video_pulse(pulse_spec, pulse_duration, video_nm='our_video_file', 
+def make_video_pulse(pulse_spec, 
+                     pulse_duration, 
+                     video_nm='our_video_file', 
                      return_df=False):
     '''
     Generate a video file to deliver a pulse of light.
@@ -580,9 +584,13 @@ def make_video_pulse(pulse_spec, pulse_duration, video_nm='our_video_file',
     if return_df:
         return df
     
-def make_video_pulse_background(background_spec, pre_background_duration, 
-                     pulse_spec, pulse_duration, post_background_duration, 
-                     video_nm='our_video_file', return_df=False):
+def make_video_pulse_background(background_spec, 
+                                pre_background_duration,
+                                pulse_spec, 
+                                pulse_duration, 
+                                post_background_duration, 
+                                video_nm='our_video_file', 
+                                return_df=False):
     '''
     Generate a video file to deliver a pulse of light against a background
     of light. Clunky but works well.

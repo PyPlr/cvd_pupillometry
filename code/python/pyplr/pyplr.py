@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 '''
 Created on Mon Mar 30 17:05:47 2020
-
 @author: JTM
-
 note: credit to Acland BT, Braver TS (2014) for some of this code
 https://github.com/beOn/cili
-
 Acland BT, Braver TS (2014). Cili (v0.5.4) [Software] 
 Available from http://doi.org/10.5281/zenodo.48843. doi:10.5281/zenodo.48843
 '''
@@ -35,7 +32,6 @@ def init_subject_analysis(subjdir, out_dir_nm='analysis'):
     out_dir_nm : str, optional
         Name for the new directory where analysis results will be saved. 
         The default is "analysis".
-
     Returns
     -------
     s : dict
@@ -58,12 +54,10 @@ def load_annotations(data_dir):
     '''
     Loads annotations (a.k.a. "triggers", "events", etc.) exported 
     from Pupil Player.
-
     Parameters
     ----------
     data_dir : str
         Directory where the Pupil Labs "annotations" data exists.
-
     Returns
     -------
     events : DataFrame
@@ -76,7 +70,6 @@ def load_annotations(data_dir):
 def load_pupil(data_dir, cols=[]):
     '''
     Loads "pupil_positions" data exported from Pupil Player.
-
     Parameters
     ----------
     data_dir : str
@@ -84,7 +77,6 @@ def load_pupil(data_dir, cols=[]):
     cols : list
         Columns to load from the file, e.g. ["pupil_timestamp","diameter","diameter_3d"]
         (check file for options). The default is ["pupil_timestamp","diameter"].
-
     Returns
     -------
     samps : DataFrame
@@ -101,17 +93,14 @@ def load_pupil(data_dir, cols=[]):
 def load_blinks(data_dir):
     '''
     Loads "blinks" data exported from Pupil Player.
-
     Parameters
     ----------
     data_dir : str
         Directory where the Pupil Labs "blinks" data exists.
-
     Returns
     -------
     blinks : DataFrame
         Pandas DataFrame containing blink events.
-
     '''
     blinks = pd.read_csv(data_dir + '\\blinks.csv')
     print('{} blinks detected by Pupil Labs, average duration {:.3f} s'.format(
@@ -159,7 +148,6 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
         must contain "start_timestamp" and "end_timestamp" columns
     mask_cols : list, optional
         columns to mask. The default is ["diameter"].
-
     Returns
     -------
     samps : DataFrame
@@ -273,7 +261,6 @@ def extract(samples,
             borrow_attributes=[]):
     '''
     Extracts ranges from samples based on event timing and sample count.
-
     Parameters
     ----------
     samples : DataFrame
@@ -293,7 +280,6 @@ def extract(samples,
         not exist in the events dataframe, the values in the each
         corresponding range will be set to float('nan'). This is uesful for 
         marking conditions, grouping variables, etc. The default is [].
-
     Returns
     -------
     df : DataFrame
@@ -337,7 +323,6 @@ def extract(samples,
 def reject_bad_trials(ranges, interp_thresh=20, drop=False):
     '''
     Drop or markup trials which exceed a threshold of interpolated data.
-
     Parameters
     ----------
     ranges : DataFrame
@@ -347,7 +332,6 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         rejection / dropped. The default is 20.
     drop : bool, optional
         Whether to drop the trials from the ranges. The default is False.
-
     Returns
     -------
     ranges : DataFrame
@@ -377,12 +361,20 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
 # FUNCTIONS FOR CALCULATING PLR METRICS #
 #########################################
 
+def velocity_profile(s, sample_rate):
+    t = 1 / sample_rate
+    return np.diff(s) / t
+
+def acceleration_profile(s, sample_rate):
+    t = 1 / sample_rate
+    vel = velocity_profile(s, sample_rate)
+    return np.diff(vel) / t
+
 def baseline(s, onset_idx):
     '''
     Return the average pupil size between the start of s and onset_idx
     '''
-    baseline = np.mean(s[0:onset_idx])
-    return baseline
+    return np.mean(s[0:onset_idx])
 
 def latency_idx(s, sample_rate, onset_idx, pc=None):
     '''
@@ -396,11 +388,11 @@ def latency_idx(s, sample_rate, onset_idx, pc=None):
         raise ValueError('Must specify int or float for pc')
     b = baseline(s, onset_idx)
     if isinstance(pc, float):
-        threshold = b-(b*pc)
-        lidx = np.argmax(s[onset_idx:]<threshold)
+        threshold = b - (b * pc)
+        lidx = np.argmax(s[onset_idx:] < threshold)
     elif isinstance(pc, int):
-        threshold = b-pc
-        lidx = np.argmax(s[onset_idx:]<threshold)
+        threshold = b - pc
+        lidx = np.argmax(s[onset_idx:] < threshold)
     lidx += onset_idx
     return lidx
 
@@ -410,105 +402,87 @@ def latency_to_constriction(s, sample_rate, onset_idx, pc=None):
     sample where constriction exceeds a percentage of the baseline.
     '''
     lidx = latency_idx(s, sample_rate, onset_idx, pc=pc)
-    latency = (lidx-onset_idx) * (1000/sample_rate)
-    return latency  
+    return (lidx - onset_idx) * (1000 / sample_rate)
 
 def time_to_max_constriction(s, sample_rate, onset_idx):
     '''
     Return the time in miliseconds between stimulus onset and the peak 
     of pupil constriction.
     '''
-    ttpc = (np.argmin(s)-onset_idx) * (1000/sample_rate)
-    return ttpc
+    return (np.argmin(s) - onset_idx) * (1000 / sample_rate)
+
 
 def time_to_max_velocity(s, sample_rate, onset_idx):
-    t = 1/sample_rate
-    v = np.diff(s)/t
-    ttmv = (np.argmin(v)-onset_idx) * (1000/sample_rate)
-    return ttmv
+    vel = velocity_profile(s, sample_rate)
+    return (np.argmin(vel) - onset_idx) * (1000 / sample_rate)
 
 def peak_constriction_idx(s):
     '''
     Return the index of the sample with peak constriction.
     '''
-    pidx = np.argmin(s)
-    return pidx
+    return np.argmin(s)
 
-def peak_constriction(s, onset_idx):
+def peak_constriction(s):
     '''
     Return the peak constriction value.
     '''
-    peakcon = np.min(s)
-    return peakcon
+    return np.min(s)
 
 def constriction_amplitude(s, onset_idx):
     '''
-    Return the maximum constriction amplitude (i.e. the absolute difference 
+    Return the constriction amplitude (i.e. the absolute difference 
     between baseline and peak constriction).
     '''
-    peak = peak_constriction(s, onset_idx)
-    b = baseline(s, onset_idx)
-    mca = abs(peak-b)
-    return mca
+    peak = peak_constriction(s)
+    base = baseline(s, onset_idx)
+    return abs(peak - base)
 
 def average_constriction_velocity(s, sample_rate, onset_idx, pc):
-    t = 1/sample_rate
-    v = abs(np.diff(s)/t)
+    vel  = velocity_profile(s, sample_rate)
     lidx = latency_idx(s, sample_rate, onset_idx, pc)
     pidx = peak_constriction_idx(s)
-    acv = np.mean(v[lidx:pidx])
-    return acv
+    return np.mean(abs(vel[lidx:pidx]))
     
-def max_constriction_velocity(s, sample_rate):
+def max_constriction_velocity(s, sample_rate, onset_idx):
     '''
     Return the maximum constriction velocity.
     '''
-    t = 1/sample_rate
-    v = abs(np.diff(s)/t)
+    vel  = velocity_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
-    mcv = np.max(v[:pidx])
-    return mcv
+    return np.max(abs(vel[onset_idx:pidx]))
 
-def max_constriction_acceleration(s, sample_rate):
+
+def max_constriction_acceleration(s, sample_rate, onset_idx):
     '''
     Return the maximum constriction acceleration.
     '''
-    t = 1/sample_rate
-    v = abs(np.diff(s)/t)
-    a = abs(np.diff(v)/t)
+    acc  = acceleration_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
-    mcacc = np.max(a[:pidx])
-    return mcacc
+    return np.max(abs(acc[onset_idx:pidx]))
 
 def constriction_time(s, sample_rate, onset_idx, pc=None):
     '''
     Return the time difference between constriction latency and peak constriction.
     '''
-    latency = latency_to_constriction(s, sample_rate, onset_idx, pc)
-    ttpc = time_to_max_constriction(s, sample_rate, onset_idx)
-    ct = ttpc-latency
-    return ct
+    lat  = latency_to_constriction(s, sample_rate, onset_idx, pc)
+    ttmc = time_to_max_constriction(s, sample_rate, onset_idx)
+    return  ttmc - lat
 
 def max_redilation_velocity(s, sample_rate):
     '''
     Return the maximum redilation velocity.
     '''
-    t = 1/sample_rate
-    v = abs(np.diff(s)/t)
+    vel  = velocity_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
-    mrdv = np.max(v[pidx:]) 
-    return mrdv
+    return np.max(abs(vel[pidx:])) 
 
 def max_redilation_acceleration(s, sample_rate):
     '''
     Return the maximum redilation acceleration.
     '''   
-    t = 1/sample_rate
-    v = abs(np.diff(s)/t)
-    a = abs(np.diff(v)/t)
+    acc  = acceleration_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
-    mrdacc = np.max(a[pidx:]) 
-    return mrdacc
+    return np.max(abs(acc[pidx:])) 
 
 # def pipr_amplitude(s, onset_idx, duration):
 # #     pipr = s[onset_idx+duration:].mean()
@@ -521,7 +495,6 @@ def max_redilation_acceleration(s, sample_rate):
 def plr_metrics(s, sample_rate, onset_idx, pc):
     '''
     Collapse a PLR into descriptive parameters.
-
     Parameters
     ----------
     s : array-like
@@ -534,7 +507,6 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
         the percentage of constriction from baseline to use in calculating
         constriction latency. Use float (e.g. pc=0.01) or int (e.g. pc=1)
         for data already expressed as %-modulation from baseline.
-
     Returns
     -------
     metrics : pd.DataFrame
@@ -546,11 +518,11 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
                'T1'        : latency_to_constriction(s, sample_rate, onset_idx, pc),
                'T2'        : time_to_max_velocity(s, sample_rate, onset_idx),
                'T3'        : time_to_max_constriction(s, sample_rate, onset_idx),
-               'D2'        : peak_constriction(s, onset_idx),
+               'D2'        : peak_constriction(s),
                'AMP'       : constriction_amplitude(s, onset_idx),
-               'VelConMax' : max_constriction_velocity(s, sample_rate),
+               'VelConMax' : max_constriction_velocity(s, sample_rate, onset_idx),
                'VelConAve' : average_constriction_velocity(s, sample_rate, onset_idx, pc),
-               'AccConMax' : max_constriction_acceleration(s, sample_rate),
+               'AccConMax' : max_constriction_acceleration(s, sample_rate, onset_idx),
                'CT'        : constriction_time(s, sample_rate, onset_idx, pc),
                'VelRedMax' : max_redilation_velocity(s, sample_rate),
                'AccRedMax' : max_redilation_acceleration(s, sample_rate)
@@ -560,12 +532,14 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
 
 def plot_plr(s, 
              sample_rate,
-             onset_idx, stim_dur,
+             onset_idx, 
+             stim_dur,
              vel_acc=False,
-             include_metrics=False):
+             stamp_metrics=False):
     '''
-    Plot a PLR
-
+    Plot a PLR with option to add descriptive parameters and velocity / acceleration
+    profiles. Useful for exploratory analysis.
+    
     Parameters
     ----------
     s : pd.Series
@@ -577,40 +551,41 @@ def plot_plr(s,
     stim_dur : float
         Duration (s) of the light stimulus.
     vel_acc : bool, optional
-        whether to also plot the velocity and acceleration profiles.
+        Whether to also plot the velocity and acceleration profiles.
         The default is False.
-
+    stamp_metrics : bool, optional
+        Whether to annotate the axis with the results of a call to 
+        plr_metrics(...). The default is False.
+        
     Returns
     -------
-    fig : figure
+    fig : matplotlib.figure.Figure
         the plot.
-
     '''
     b = baseline(s, onset_idx)
-    fig , ax = plt.subplots(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(s, lw=3)
-    ax.axhline(b,0,1, ls='dashed', color='k', lw=1)
-    ax.axvspan(onset_idx, onset_idx+(sample_rate*stim_dur), color='k', alpha=.3)
-    ax.set_ylabel('Pupil Size ')
+    ax.axhline(b, 0, 1, ls='dashed', color='k', lw=1)
+    ax.axvspan(onset_idx, onset_idx + (sample_rate * stim_dur), color='k', alpha=.3)
+    ax.set_ylabel('Pupil Size')
     ax.set_xlabel('Time (s)')
-    x  = [val for val in range(0, len(s), sample_rate*5)]
-    xl = [str(val) for val in range(-int(onset_idx/sample_rate), int(len(s)/sample_rate), 5)]
+    x  = [val for val in range(0, len(s), sample_rate * 5)]
+    xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
     ax.set_xticks(x)
     ax.set_xticklabels(xl)
     
     if vel_acc:
         ax2 = ax.twinx()
-        t = 1/sample_rate
-        v = abs(np.diff(s)/t)
-        a = abs(np.diff(v)/t)
-        ax2.plot(v, color='g', lw=2)
-        ax2.plot(a, color='r', lw=.5, alpha=.6)
+        vel = velocity_profile(s, sample_rate)
+        acc = acceleration_profile(s, sample_rate)
+        ax2.plot(vel, color='g', lw=2)
+        ax2.plot(acc, color='r', lw=1)
         ax2.set_ylabel('Velocity / Acceleration')
     
-    if include_metrics:
+    if stamp_metrics:
         m = plr_metrics(s, sample_rate, onset_idx, pc=.01)
         m = m.round(3)
-        ax2.text(.7,.1,m.to_string(), size=8, transform=ax2.transAxes)
+        ax2.text(.7, .1, m.to_string(), size=8, transform=ax2.transAxes)
             
     return fig
 
