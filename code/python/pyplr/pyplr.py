@@ -34,7 +34,7 @@ def init_subject_analysis(subjdir, out_dir_nm='analysis'):
         The default is "analysis".
     Returns
     -------
-    s : dict
+    dict
         information for the subject.
     '''
     subjid = op.basename(subjdir)
@@ -44,16 +44,18 @@ def init_subject_analysis(subjdir, out_dir_nm='analysis'):
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
     os.mkdir(out_dir)
-    return {'id':subjid,
-            'root':subjdir,
-            'pl_data_dir':pl_data_dir, 
-            'out_dir':out_dir}
-
+    return {
+        'id':subjid,
+        'root':subjdir,
+        'pl_data_dir':pl_data_dir, 
+        'out_dir':out_dir
+        }
 
 def load_annotations(data_dir):
     '''
     Loads annotations (a.k.a. "triggers", "events", etc.) exported 
     from Pupil Player.
+    
     Parameters
     ----------
     data_dir : str
@@ -67,9 +69,10 @@ def load_annotations(data_dir):
     print('Loaded {} events'.format(len(events)))
     return events
    
-def load_pupil(data_dir, cols=[]):
+def load_pupil(data_dir, method='3d c++', cols=[]):
     '''
     Loads "pupil_positions" data exported from Pupil Player.
+    
     Parameters
     ----------
     data_dir : str
@@ -86,6 +89,7 @@ def load_pupil(data_dir, cols=[]):
         samps = pd.read_csv(data_dir + '\\pupil_positions.csv')
     else:
         samps = pd.read_csv(data_dir + '\\pupil_positions.csv', usecols=cols)
+    samps = samps[samps.method=='3d c++']    
     samps.set_index('pupil_timestamp', inplace=True)
     print('Loaded {} samples'.format(len(samps)))
     return samps
@@ -396,7 +400,7 @@ def latency_idx(s, sample_rate, onset_idx, pc=None):
     lidx += onset_idx
     return lidx
 
-def latency_to_constriction(s, sample_rate, onset_idx, pc=None):
+def latency_to_constriction_a(s, sample_rate, onset_idx, pc=None):
     '''
     Return the time in miliseconds between stimulus onset and the first 
     sample where constriction exceeds a percentage of the baseline.
@@ -404,17 +408,27 @@ def latency_to_constriction(s, sample_rate, onset_idx, pc=None):
     lidx = latency_idx(s, sample_rate, onset_idx, pc=pc)
     return (lidx - onset_idx) * (1000 / sample_rate)
 
+def latency_to_constriction_b(s, sample_rate, onset_idx):
+    '''
+    Return the time in miliseconds between stimulus onset and the time 
+    at which the pupil reaches maximal negative acceleration within a 
+    1-s window. See Bergamin & Kardon (2003) for justification. Requires 
+    well-smoothed pupil data. 
+    '''
+    acc = acceleration_profile(s, sample_rate)
+    return np.argmin(acc[onset_idx:onset_idx + sample_rate]) * (1000 / sample_rate)
+    
 def time_to_max_constriction(s, sample_rate, onset_idx):
     '''
     Return the time in miliseconds between stimulus onset and the peak 
     of pupil constriction.
     '''
-    return (np.argmin(s) - onset_idx) * (1000 / sample_rate)
+    return np.argmin(s[onset_idx:]) * (1000 / sample_rate)
 
 
 def time_to_max_velocity(s, sample_rate, onset_idx):
     vel = velocity_profile(s, sample_rate)
-    return (np.argmin(vel) - onset_idx) * (1000 / sample_rate)
+    return np.argmin(vel[onset_idx:]) * (1000 / sample_rate)
 
 def peak_constriction_idx(s):
     '''
@@ -464,7 +478,7 @@ def constriction_time(s, sample_rate, onset_idx, pc=None):
     '''
     Return the time difference between constriction latency and peak constriction.
     '''
-    lat  = latency_to_constriction(s, sample_rate, onset_idx, pc)
+    lat  = latency_to_constriction_a(s, sample_rate, onset_idx, pc)
     ttmc = time_to_max_constriction(s, sample_rate, onset_idx)
     return  ttmc - lat
 
@@ -482,15 +496,53 @@ def max_redilation_acceleration(s, sample_rate):
     '''   
     acc  = acceleration_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
-    return np.max(abs(acc[pidx:])) 
+    return np.max(abs(acc[pidx:]))
 
-# def pipr_amplitude(s, onset_idx, duration):
-# #     pipr = s[onset_idx+duration:].mean()
-# #     return pipr
+def recovery_time_75pc(s, sample_rate, onset_idx):
+    '''
+    Return the time in ms until 75% recovery from baseline.
+    '''
+    base = baseline(s, onset_idx)
+    pidx = peak_constriction_idx(s)
+    amp  = constriction_amplitude(s, onset_idx)
+    return np.argmax(s[pidx:] > base - (amp / 4)) * (1000 / sample_rate)
 
-# def pipr_early_AUC:
+##########################################
+# FUNCTIONS FOR CALCULATING PIPR METRICS #
+##########################################
+
+def pipr_amplitude(s, sample_rate, window):
+     pipr = s[window[0]:window[1]].mean()
+     return pipr
+ 
+def pipr_duration(s, sample_rate, onset_idx, duration):
+    '''
+    Return the time to return to baseline after light offset. ISI should be 
+    between 100 and 660 s to allow pupil to return to baseline (see Adhikari
+    et al., 2015)
+    '''
+    offset_idx = onset_idx + duration
+    base = baseline(s, onset_idx)
+    return np.argmax(s[offset_idx:] >= base) * (1000 / sample_rate)
+
+def pipr_AUC_early(s, sample_rate, onset_idx, duration):
+    '''
+    Unitless - AUC between offset and 10 s post offset
+    '''
+    base = baseline(s, onset_idx)
+    offset_idx = onset_idx + duration
+    auc_idx = offset_idx + (sample_rate * 10)
+    return np.sum(base - abs(s[offset_idx:auc_idx]))
+
+def pipr_AUC_late(s, sample_rate, onset_idx, duration):
+    '''
+    Unitless - AUC between 10-30 s post offset
+    '''
+    base = baseline(s, onset_idx)
+    offset_idx = onset_idx + duration
+    auc_idx = offset_idx + (sample_rate * 10)
+    return np.sum(base - abs(s[auc_idx:auc_idx + (sample_rate * 30)]))
     
-# def pipr_late_AUC:
 
 def plr_metrics(s, sample_rate, onset_idx, pc):
     '''
@@ -515,9 +567,11 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
     
     metrics = {
                'D1'        : baseline(s, onset_idx),
-               'T1'        : latency_to_constriction(s, sample_rate, onset_idx, pc),
+               'T1a'       : latency_to_constriction_a(s, sample_rate, onset_idx, pc),
+               'T1b'       : latency_to_constriction_b(s, sample_rate, onset_idx),
                'T2'        : time_to_max_velocity(s, sample_rate, onset_idx),
                'T3'        : time_to_max_constriction(s, sample_rate, onset_idx),
+               'T4'        : recovery_time_75pc(s, sample_rate, onset_idx),
                'D2'        : peak_constriction(s),
                'AMP'       : constriction_amplitude(s, onset_idx),
                'VelConMax' : max_constriction_velocity(s, sample_rate, onset_idx),
@@ -537,8 +591,8 @@ def plot_plr(s,
              vel_acc=False,
              stamp_metrics=False):
     '''
-    Plot a PLR with option to add descriptive parameters and velocity / acceleration
-    profiles. Useful for exploratory analysis.
+    Plot a PLR with option to add descriptive parameters and 
+    velocity / acceleration profiles. Useful for exploratory analysis.
     
     Parameters
     ----------
@@ -585,13 +639,14 @@ def plot_plr(s,
     if stamp_metrics:
         m = plr_metrics(s, sample_rate, onset_idx, pc=.01)
         m = m.round(3)
-        ax2.text(.7, .1, m.to_string(), size=8, transform=ax2.transAxes)
+        ax2.text(.78, .03, m.to_string(), size=8, transform=ax2.transAxes)
             
     return fig
 
-
-# def plot_trials(ranges, sample_rate, onset_idx, stim_dur, pupil_col=['diameter']):
-#     for i, df in ranges.groupby(['event']):
-#         print(i,df)
-#         plot_plr(df[pupil_col], sample_rate, onset_idx, stim_dur)
-#         input('Press enter...')
+# def plot_trials(ranges, sample_rate, onset_idx, stim_dur, pupil_col='diameter', out_dir=None):
+#     if not isinstance(ranges.index, pd.MultiIndex):
+#         ranges.set_index(['event','onset'], inplace=True)
+#     for event, df in ranges.groupby(level=0):
+#         f = plot_plr(df[pupil_col].values, sample_rate, onset_idx, stim_dur, vel_acc=True, stamp_metrics=True)
+#         if out_dir:
+#             f.savefig(out_dir + '\\event' + str(event) + '.png')
