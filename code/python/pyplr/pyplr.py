@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 # FUNCTIONS TO LOAD DATA #
 ##########################
 
-def init_subject_analysis(subjdir, out_dir_nm='analysis'):
+def init_subject_analysis(subjdir, out_dir_nm='pyplr_analysis'):
     '''
     Initiate data analysis for a given subject.
     
@@ -31,16 +31,17 @@ def init_subject_analysis(subjdir, out_dir_nm='analysis'):
         Path to subject directory
     out_dir_nm : str, optional
         Name for the new directory where analysis results will be saved. 
-        The default is "analysis".
+        The default is 'pyplr_analysis'.
     Returns
     -------
     dict
         information for the subject.
+        
     '''
     subjid = op.basename(subjdir)
-    print('{}\n{:*^60s}\n{}'.format('*'*60,subjid,'*'*60,))
-    pl_data_dir = op.join(subjdir, 'exports\\000') # default for data exported from pupil player
-    out_dir = op.join(subjdir, out_dir_nm)
+    print('{}\n{:*^60s}\n{}'.format('*' * 60, subjid, '*' * 60,))
+    pl_data_dir = op.join(subjdir, 'exports', '', '000', '') # default for data exported from pupil player
+    out_dir = op.join(subjdir, out_dir_nm, '')
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
     os.mkdir(out_dir)
@@ -53,42 +54,46 @@ def init_subject_analysis(subjdir, out_dir_nm='analysis'):
 
 def load_annotations(data_dir):
     '''
-    Loads annotations (a.k.a. "triggers", "events", etc.) exported 
+    Loads annotations (a.k.a. 'triggers', 'events', etc.) exported 
     from Pupil Player.
     
     Parameters
     ----------
     data_dir : str
-        Directory where the Pupil Labs "annotations" data exists.
+        Directory where the Pupil Labs 'annotations' data exists.
     Returns
     -------
     events : DataFrame
         Pandas DataFrame containing events.
+        
     '''
-    events = pd.read_csv(data_dir + '\\annotations.csv')
+    fname = op.join(data_dir, '', 'annotations.csv')
+    events = pd.read_csv(fname)
     print('Loaded {} events'.format(len(events)))
     return events
    
 def load_pupil(data_dir, method='3d c++', cols=[]):
     '''
-    Loads "pupil_positions" data exported from Pupil Player.
+    Loads 'pupil_positions' data exported from Pupil Player.
     
     Parameters
     ----------
     data_dir : str
         Directory where the Pupil Labs 'annotations' data exists.
     cols : list
-        Columns to load from the file, e.g. ["pupil_timestamp","diameter","diameter_3d"]
-        (check file for options). The default is ["pupil_timestamp","diameter"].
+        Columns to load from the file, e.g. ['pupil_timestamp','diameter','diameter_3d']
+        (check file for options). The default is ['pupil_timestamp','diameter'].
     Returns
     -------
     samps : DataFrame
         Pandas DataFrame containing requested samples.
+        
     '''
+    fname = op.join(data_dir, '', 'pupil_positions.csv')
     if not cols:
-        samps = pd.read_csv(data_dir + '\\pupil_positions.csv')
+        samps = pd.read_csv(fname)
     else:
-        samps = pd.read_csv(data_dir + '\\pupil_positions.csv', usecols=cols)
+        samps = pd.read_csv(fname, usecols=cols)
     samps = samps[samps.method=='3d c++']    
     samps.set_index('pupil_timestamp', inplace=True)
     print('Loaded {} samples'.format(len(samps)))
@@ -96,20 +101,23 @@ def load_pupil(data_dir, method='3d c++', cols=[]):
 
 def load_blinks(data_dir):
     '''
-    Loads "blinks" data exported from Pupil Player.
+    Loads 'blinks' data exported from Pupil Player.
+    
     Parameters
     ----------
     data_dir : str
-        Directory where the Pupil Labs "blinks" data exists.
+        Directory where the Pupil Labs 'blinks' data exists.
     Returns
     -------
     blinks : DataFrame
         Pandas DataFrame containing blink events.
+        
     '''
-    blinks = pd.read_csv(data_dir + '\\blinks.csv')
+    fname = op.join(data_dir, '', 'blinks.csv')
+    blinks = pd.read_csv(fname)
     print('{} blinks detected by Pupil Labs, average duration {:.3f} s'.format(
         len(blinks), blinks.duration.mean()))
-    return blinks    
+    return blinks
 
 ###########################
 # FUNCTIONS TO CLEAN DATA #
@@ -117,17 +125,23 @@ def load_blinks(data_dir):
     
 def ev_row_idxs(samples, blinks):
     ''' 
-    Returns the indices in "samples" contained in events from "events".
+    Returns the indices in 'samples' contained in events from 'events'.
+    
     Parameters
     ----------
     samples : DataFrame
         The samples from which to pull indices.
     events : DataFrame
-        The events whose indices should be pulled from "samples".
+        The events whose indices should be pulled from 'samples'.
+        
+    Returns
+    -------
+    samps : DataFrame
+        masked data
+        
     '''
     idxs = []
     for start, end in zip(blinks['start_timestamp'],blinks['end_timestamp']):
-        #print(start, end)
         idxs.extend(list(samples.loc[start:end].index))
     idxs = np.unique(idxs)
     idxs = np.intersect1d(idxs, samples.index.tolist())
@@ -135,7 +149,7 @@ def ev_row_idxs(samples, blinks):
 
 def get_mask_idxs(samples, blinks):
     '''
-    Finds indices from "samples" within the returned events.
+    Finds indices from 'samples' within the returned events.
     '''
     blidxs = ev_row_idxs(samples, blinks)
     return blidxs
@@ -147,15 +161,16 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
     Parameters
     ----------
     samples : DataFrame
-        must contain at least "pupil_timestamp" and "diameter" columns
+        Must contain at least 'pupil_timestamp' and 'diameter' columns
     blinks : DataFrame
-        must contain "start_timestamp" and "end_timestamp" columns
+        Must contain 'start_timestamp' and 'end_timestamp' columns
     mask_cols : list, optional
-        columns to mask. The default is ["diameter"].
+        Columns to mask. The default is ['diameter'].
     Returns
     -------
     samps : DataFrame
         masked data
+        
     '''
     samps = samples.copy(deep=True)
     indices = get_mask_idxs(samps, blinks)
@@ -171,22 +186,24 @@ def interpolate_blinks(samples, blinks, fields=['diameter']):
     Parameters
     ----------
     samples : DataFrame
-        must contain at least "pupil_timestamp" and "diameter" columns
+        Must contain at least 'pupil_timestamp' and 'diameter' columns
     blinks : DataFrame
-        must contain "start_timestamp" and "end_timestamp" columns
+        Must contain 'start_timestamp' and 'end_timestamp' columns
     interp_cols : list, optional
-        columns to interpolate. The default is ["diameter"].
+        Columns to interpolate. The default is ['diameter'].
+        
     Returns
     -------
     samps : DataFrame
         blink-interpolated data
+        
     '''
     samps = mask_blinks(samples, blinks, mask_cols=fields)
     samps = samps.interpolate(method='linear', axis=0, inplace=False)
     
     print('{} samples ({:.3f} %) reconstructed with linear interpolation'.format(
         len(samps.loc[samps['interpolated']==1]), 
-        samps.loc[:,'interpolated'].value_counts(normalize=True)[1]*100))
+        samps.loc[:, 'interpolated'].value_counts(normalize=True)[1] * 100))
     return samps
 
 def mask_zeros(samples, mask_cols=['diameter']):
@@ -199,6 +216,7 @@ def mask_zeros(samples, mask_cols=['diameter']):
         The samples to search for 0 values.
     mask_fields (list of strings)
         The columns to search for 0 values.
+        
     '''
     samps = samples.copy(deep=True)
     for f in mask_cols:
@@ -268,7 +286,7 @@ def extract(samples,
     Parameters
     ----------
     samples : DataFrame
-        The samples to extract from. Index must be timestamp.
+        The samples from which to extract events. Index must be timestamp.
     events : DataFrame
         The events to extract. Index must be timestamp.
     offset : int, optional
@@ -284,10 +302,12 @@ def extract(samples,
         not exist in the events dataframe, the values in the each
         corresponding range will be set to float('nan'). This is uesful for 
         marking conditions, grouping variables, etc. The default is [].
+        
     Returns
     -------
     df : DataFrame
         Extracted events complete with hierarchical multi-index.
+        
     '''
     # negative duration should raise an exception
     if duration <= 0:
@@ -327,6 +347,7 @@ def extract(samples,
 def reject_bad_trials(ranges, interp_thresh=20, drop=False):
     '''
     Drop or markup trials which exceed a threshold of interpolated data.
+    
     Parameters
     ----------
     ranges : DataFrame
@@ -336,12 +357,14 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         rejection / dropped. The default is 20.
     drop : bool, optional
         Whether to drop the trials from the ranges. The default is False.
+        
     Returns
     -------
     ranges : DataFrame
         Same as ranges but with a column identifying trials marked for
         rejection (drop = False) or with those trials dropped from the 
         DataFrame (drop = True).
+        
     '''
     if not isinstance(ranges.index, pd.MultiIndex):
         raise ValueError('Index of ranges must be pd.MultiIndex')
@@ -366,10 +389,18 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
 #########################################
 
 def velocity_profile(s, sample_rate):
+    '''
+    Return the velocity profile of a PLR.
+
+    '''
     t = 1 / sample_rate
     return np.diff(s) / t
 
 def acceleration_profile(s, sample_rate):
+    '''
+    Return the acceleration profile of a PLR.
+
+    '''
     t = 1 / sample_rate
     vel = velocity_profile(s, sample_rate)
     return np.diff(vel) / t
@@ -377,6 +408,7 @@ def acceleration_profile(s, sample_rate):
 def baseline(s, onset_idx):
     '''
     Return the average pupil size between the start of s and onset_idx
+    
     '''
     return np.mean(s[0:onset_idx])
 
@@ -404,6 +436,7 @@ def latency_to_constriction_a(s, sample_rate, onset_idx, pc=None):
     '''
     Return the time in miliseconds between stimulus onset and the first 
     sample where constriction exceeds a percentage of the baseline.
+    
     '''
     lidx = latency_idx(s, sample_rate, onset_idx, pc=pc)
     return (lidx - onset_idx) * (1000 / sample_rate)
@@ -414,6 +447,7 @@ def latency_to_constriction_b(s, sample_rate, onset_idx):
     at which the pupil reaches maximal negative acceleration within a 
     1-s window. See Bergamin & Kardon (2003) for justification. Requires 
     well-smoothed pupil data. 
+    
     '''
     acc = acceleration_profile(s, sample_rate)
     return np.argmin(acc[onset_idx:onset_idx + sample_rate]) * (1000 / sample_rate)
@@ -422,23 +456,31 @@ def time_to_max_constriction(s, sample_rate, onset_idx):
     '''
     Return the time in miliseconds between stimulus onset and the peak 
     of pupil constriction.
+    
     '''
     return np.argmin(s[onset_idx:]) * (1000 / sample_rate)
 
 
 def time_to_max_velocity(s, sample_rate, onset_idx):
+    '''
+    Return the time between stimulus onset and when pupil constriction reaches 
+    maximum velocity.
+    
+    '''
     vel = velocity_profile(s, sample_rate)
     return np.argmin(vel[onset_idx:]) * (1000 / sample_rate)
 
 def peak_constriction_idx(s):
     '''
     Return the index of the sample with peak constriction.
+    
     '''
     return np.argmin(s)
 
 def peak_constriction(s):
     '''
-    Return the peak constriction value.
+    Return the peak constriction value (i.e. the smallest pupil size).
+    
     '''
     return np.min(s)
 
@@ -446,12 +488,17 @@ def constriction_amplitude(s, onset_idx):
     '''
     Return the constriction amplitude (i.e. the absolute difference 
     between baseline and peak constriction).
+    
     '''
     peak = peak_constriction(s)
     base = baseline(s, onset_idx)
     return abs(peak - base)
 
 def average_constriction_velocity(s, sample_rate, onset_idx, pc):
+    '''
+    Return the average constriction velocity.
+
+    '''
     vel  = velocity_profile(s, sample_rate)
     lidx = latency_idx(s, sample_rate, onset_idx, pc)
     pidx = peak_constriction_idx(s)
@@ -460,6 +507,7 @@ def average_constriction_velocity(s, sample_rate, onset_idx, pc):
 def max_constriction_velocity(s, sample_rate, onset_idx):
     '''
     Return the maximum constriction velocity.
+    
     '''
     vel  = velocity_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
@@ -469,6 +517,7 @@ def max_constriction_velocity(s, sample_rate, onset_idx):
 def max_constriction_acceleration(s, sample_rate, onset_idx):
     '''
     Return the maximum constriction acceleration.
+    
     '''
     acc  = acceleration_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
@@ -477,6 +526,7 @@ def max_constriction_acceleration(s, sample_rate, onset_idx):
 def constriction_time(s, sample_rate, onset_idx, pc=None):
     '''
     Return the time difference between constriction latency and peak constriction.
+    
     '''
     lat  = latency_to_constriction_a(s, sample_rate, onset_idx, pc)
     ttmc = time_to_max_constriction(s, sample_rate, onset_idx)
@@ -485,6 +535,7 @@ def constriction_time(s, sample_rate, onset_idx, pc=None):
 def max_redilation_velocity(s, sample_rate):
     '''
     Return the maximum redilation velocity.
+    
     '''
     vel  = velocity_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
@@ -493,6 +544,7 @@ def max_redilation_velocity(s, sample_rate):
 def max_redilation_acceleration(s, sample_rate):
     '''
     Return the maximum redilation acceleration.
+    
     '''   
     acc  = acceleration_profile(s, sample_rate)
     pidx = peak_constriction_idx(s)
@@ -501,6 +553,7 @@ def max_redilation_acceleration(s, sample_rate):
 def recovery_time_75pc(s, sample_rate, onset_idx):
     '''
     Return the time in ms until 75% recovery from baseline.
+    
     '''
     base = baseline(s, onset_idx)
     pidx = peak_constriction_idx(s)
@@ -547,6 +600,7 @@ def pipr_AUC_late(s, sample_rate, onset_idx, duration):
 def plr_metrics(s, sample_rate, onset_idx, pc):
     '''
     Collapse a PLR into descriptive parameters.
+    
     Parameters
     ----------
     s : array-like
@@ -559,6 +613,7 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
         the percentage of constriction from baseline to use in calculating
         constriction latency. Use float (e.g. pc=0.01) or int (e.g. pc=1)
         for data already expressed as %-modulation from baseline.
+        
     Returns
     -------
     metrics : pd.DataFrame
@@ -615,6 +670,7 @@ def plot_plr(s,
     -------
     fig : matplotlib.figure.Figure
         the plot.
+        
     '''
     b = baseline(s, onset_idx)
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -623,7 +679,7 @@ def plot_plr(s,
     ax.axvspan(onset_idx, onset_idx + (sample_rate * stim_dur), color='k', alpha=.3)
     ax.set_ylabel('Pupil Size')
     ax.set_xlabel('Time (s)')
-    x  = [val for val in range(0, len(s), sample_rate * 5)]
+    x  = [val for val in range(0, len(s) + sample_rate, sample_rate * 5)]
     xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
     ax.set_xticks(x)
     ax.set_xticklabels(xl)

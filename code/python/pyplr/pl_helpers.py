@@ -62,15 +62,23 @@ class PupilCore():
     
     def notify(self, notification):
         '''
-        Send a notification to Pupil Remote.
+        Send a notification to Pupil Remote. Every notification has a topic 
+        and can contain potential payload data. The payload data has to be 
+        serializable, so not every Python object will work. To find out which
+        plugins send and receive notifications, open the codebase and search 
+        for `.notify_all(` and `def on_notify(`. 
     
         Parameters
         ----------
         pupil_remote : zmq.sugar.socket.Socket
             the pupil remote helper.
         notification : dict
-            the notification dict. 
-            e.g. {'subject':'start_plugin', 'name':'Annotation_Capture'}
+            the notification dict. Some examples:
+                
+            - {'subject':'start_plugin', 'name':'Annotation_Capture', 'args':{}}) 
+            - {'subject':'recording.should_start', 'session_name':'my session'}
+            - {'subject':'recording.should_stop'}
+            
         Returns
         -------
         string

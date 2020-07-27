@@ -9,6 +9,7 @@ See the "LIGHT HUB RESTful API" manual for further functions and more info.
 
 Contains additional functions for working with the STLAB.
 '''
+
 from time import sleep
 from datetime import datetime
 import json
@@ -81,6 +82,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         data = {'arg':intensity_values}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
@@ -129,6 +131,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
@@ -152,6 +155,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
@@ -180,6 +184,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         if flux:
             data = {'arg':[x, y, flux]}
@@ -200,6 +205,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/TURN_OFF'
@@ -218,6 +224,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         data = {'arg':blink}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
@@ -239,6 +246,7 @@ class Device():
         -------
         temperatures : np.array
             [  Number,  Number,  Number,  Number  ].
+            
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_PCB_TEMPERATURE'
@@ -288,6 +296,7 @@ class Device():
         -------
         spectrum : list
             [Number, Number, ..., Number, Number] with 81 elements
+            
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_SPECTROMETER_SPECTRUM'
@@ -313,6 +322,7 @@ class Device():
         -------
         matrix : list
             10 x 81 calibration matrix.
+            
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_LED_CALIBRATION'
@@ -337,6 +347,7 @@ class Device():
         Returns
         -------
         None.
+        
         '''
         args = [('file', (video, open(video, 'rb'), 'application/json'))]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/video' 
@@ -381,6 +392,7 @@ class Device():
         spectrometer). How are the serial and model codes is yet to be defined,
         but we expect a maximum 50 character length code for serial and 30 for
         model.
+        
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_DEVICE_INFO'
@@ -437,7 +449,7 @@ class Device():
         Parameters
         ----------
         leds : list, optional
-            list of leds to sample. The default is [0].
+            List of leds to sample. The default is [0].
         intensity : list, optional
             The intensity values to use for the sampling. The default is [4095].
         wait_before_sample : float, optional
@@ -536,10 +548,10 @@ def make_video_file(df, video_nm='our_video_file', repeats=1):
         }
     with open(video_nm + '.dsf', 'w') as outfile:
         json.dump(d, outfile)
-    print('"{}" saved in the current working directory.'.format(video_nm+'.dsf'))
+    print('"{}" saved in the current working directory.'.format(video_nm + '.dsf'))
 
 def _video_file_row(time=0, spec=[0,0,0,0,0,0,0,0,0,0]):
-    fields = [time]+spec
+    fields = [time] + spec
     row = pd.DataFrame(fields).T
     cols = get_video_cols()
     row.columns = cols
@@ -548,7 +560,7 @@ def _video_file_row(time=0, spec=[0,0,0,0,0,0,0,0,0,0]):
 def _video_file_end(end_time):
     df = pd.DataFrame()
     df = df.append(_video_file_row(time=end_time))     # two extra dummy rows ensure the light 
-    df = df.append(_video_file_row(time=end_time+100)) # turns off when video file finishes
+    df = df.append(_video_file_row(time=end_time + 100)) # turns off when video file finishes
     return df
 
 def make_video_pulse(pulse_spec, 
@@ -626,8 +638,8 @@ def make_video_pulse_background(background_spec,
     df = df.append(_video_file_row(0, background_spec))
     df = df.append(_video_file_row(pre_background_duration, background_spec))
     df = df.append(_video_file_row(pre_background_duration, pulse_spec))
-    df = df.append(_video_file_row(pre_background_duration+pulse_duration, pulse_spec))
-    df = df.append(_video_file_row(pre_background_duration+pulse_duration, background_spec))
+    df = df.append(_video_file_row(pre_background_duration + pulse_duration, pulse_spec))
+    df = df.append(_video_file_row(pre_background_duration + pulse_duration, background_spec))
     df = df.append(_video_file_row(end, background_spec))
     df = df.append(_video_file_end(end))
     df.reset_index(inplace=True, drop=True)
@@ -658,7 +670,6 @@ def interp_spectra(spectra):
         DESCRIPTION.
 
     '''
-    
     tbl = spectra.unstack(level=2)
     tbl.columns = [val[1] for val in tbl.columns]
     
@@ -695,6 +706,7 @@ def predict_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None):
     -------
     spectrum : np.array
         Predicted spectrum for given intensities.
+        
     '''
     spectrum = np.zeros(81)
     for led , val in enumerate(intensity):
@@ -709,13 +721,14 @@ def get_led_colors():
 
 def get_wlbins(bin_width=5):
     if bin_width==1:
-        wlbins = [int(val) for val in np.linspace(380,780,81*bin_width)]
+        wlbins = [int(val) for val in np.linspace(380, 780, 81 * bin_width)]
     else:
-        wlbins = [int(val) for val in np.linspace(380,780,81)]
+        wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     return wlbins
 
 def spec_to_xyz(spec):
-    '''Convert a spectrum to an xyz point.
+    '''
+    Convert a spectrum to an xyz point.
 
     The spectrum must be on the same grid of points as the colour-matching
     function, cmf: 380-780 nm in 5 nm steps.
@@ -745,8 +758,8 @@ def spectra_to_xyz(spectra):
     -------
     xyz : DataFrame
         The xyz values for each spectrum.
+        
     '''
-    
     idx = []    
     xyz = []
     for i, spec in spectra.groupby(by=['led','intensity']):
@@ -806,6 +819,18 @@ def spectra_to_melanopic_irradiance(spectra, grouper=['led','intensity']):
     mi = spectra.groupby(by=grouper)['flux'].agg(lambda x: x.dot(mel.values.T))
     return mi
 
+def spectra_to_luminance(spectra, grouper=['led','intensity']):
+    from CIE import get_CIE_1924_photopic_vl
+    
+    # get luminancephotopic luminance curve
+    vl = get_CIE_1924_photopic_vl(asdf=True)
+    vl = vl[::5]
+    
+    # aggregate to luminance
+    lum = spectra.groupby(by=grouper)['flux'].agg(lambda x: x.dot(vl.values))
+    return lum    
+
+ 
 def explore_spectra(spectra):
     '''
     This function takes a DataFrame of spectra and plots them, along with other
