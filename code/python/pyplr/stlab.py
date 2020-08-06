@@ -23,7 +23,7 @@ import pandas as pd
 # Device class for STLAB #
 ##########################
 
-class Device():
+class STLAB():
     
     # Class attributes
     description = 'Spectrally tuneable light engine with 10 narrow-band primaries'
@@ -36,6 +36,24 @@ class Device():
 
     # Initializer / Instance Attributes
     def __init__(self, username, identity, password, url='192.168.7.2'):
+        '''
+        
+        Parameters
+        ----------
+        username : TYPE
+            DESCRIPTION.
+        identity : TYPE
+            DESCRIPTION.
+        password : TYPE
+            DESCRIPTION.
+        url : TYPE, optional
+            DESCRIPTION. The default is '192.168.7.2'.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.username = username
         self.identity = identity
         self.password = password
@@ -442,9 +460,15 @@ class Device():
 
     # User-defined functions 
     
-    def sample_leds(self, leds=[0], intensity=[4095], wait_before_sample=.2):
+    def sample_leds(self, 
+                    leds=[0], 
+                    intensity=[4095], 
+                    wait_before_sample=.2,
+                    ocean_optics=None):
         '''
-        Sample each of the given LEDs at the specified intensity settings.
+        Sample each of the given LEDs at the specified intensity settings using
+        the STLAB's on-board spectrometer. Option to also obtain measurements
+        with an external Ocean Optics spectrometer.
     
         Parameters
         ----------
@@ -455,24 +479,40 @@ class Device():
         wait_before_sample : float, optional
             Time in seconds to wait after setting a spectrum before acquiring 
             measurement from spectrometer. The default is .2.
+        ocean_optics : seabreeze.spectrometers.Spectrometer, optional
+            Whether to also acquire measurements from an Ocean Optics 
+            spectrometer. Requires the seabreeze package to be installed.
+            The default is None.
     
         Returns
         -------
-        df : DataFram
-            The resulting DataFrame with hierarchial pd.MultiIndex and column 'flux'.
-    
+        stlab_specs : DataFram
+            The resulting measurements from the STLAB spectrometer in a 
+            DataFrame with hierarchial pd.MultiIndex and column 'flux'.
+        oo_specs : DataFrame, on request
+            The resulting measurements from the Ocean Optics 
+            spectrometer () in a DataFrame with hierarchial pd.MultiIndex and 
+            column 'flux'. 
+            
         '''
             
         print('Sampling {} leds at the following intensities: {}'.format(
             len(leds), intensity))
         leds_off = [0]*10
         
-        # dict to store data
-        df = pd.DataFrame()
-        midx = pd.MultiIndex.from_product(
+        # df to store stlab spectrometer data
+        stlab_specs = pd.DataFrame()
+        stlab_midx = pd.MultiIndex.from_product(
             [leds, intensity, self.wlbins],
             names=['led', 'intensity', 'wavelength'])
-    
+        
+        # df to store ocean optics spectrometer data, if required
+        if ocean_optics:
+            oo_specs = pd.DataFrame()
+            oo_midx = pd.MultiIndex.from_product(
+            [leds, intensity, ocean_optics.wavelengths()],
+            names=['led', 'intensity', 'wavelength'])
+            
         # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
     
@@ -485,14 +525,27 @@ class Device():
                 spec[led] = val
                 self.set_spectrum_a(spec)
                 sleep(wait_before_sample)
-                data = self.get_spectrometer_spectrum(norm=False)
-                data = pd.DataFrame(data)
-                data.rename(columns={0:'flux'}, inplace=True)
-                df = pd.concat([df, pd.DataFrame(data)])
+                stlab_data = self.get_spectrometer_spectrum(norm=False)
+                stlab_data = pd.DataFrame(stlab_data)
+                stlab_data.rename(columns={0:'flux'}, inplace=True)
+                stlab_specs = pd.concat([stlab_specs, pd.DataFrame(stlab_data)])
+                
+                if ocean_optics:
+                    oo_data = ocean_optics.intensities()
+                    oo_data = pd.DataFrame(oo_data)
+                    oo_data.rename(columns={0:'flux'}, inplace=True)
+                    oo_specs = pd.concat([oo_specs, pd.DataFrame(oo_data)])
         
         self.turn_off()
-        df.index = midx
-        return df  
+        
+        stlab_specs.index = stlab_midx
+        
+        if ocean_optics:
+            oo_specs.index = oo_midx
+            return stlab_specs, oo_specs
+        
+        else:
+            return stlab_specs  
 
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #

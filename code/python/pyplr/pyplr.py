@@ -38,7 +38,7 @@ def init_subject_analysis(subjdir, out_dir_nm='pyplr_analysis'):
         information for the subject.
         
     '''
-    subjid = op.basename(subjdir)
+    subjid = op.basename(subjdir[:-1])
     print('{}\n{:*^60s}\n{}'.format('*' * 60, subjid, '*' * 60,))
     pl_data_dir = op.join(subjdir, 'exports', '', '000', '') # default for data exported from pupil player
     out_dir = op.join(subjdir, out_dir_nm, '')
@@ -97,6 +97,7 @@ def load_pupil(data_dir, method='3d c++', cols=[]):
     samps = samps[samps.method=='3d c++']    
     samps.set_index('pupil_timestamp', inplace=True)
     print('Loaded {} samples'.format(len(samps)))
+    print('Average confidence: {}'.format(samps.confidence.mean()))
     return samps
 
 def load_blinks(data_dir):
@@ -679,10 +680,10 @@ def plot_plr(s,
     ax.axvspan(onset_idx, onset_idx + (sample_rate * stim_dur), color='k', alpha=.3)
     ax.set_ylabel('Pupil Size')
     ax.set_xlabel('Time (s)')
-    x  = [val for val in range(0, len(s) + sample_rate, sample_rate * 5)]
-    xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
-    ax.set_xticks(x)
-    ax.set_xticklabels(xl)
+    #x  = [val for val in range(0, len(s) + sample_rate, sample_rate * 5)]
+    #xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
+    #ax.set_xticks(x)
+    #ax.set_xticklabels(xl)
     
     if vel_acc:
         ax2 = ax.twinx()
@@ -695,7 +696,7 @@ def plot_plr(s,
     if stamp_metrics:
         m = plr_metrics(s, sample_rate, onset_idx, pc=.01)
         m = m.round(3)
-        ax2.text(.78, .03, m.to_string(), size=8, transform=ax2.transAxes)
+        ax.text(.78, .03, m.to_string(), size=8, transform=ax.transAxes)
             
     return fig
 
