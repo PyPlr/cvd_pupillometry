@@ -12,6 +12,7 @@ Contains additional functions for working with the STLAB.
 
 from time import sleep
 from datetime import datetime
+from random import shuffle
 import json
 
 import requests
@@ -19,17 +20,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from oceanops import adaptive_measurement
+
 ##########################
 # Device class for STLAB #
 ##########################
 
 class STLAB():
+    '''
+    A class to encapsulate the LEDMOTIVE SpectraTune Lab device and its 
+    RESTFUL_API. 
+    
+    '''
     
     # Class attributes
     description = 'Spectrally tuneable light engine with 10 narrow-band primaries'
-    colors = ['blueviolet', 'royalblue', 'darkblue',
-              'blue', 'cyan', 'green', 'lime',
-              'orange', 'red', 'darkred']
+    colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan', 
+              'green', 'lime', 'orange', 'red', 'darkred']
     wlbins = [int(val) for val in np.linspace(380,780,81)]
     min_intensity = 0
     max_intensity = 4095
@@ -77,7 +84,8 @@ class STLAB():
             # for some reason, after first turning on the STLAB, video files 
             # won't play unless you first do something in synchronous mode. A 
             # default flash of red light at startup gets around this issue, but 
-            # it might be a good idea to ask Ledmotive about this.
+            # it might be a good idea to ask Ledmotive about this. Also, the
+            # first time you do play a video file, it often flickers.
             self.spectruma([0,0,0,0,0,0,0,0,100,100]) 
             sleep(.2)
             self.turn_off()
@@ -322,9 +330,9 @@ class STLAB():
         rmv = dict(r.json())['data'][0]
         spectrum = np.array(dict(r.json())['data'][1:])
         if norm:
-            return spectrum
+            return rmv, spectrum
         else:
-            return spectrum * rmv
+            return rmv, spectrum * rmv
     
     def get_led_calibration(self):
         '''
@@ -434,7 +442,7 @@ class STLAB():
         None.
 
         '''
-        data = {'arg':colour_priority}
+        data = {'arg' : colour_priority}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_COLOR_PRIORITY'
         requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
@@ -454,21 +462,66 @@ class STLAB():
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         colour_priority = dict(r.json())['data'] 
         return colour_priority
-     
+    
+    def get_spectrometer_integration_time(self):
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            str(self.info['id']) + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
+        r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
+        integration_time = dict(r.json())['data'] 
+        return integration_time
+    
+    def set_spectrometer_integration_time(self, integration_time):
+        data = {'arg' : integration_time}
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            str(self.info['id']) + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
+        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
+        
+    def get_input_power(self):
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            str(self.info['id']) + '/command/GET_INPUT_POWER'
+        r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
+        input_power = dict(r.json())['data'] 
+        return input_power
+    
+    def get_dimming_level(self):
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            str(self.info['id']) + '/command/GET_DIMMING_LEVEL'
+        r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
+        dimming_level = dict(r.json())['data'] 
+        return dimming_level
+    
     # see RESTFUL_API for further mehods and define here if needed
     # def new_method_from_restful_api(self)...
 
     # User-defined functions 
+    def full_readout(self):
+        tmps = self.get_pcb_temperature()
+        ip   = self.get_input_power()
+        it   = self.get_spectrometer_integration_time()
+        dl   = self.get_dimming_level()
+        rmv, counts = self.get_spectrometer_spectrum(norm=False)
+        info_dict = {'rmv'              : [rmv],
+                     'LEDs_temp'        : [tmps[0]],
+                     'drivers_temps'    : [tmps[1]],
+                     'board_temp'       : [tmps[2]],
+                     'micro_temp'       : [tmps[3]],
+                     'integration_time' : [it],
+                     'input_power'      : [ip],
+                     'dimming_level'    : [dl]
+                     }
+        
+        return counts, info_dict
     
     def sample_leds(self, 
                     leds=[0], 
-                    intensity=[4095], 
+                    intensities=[4095], 
                     wait_before_sample=.2,
-                    ocean_optics=None):
+                    ocean_optics=None,
+                    randomise=False):
         '''
         Sample each of the given LEDs at the specified intensity settings using
-        the STLAB's on-board spectrometer. Option to also obtain measurements
-        with an external Ocean Optics spectrometer.
+        the STLAB's on-board spectrometer. Option to also obtain concurrent 
+        measurements with an external Ocean Optics spectrometer.
     
         Parameters
         ----------
@@ -483,69 +536,80 @@ class STLAB():
             Whether to also acquire measurements from an Ocean Optics 
             spectrometer. Requires the seabreeze package to be installed.
             The default is None.
+        randomise : bool, optional
+            Whether to randomise the order in which the led-intensity settings 
+            are sampled.
     
         Returns
         -------
-        stlab_specs : DataFram
-            The resulting measurements from the STLAB spectrometer in a 
-            DataFrame with hierarchial pd.MultiIndex and column 'flux'.
-        oo_specs : DataFrame, on request
-            The resulting measurements from the Ocean Optics 
-            spectrometer () in a DataFrame with hierarchial pd.MultiIndex and 
-            column 'flux'. 
+        stlab_spectra : pd.DataFram
+            The resulting measurements from the STLAB spectrometer.
+        stlab_info : pd.DataFrame
+            The companion info to stlab_spectra, with matching indices.
+        oo_spectra : pd.DataFrame, optional
+            The resulting measurements from the Ocean Optics spectrometer.
+        oo_info : pd.DataFrame, optional
+            The companion info to the oo_spectra, with matching indices.
             
         '''
-            
-        print('Sampling {} leds at the following intensities: {}'.format(
-            len(leds), intensity))
+        # off spectrum    
         leds_off = [0]*10
         
         # df to store stlab spectrometer data
-        stlab_specs = pd.DataFrame()
-        stlab_midx = pd.MultiIndex.from_product(
-            [leds, intensity, self.wlbins],
-            names=['led', 'intensity', 'wavelength'])
+        stlab_spectra = pd.DataFrame()
+        stlab_info  = pd.DataFrame()
         
         # df to store ocean optics spectrometer data, if required
         if ocean_optics:
-            oo_specs = pd.DataFrame()
-            oo_midx = pd.MultiIndex.from_product(
-            [leds, intensity, ocean_optics.wavelengths()],
-            names=['led', 'intensity', 'wavelength'])
-            
+            oo_spectra = pd.DataFrame()
+            oo_info  = pd.DataFrame()
+
         # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
-    
-        for led in leds:
+        
+        # generate led-intensity settings
+        settings = [(l, i) for l in leds for i in intensities]
+        print('Sampling {} leds at the following intensities: {}'.format(
+            len(leds), intensities))
+        if randomise:
+            shuffle(settings)
+        
+        # begin sampling            
+        for i, s in enumerate(settings):
+            led = s[0]
+            intensity = s[1]
             self.set_spectrum_a(leds_off)
             sleep(wait_before_sample)
-            for val in intensity:
-                print('Led: {}, intensity: {}'.format(led, val))
-                spec = [0]*10
-                spec[led] = val
-                self.set_spectrum_a(spec)
-                sleep(wait_before_sample)
-                stlab_data = self.get_spectrometer_spectrum(norm=False)
-                stlab_data = pd.DataFrame(stlab_data)
-                stlab_data.rename(columns={0:'flux'}, inplace=True)
-                stlab_specs = pd.concat([stlab_specs, pd.DataFrame(stlab_data)])
-                
-                if ocean_optics:
-                    oo_data = ocean_optics.intensities()
-                    oo_data = pd.DataFrame(oo_data)
-                    oo_data.rename(columns={0:'flux'}, inplace=True)
-                    oo_specs = pd.concat([oo_specs, pd.DataFrame(oo_data)])
+            print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
+                i, len(settings), led, intensity))
+            spec = [0]*10
+            spec[led] = intensity
+            self.set_spectrum_a(spec)
+            sleep(wait_before_sample)
+            stlab_counts, stlab_info_dict = self.full_readout()
+            stlab_spectra = stlab_spectra.append(
+                pd.DataFrame(stlab_counts, index=[self.wlbins], columns=[i]).T)
+            stlab_info_dict['led'] = led
+            stlab_info_dict['intensity'] = intensity
+            stlab_info = stlab_info.append(pd.DataFrame(stlab_info_dict, index=[i]))
+            
+            if ocean_optics:
+                oo_counts, oo_info_dict = adaptive_measurement(ocean_optics)
+                oo_spectra = oo_spectra.append(
+                    pd.DataFrame(oo_counts, 
+                                 index=[ocean_optics.wavelengths()],
+                                 columns=[i]).T)
+                oo_info_dict['led'] = led
+                oo_info_dict['intensity'] = intensity
+                oo_info = oo_info.append(pd.DataFrame(oo_info_dict, index=[i]))
         
         self.turn_off()
-        
-        stlab_specs.index = stlab_midx
-        
+    
         if ocean_optics:
-            oo_specs.index = oo_midx
-            return stlab_specs, oo_specs
+            return stlab_spectra, stlab_info,  oo_spectra, oo_info
         
         else:
-            return stlab_specs  
+            return stlab_spectra, stlab_info
 
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #

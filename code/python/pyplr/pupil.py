@@ -176,9 +176,6 @@ class LightStamper(Thread):
 
     '''
     
-    successful = False
-    timestamp = None
-    
     def __init__(self, pupil, trigger, threshold, wait_time=None):
         '''
         Parameters
@@ -202,6 +199,8 @@ class LightStamper(Thread):
         self.trigger = trigger
         self.threshold = threshold
         self.wait_time = wait_time
+        self.successful = False
+        self.timestamp = None
 
         # a unique, encapsulated subscription to frame.world
         self.subscriber = self.pupil.context.socket(zmq.SUB)
@@ -232,8 +231,8 @@ class LightStamper(Thread):
                     print('Light stamped at {}'.format(recent_world_ts))
                     self.trigger['timestamp'] = recent_world_ts # change trigger timestamp
                     self.pupil.send_trigger(self.trigger)
-                    self.successful = True
                     self.timestamp = recent_world_ts
+                    self.successful = True
             recent_world_minus_one = recent_world
             if self.wait_time > 0:
                 t2 = time()

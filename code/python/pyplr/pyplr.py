@@ -68,8 +68,13 @@ def load_annotations(data_dir):
         
     '''
     fname = op.join(data_dir, '', 'annotations.csv')
-    events = pd.read_csv(fname)
-    print('Loaded {} events'.format(len(events)))
+    try:
+        events = pd.read_csv(fname)
+        print('Loaded {} events'.format(len(events)))
+    except FileNotFoundError:
+        print('{} does not appear to exist. Make sure annotations plugin is \
+              active before exporting'.format(fname))
+        
     return events
    
 def load_pupil(data_dir, method='3d c++', cols=[]):
@@ -90,14 +95,17 @@ def load_pupil(data_dir, method='3d c++', cols=[]):
         
     '''
     fname = op.join(data_dir, '', 'pupil_positions.csv')
-    if not cols:
-        samps = pd.read_csv(fname)
-    else:
-        samps = pd.read_csv(fname, usecols=cols)
-    samps = samps[samps.method=='3d c++']    
-    samps.set_index('pupil_timestamp', inplace=True)
-    print('Loaded {} samples'.format(len(samps)))
-    print('Average confidence: {}'.format(samps.confidence.mean()))
+    try:
+        if not cols:
+            samps = pd.read_csv(fname)
+        else:
+            samps = pd.read_csv(fname, usecols=cols)
+        samps = samps[samps.method=='3d c++']    
+        samps.set_index('pupil_timestamp', inplace=True)
+        print('Loaded {} samples'.format(len(samps)))
+        print('Average confidence: {}'.format(samps.confidence.mean()))
+    except FileNotFoundError:
+        print('{} does not appear to exist. Check directory and pupil player'.format(fname))
     return samps
 
 def load_blinks(data_dir):
@@ -115,9 +123,13 @@ def load_blinks(data_dir):
         
     '''
     fname = op.join(data_dir, '', 'blinks.csv')
-    blinks = pd.read_csv(fname)
-    print('{} blinks detected by Pupil Labs, average duration {:.3f} s'.format(
-        len(blinks), blinks.duration.mean()))
+    try:
+        blinks = pd.read_csv(fname)
+        print('{} blinks detected by Pupil Labs, average duration {:.3f} s'.format(
+            len(blinks), blinks.duration.mean()))
+    except FileNotFoundError:
+        print('{} does not appear to exist. Make sure blink detection plugin is \
+              active before exporting in Pupil Player'.format(fname))
     return blinks
 
 ###########################
