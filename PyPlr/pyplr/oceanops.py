@@ -10,6 +10,9 @@ A module to help with measurents for Ocean Optics spectrometers.
 
 from time import sleep
 
+import numpy as np
+import pandas as pd
+
 def adaptive_measurement(spectrometer):
     '''
     For a given light source, use an adaptive procedure to find the integration 
@@ -89,3 +92,30 @@ def adaptive_measurement(spectrometer):
                      'integration_time' : [intgt],
                      'model'            : [spectrometer.model]}
     
+def dark_measurement(spectrometer, integration_times=[1000]):
+    '''
+    Sample the dark spectrum with a range of integration times. Do this for a 
+    range of temperatures to characterise the relationship between temperature
+    and integration time.
+
+    '''
+    wls = spectrometer.wavelengths()
+    data = pd.DataFrame()
+    for intgt in integration_times:
+        spectrometer.integration_time_micros(intgt)
+        sleep(.05)
+        temps = spectrometer.f.temperature.temperature_get_all()
+        sleep(.05)
+        board_temp = np.round(temps[0], decimals=2)
+        micro_temp = np.round(temps[2], decimals=2)
+        print('Board temp: {}, integration time: {}'.format(board_temp, intgt))
+        intensities = pd.DataFrame(spectrometer.intensities())
+        intensities.rename(columns={0:'dark_counts'}, inplace=True)
+        data = pd.concat([data, intensities])
+        
+    midx = pd.MultiIndex.from_product(
+        [[board_temp], [micro_temp], integration_times, wls],
+        names=['board_temp', 'micro_temp', 'integration_time', 'wavelengths'])
+    data.index = midx
+    
+    return data
