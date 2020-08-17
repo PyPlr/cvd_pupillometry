@@ -5,38 +5,11 @@ Created on Mon Aug 10 10:27:12 2020
 
 @author: jtm
 """
-from time import sleep
 
-import numpy as np
 import pandas as pd
 from seabreeze.spectrometers import Spectrometer
 
 from oceanops import dark_measurement
-
-
-def darkcal(spectrometer, integration_times=[1000]):
-    
-    wls = oo.wavelengths()
-    data = pd.DataFrame()
-    for it in integration_times:
-        oo.integration_time_micros(it)
-        sleep(.2)
-        temps = oo.f.temperature.temperature_get_all()
-        sleep(.2)
-        board_temp = np.round(temps[0], decimals=2)
-        micro_temp = np.round(temps[2], decimals=2)
-        print('Board temp: {}, integration time: {}'.format(board_temp, it))
-        intensities = pd.DataFrame(oo.intensities())
-        intensities.rename(columns={0:'raw'}, inplace=True)
-        data = pd.concat([data, intensities])
-
-        
-    midx = pd.MultiIndex.from_product(
-        [[board_temp], [micro_temp], integration_times, wls],
-        names=['board_temp', 'micro_temp', 'integration_time', 'wavelengths'])
-    data.index = midx
-    
-    return data
 
 #%% make a df to hold data
 # connect to OceanOptics spectrometer

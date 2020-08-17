@@ -464,6 +464,15 @@ class STLAB():
         return colour_priority
     
     def get_spectrometer_integration_time(self):
+        '''
+        Get the current integration time used by the spectrometer for gathering data.
+
+        Returns
+        -------
+        integration_time : int
+            A positive integer ranging from 50 to 140000 in tenths of millisecond.
+
+        '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
@@ -471,12 +480,37 @@ class STLAB():
         return integration_time
     
     def set_spectrometer_integration_time(self, integration_time):
+        '''
+        Sets the integration time of the spectrometer to gather data. Longer 
+        times will result in more light reaching the sensor (like exposure 
+        time in photography). Special attention should be taken to avoid 
+        signal saturation.
+
+        Parameters
+        ----------
+        integration_time : int
+            A positive integer ranging from 50 to 140000 in tenths of millisecond.
+
+        Returns
+        -------
+        None.
+
+        '''
         data = {'arg' : integration_time}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
         requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
         
     def get_input_power(self):
+        '''
+        Returns the current consumed electrical power of the luminaire in mW.
+
+        Returns
+        -------
+        input_power : int
+            The electrical power at the luminaire in mW..
+
+        '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_INPUT_POWER'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
@@ -494,55 +528,81 @@ class STLAB():
     # def new_method_from_restful_api(self)...
 
     # User-defined functions 
-    def full_readout(self):
+    def full_readout(self, setting={}):
+        '''
+        Get a full readout from the STLAB.
+
+        Parameters
+        ----------
+        setting : dict, optional
+            The current setting of the luminaire (if known), to be included in
+            the info_dict. For example {'led' : 5, 'intensity' : 3000}, or 
+            {'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}. 
+            The default is {}.
+
+        Returns
+        -------
+        counts : TYPE
+            DESCRIPTION.
+        info_dict : TYPE
+            DESCRIPTION.
+
+        '''
         tmps = self.get_pcb_temperature()
         ip   = self.get_input_power()
         it   = self.get_spectrometer_integration_time()
         dl   = self.get_dimming_level()
         rmv, counts = self.get_spectrometer_spectrum(norm=False)
-        info_dict = {'rmv'              : [rmv],
-                     'LEDs_temp'        : [tmps[0]],
-                     'drivers_temps'    : [tmps[1]],
-                     'board_temp'       : [tmps[2]],
-                     'micro_temp'       : [tmps[3]],
-                     'integration_time' : [it],
-                     'input_power'      : [ip],
-                     'dimming_level'    : [dl]
+        info_dict = {'rmv'              : rmv,
+                     'LEDs_temp'        : tmps[0],
+                     'drivers_temp'     : tmps[1],
+                     'board_temp'       : tmps[2],
+                     'micro_temp'       : tmps[3],
+                     'integration_time' : it,
+                     'input_power'      : ip,
+                     'dimming_level'    : dl
                      }
-        
+        info_dict = {**info_dict, **setting}
         return counts, info_dict
     
-    def sample_leds(self, 
-                    leds=[0], 
-                    intensities=[4095], 
-                    wait_before_sample=.2,
-                    ocean_optics=None,
-                    randomise=False):
+    def sample(self, 
+               leds=[0], 
+               intensities=[500], 
+               spectra=None,
+               wait_before_sample=.2,
+               ocean_optics=None,
+               randomise=False):
         '''
-        Sample each of the given LEDs at the specified intensity settings using
-        the STLAB's on-board spectrometer. Option to also obtain concurrent 
-        measurements with an external Ocean Optics spectrometer.
+        Sample a set of LEDs individually at a range of specified intensities 
+        using the STLABs on-board spectrometer. Or, alternatively, sample a set
+        of pre-defined spectra. Option to also obtain concurrent measurements 
+        with an external Ocean Optics spectrometer.
     
         Parameters
         ----------
         leds : list, optional
-            List of leds to sample. The default is [0].
-        intensity : list, optional
-            The intensity values to use for the sampling. The default is [4095].
+            List of unique integers from 0-9 representing the LEDs to sample.
+            The default is [0].
+        intensities : list, optional
+            List of integer values between 0-4095 representing the intensity 
+            values at which to sample the LEDs. The default is [500].
+        spectra : list, optinal
+            List of predfined spectra to sample. Must be None if specifying
+            leds or intensities. The default is None.
         wait_before_sample : float, optional
             Time in seconds to wait after setting a spectrum before acquiring 
-            measurement from spectrometer. The default is .2.
+            a measurement from the spectrometer(s). The default is .2.
         ocean_optics : seabreeze.spectrometers.Spectrometer, optional
-            Whether to also acquire measurements from an Ocean Optics 
+            Whether to acquire concurrent measurements from an Ocean Optics 
             spectrometer. Requires the seabreeze package to be installed.
             The default is None.
         randomise : bool, optional
-            Whether to randomise the order in which the led-intensity settings 
-            are sampled.
+            Whether to randomise the order in which the LED-intensity settings 
+            or spectra are sampled. The default is False.
     
         Returns
         -------
-        stlab_spectra : pd.DataFram
+        stlab_spectra : pd.DataFrame
             The resulting measurements from the STLAB spectrometer.
         stlab_info : pd.DataFrame
             The companion info to stlab_spectra, with matching indices.
@@ -552,151 +612,84 @@ class STLAB():
             The companion info to the oo_spectra, with matching indices.
             
         '''
+        if spectra and (leds or intensities):
+            raise ValueError('leds and intensities must be None when specifying spectra')
+  
         # off spectrum    
         leds_off = [0]*10
         
         # df to store stlab spectrometer data
-        stlab_spectra = pd.DataFrame()
-        stlab_info  = pd.DataFrame()
+        stlab_spectra = []
+        stlab_info  = []
         
         # df to store ocean optics spectrometer data, if required
         if ocean_optics:
-            oo_spectra = pd.DataFrame()
-            oo_info  = pd.DataFrame()
+            oo_spectra = []
+            oo_info  = []
 
         # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
         
-        # generate led-intensity settings
-        settings = [(l, i) for l in leds for i in intensities]
-        print('Sampling {} leds at the following intensities: {}'.format(
-            len(leds), intensities))
+        # generate the settings
+        if spectra:
+            settings = spectra
+            print('Sampling {} spectra: {}'.format(
+                len(spectra), spectra))
+        else:
+            settings = [(l, i) for l in leds for i in intensities]
+            print('Sampling {} leds at the following intensities: {}'.format(
+                len(leds), intensities))
+        
+        # shuffle
         if randomise:
             shuffle(settings)
         
         # begin sampling            
         for i, s in enumerate(settings):
-            led = s[0]
-            intensity = s[1]
-            self.set_spectrum_a(leds_off)
+            if not spectra:
+                led, intensity = s[0], s[1]
+                setting = {'led' : led, 'intensitiy' : intensity}
+                s = [0]*10
+                s[led] = intensity
+                print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
+                    i+1, len(settings), led, intensity))
+            else:
+                setting = {'intensities' : s}
+                print('Measurement: {} / {}, spectrum: {}'.format(
+                    i+1, len(settings), s))
+                       
+            # set the spectrum
+            self.set_spectrum_a(s)
             sleep(wait_before_sample)
-            print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
-                i, len(settings), led, intensity))
-            spec = [0]*10
-            spec[led] = intensity
-            self.set_spectrum_a(spec)
-            sleep(wait_before_sample)
-            stlab_counts, stlab_info_dict = self.full_readout()
-            stlab_spectra = stlab_spectra.append(
-                pd.DataFrame(stlab_counts, index=[self.wlbins], columns=[i]).T)
-            stlab_info_dict['led'] = led
-            stlab_info_dict['intensity'] = intensity
-            stlab_info = stlab_info.append(pd.DataFrame(stlab_info_dict, index=[i]))
+            
+            # full readout from STLAB
+            stlab_counts, stlab_info_dict = self.full_readout(setting=setting)
+            stlab_spectra.append(stlab_counts)
+            stlab_info.append(stlab_info_dict)
             
             if ocean_optics:
-                oo_counts, oo_info_dict = adaptive_measurement(ocean_optics)
-                oo_spectra = oo_spectra.append(
-                    pd.DataFrame(oo_counts, 
-                                 index=[ocean_optics.wavelengths()],
-                                 columns=[i]).T)
-                oo_info_dict['led'] = led
-                oo_info_dict['intensity'] = intensity
-                oo_info = oo_info.append(pd.DataFrame(oo_info_dict, index=[i]))
+                oo_counts, oo_info_dict = adaptive_measurement(
+                    ocean_optics, setting=setting)
+                oo_spectra.append(oo_counts)
+                oo_info.append(oo_info_dict)
         
+        # make dfs
+        stlab_spectra = pd.DataFrame(stlab_spectra)
+        stlab_spectra.columns = self.wlbins
+        stlab_info = pd.DataFrame(stlab_info)
+        
+        oo_spectra = pd.DataFrame(oo_spectra)
+        oo_spectra.columns = ocean_optics.wavelengths()
+        oo_info = pd.DataFrame(oo_info)
+        
+        # turn off
         self.turn_off()
     
         if ocean_optics:
-            return stlab_spectra, stlab_info,  oo_spectra, oo_info
-        
+            return stlab_spectra, stlab_info, oo_spectra, oo_info
         else:
             return stlab_spectra, stlab_info
 
-    def sample_spectra(self, 
-                       spectra=[[0,0,0,0,0,0,0,0,0,0]], 
-                       wait_before_sample=.2,
-                       ocean_optics=None,
-                       randomise=False):
-        '''
-        Sample a set of spectra using the STLAB's on-board spectrometer. 
-        Option to also obtain concurrent measurements with an external 
-        Ocean Optics spectrometer. MERGE THIS WITH THE PREVIOUS METHOD.
-    
-        Parameters
-        ----------
-        spectra : list of lists, optional
-            List of spectra to sample. The default is [[0,0,0,0,0,0,0,0,0,0]].
-        wait_before_sample : float, optional
-            Time in seconds to wait after setting a spectrum before acquiring 
-            measurement from spectrometer. The default is .2.
-        ocean_optics : seabreeze.spectrometers.Spectrometer, optional
-            Whether to also acquire measurements from an Ocean Optics 
-            spectrometer. Requires the seabreeze package to be installed.
-            The default is None.
-        randomise : bool, optional
-            Whether to randomise the order in which the led-intensity settings 
-            are sampled.
-    
-        Returns
-        -------
-        stlab_spectra : pd.DataFram
-            The resulting measurements from the STLAB spectrometer.
-        stlab_info : pd.DataFrame
-            The companion info to stlab_spectra, with matching indices.
-        oo_spectra : pd.DataFrame, optional
-            The resulting measurements from the Ocean Optics spectrometer.
-        oo_info : pd.DataFrame, optional
-            The companion info to the oo_spectra, with matching indices.
-            
-        '''
-        # off spectrum    
-        leds_off = [0]*10
-        
-        # df to store stlab spectrometer data
-        stlab_spectra = pd.DataFrame()
-        stlab_info  = pd.DataFrame()
-        
-        # df to store ocean optics spectrometer data, if required
-        if ocean_optics:
-            oo_spectra = pd.DataFrame()
-            oo_info  = pd.DataFrame()
-
-        # turn stlab off if it's on
-        self.set_spectrum_a(leds_off)
-        
-        print('Sampling {} spectra'.format(len(spectra)))
-        if randomise:
-            shuffle(spectra)
-        
-        # begin sampling            
-        for i, spec in enumerate(spectra):
-            self.set_spectrum_a(leds_off)
-            sleep(wait_before_sample)
-            print('Measurement: {} / {}, LED intensities: {}'.format(
-                i, len(spectra), spec))
-            self.set_spectrum_a(spec)
-            sleep(wait_before_sample)
-            stlab_counts, stlab_info_dict = self.full_readout()
-            stlab_spectra = stlab_spectra.append(
-                pd.DataFrame(stlab_counts, index=[self.wlbins], columns=[i]).T)
-            stlab_info_dict['intensities'] = str(spec)
-            stlab_info = stlab_info.append(pd.DataFrame(stlab_info_dict, index=[i]))
-            
-            if ocean_optics:
-                oo_counts, oo_info_dict = adaptive_measurement(ocean_optics)
-                oo_spectra = oo_spectra.append(
-                    pd.DataFrame(oo_counts, 
-                                 index=[ocean_optics.wavelengths()],
-                                 columns=[i]).T)
-                oo_info_dict['intensities'] = str(spec)
-                oo_info = oo_info.append(pd.DataFrame(oo_info_dict, index=[i]))
-        
-        self.turn_off()
-    
-        if ocean_optics:
-            return stlab_spectra, stlab_info,  oo_spectra, oo_info
-        
-        else:
-            return stlab_spectra, stlab_info
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #
 #################################

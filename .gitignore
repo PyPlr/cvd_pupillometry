@@ -1,5 +1,5 @@
 .DS_Store
-data/*
-record/*
-literature/*
-img/*
+PyPlr/__pycache__
+PyPlr/.ipynb_checkpoints
+PyPlr/.DS_Store
+PyPlr/pyplr/.DS_Store

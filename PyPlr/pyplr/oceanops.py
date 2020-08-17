@@ -13,13 +13,30 @@ from time import sleep
 import numpy as np
 import pandas as pd
 
-def adaptive_measurement(spectrometer):
+def adaptive_measurement(spectrometer, setting={}):
     '''
     For a given light source, use an adaptive procedure to find the integration 
     time which returns a spectrum whose maximum reported value in raw units is
     between 80-90% of the maximum intensity value for the device. Can take up
     to a maximum of ~3.5 mins for lower light levels, though this could be 
     reduced somewhat by optimising the algorithm.
+
+    Parameters
+    ----------
+    spectrometer : seabreeze.spectrometers.Spectrometer
+        The Ocean Optics spectrometer instance.
+    setting : dict, optional
+         The current setting of the light source (if known), to be included in
+         the info_dict. For example {'led' : 5, 'intensity' : 3000}, or 
+         {'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}. 
+         The default is {}.
+
+    Returns
+    -------
+    oo_spectra : pd.DataFrame
+        The resulting measurements from the Ocean Optics spectrometer.
+    oo_info_dict : dict
+        The companion info to the oo_spectra, with matching indices.
 
     '''
     # initial parameters
@@ -52,10 +69,10 @@ def adaptive_measurement(spectrometer):
         sleep(.05)
         
         # obtain intensity measurements
-        oo_data = spectrometer.intensities()
+        oo_counts = spectrometer.intensities()
         
         # get the maximum reported value
-        max_reported = max(oo_data)
+        max_reported = max(oo_counts)
         print('\tIntegration time: {} ms --> maximum reported value: {}'.format(
             intgt / 1000, max_reported))
         
@@ -86,11 +103,14 @@ def adaptive_measurement(spectrometer):
             lower_intgt = intgt
             intgt += (upper_intgt - lower_intgt) / 2
     
+    oo_info_dict = {'board_temp'       : temps[0],
+                    'micro_temp'       : temps[2],
+                    'integration_time' : intgt,
+                    'model'            : spectrometer.model}
+    oo_info_dict = {**oo_info_dict, **setting}
+    
     # return the final counts and dict of sample-related info
-    return oo_data, {'board_temp'       : [temps[0]],
-                     'micro_temp'       : [temps[2]],
-                     'integration_time' : [intgt],
-                     'model'            : [spectrometer.model]}
+    return oo_counts, oo_info_dict
     
 def dark_measurement(spectrometer, integration_times=[1000]):
     '''

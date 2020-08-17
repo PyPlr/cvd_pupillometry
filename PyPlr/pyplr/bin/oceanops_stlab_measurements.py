@@ -53,4 +53,5 @@ oo_spectra.to_csv('oo_spectra_14_08_2020.csv', index=False)
 oo_info.to_csv('oo_spectra_14_08_2020_info.csv', index=False)
 
 
-stlab_info
+#%%
+sc,si,ooc,ooi=d.sample(leds=None, intensities=None, spectra=[[1,600,600,600,600,600,600,600,600,600],[60,800,800,800,800,3000,3000,2000,4000,300]], ocean_optics=oo)
