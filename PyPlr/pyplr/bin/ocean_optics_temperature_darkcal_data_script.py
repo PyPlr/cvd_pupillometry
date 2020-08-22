@@ -31,6 +31,6 @@ while t < 45.00:
     t = oo.f.temperature.temperature_get_all()[0]
     
 #%% run once data for all desired temperatures have been collected
-data.to_csv('ocean_optics_temperature_darkcal_6-45degC.csv')
+data.to_csv('ocean_optics_temperature_darkcal_2-45degC.csv')
 
 

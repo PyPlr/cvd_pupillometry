@@ -37,6 +37,12 @@ class STLAB():
     description = 'Spectrally tuneable light engine with 10 narrow-band primaries'
     colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan', 
               'green', 'lime', 'orange', 'red', 'darkred']
+    rgb_colors = [[.220, .004, .773, 1.], [.095, .232, .808, 1.],
+                  [.098, .241, .822, 1.], [.114, .401, .755, 1.],
+                  [.194, .792, .639, 1.], [.215, .895, .489, 1.],
+                  [.599, .790, .125, 1.], [.980, .580, .005, 1.],
+                  [.975, .181, .174, 1.], [.692, .117, .092, 1.]]
+
     wlbins = [int(val) for val in np.linspace(380,780,81)]
     min_intensity = 0
     max_intensity = 4095
@@ -571,7 +577,8 @@ class STLAB():
                spectra=None,
                wait_before_sample=.2,
                ocean_optics=None,
-               randomise=False):
+               randomise=False,
+               save_output=False):
         '''
         Sample a set of LEDs individually at a range of specified intensities 
         using the STLABs on-board spectrometer. Or, alternatively, sample a set
@@ -599,6 +606,9 @@ class STLAB():
         randomise : bool, optional
             Whether to randomise the order in which the LED-intensity settings 
             or spectra are sampled. The default is False.
+        save_output : bool, optional
+            Whether to save the samples and info as .csv files in the current
+            working directory.
     
         Returns
         -------
@@ -618,11 +628,11 @@ class STLAB():
         # off spectrum    
         leds_off = [0]*10
         
-        # df to store stlab spectrometer data
+        # list to store stlab spectrometer data
         stlab_spectra = []
         stlab_info  = []
         
-        # df to store ocean optics spectrometer data, if required
+        # list to store ocean optics spectrometer data, if required
         if ocean_optics:
             oo_spectra = []
             oo_info  = []
@@ -648,7 +658,7 @@ class STLAB():
         for i, s in enumerate(settings):
             if not spectra:
                 led, intensity = s[0], s[1]
-                setting = {'led' : led, 'intensitiy' : intensity}
+                setting = {'led' : led, 'intensity' : intensity}
                 s = [0]*10
                 s[led] = intensity
                 print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
@@ -678,13 +688,22 @@ class STLAB():
         stlab_spectra.columns = self.wlbins
         stlab_info = pd.DataFrame(stlab_info)
         
-        oo_spectra = pd.DataFrame(oo_spectra)
-        oo_spectra.columns = ocean_optics.wavelengths()
-        oo_info = pd.DataFrame(oo_info)
+        if ocean_optics:
+            oo_spectra = pd.DataFrame(oo_spectra)
+            oo_spectra.columns = ocean_optics.wavelengths()
+            oo_info = pd.DataFrame(oo_info)
         
         # turn off
         self.turn_off()
-    
+        
+        if save_output:
+            fid = datetime.now().strftime('%D-%H-%M').replace('/','-')
+            stlab_spectra.to_csv('stlab_spectra_' + fid + '.csv')
+            stlab_info.to_csv('stlab_info_' + fid + '.csv')
+            if ocean_optics:
+                oo_spectra.to_csv('oo_spectra_' + fid + '.csv')
+                oo_info.to_csv('oo_info_' + fid + '.csv')
+            
         if ocean_optics:
             return stlab_spectra, stlab_info, oo_spectra, oo_info
         else:

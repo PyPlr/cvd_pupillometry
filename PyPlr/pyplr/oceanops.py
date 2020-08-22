@@ -139,3 +139,12 @@ def dark_measurement(spectrometer, integration_times=[1000]):
     data.index = midx
     
     return data
+
+def predict_dark_spds(spectra_info, calfile):
+    c = pd.read_table(calfile, skiprows=2, sep='\t', index_col=False)
+    dark_spds = []
+    for idx, row in spectra_info.iterrows():
+        x  = spectra_info.loc[idx, 'board_temp']
+        y  = spectra_info.loc[idx, 'integration_time']
+        dark_spds.append((c.p00 + c.p10*x + c.p01*y + c.p20*x*x + c.p11*x*y + c.p30*x*x*x + c.p21*x*x*y).values)
+    return pd.DataFrame(dark_spds)
