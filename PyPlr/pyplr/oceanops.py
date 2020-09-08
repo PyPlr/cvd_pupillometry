@@ -140,11 +140,43 @@ def dark_measurement(spectrometer, integration_times=[1000]):
     
     return data
 
-def predict_dark_spds(spectra_info, calfile):
-    c = pd.read_table(calfile, skiprows=2, sep='\t', index_col=False)
+def predict_dark_spds(spectra_info, darkcal_file):
+    '''
+    Predict the dark spectra from the temperature and integration times of a
+    set of measurements. These must be subtracted from measured pixel counts 
+    during the unit-calibration process.
+
+    Parameters
+    ----------
+    spectra_info : pd.DataFrame
+        The info dataframe containing the 'board_temp' and 'integration_time'
+        variables.
+    calfile : string
+        Path to the calibration file. This is currenly generated in MATLAB. 
+
+    Returns
+    -------
+    pd.DataFrame
+        The predicted dark spectra.
+
+    '''
+    c = pd.read_table(darkcal_file, skiprows=2, sep='\t', index_col=False)
     dark_spds = []
     for idx, row in spectra_info.iterrows():
         x  = spectra_info.loc[idx, 'board_temp']
         y  = spectra_info.loc[idx, 'integration_time']
-        dark_spds.append((c.p00 + c.p10*x + c.p01*y + c.p20*x*x + c.p11*x*y + c.p30*x*x*x + c.p21*x*x*y).values)
+        dark_spec = []
+        for i in range(0, c.shape[0]):
+            p00 = c.loc[i, 'p00']
+            p10 = c.loc[i, 'p10']
+            p01 = c.loc[i, 'p01']
+            p20 = c.loc[i, 'p20']
+            p11 = c.loc[i, 'p11']
+            p30 = c.loc[i, 'p30']
+            p21 = c.loc[i, 'p21']
+            
+            dark_spec.append(p00 + p10*x + p01*y + p20*x*x + p11*x*y + p30*x*x*x + p21*x*x*y)
+
+        dark_spds.append(dark_spec)
+        
     return pd.DataFrame(dark_spds)

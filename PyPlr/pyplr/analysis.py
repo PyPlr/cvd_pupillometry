@@ -692,10 +692,10 @@ def plot_plr(s,
     ax.axvspan(onset_idx, onset_idx + (sample_rate * stim_dur), color='k', alpha=.3)
     ax.set_ylabel('Pupil Size')
     ax.set_xlabel('Time (s)')
-    #x  = [val for val in range(0, len(s) + sample_rate, sample_rate * 5)]
-    #xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
-    #ax.set_xticks(x)
-    #ax.set_xticklabels(xl)
+    x  = [val for val in range(0, len(s) + sample_rate, sample_rate * 5)]
+    xl = [str(val) for val in range(-int(onset_idx / sample_rate), int(len(s) / sample_rate), 5)]
+    ax.set_xticks(x)
+    ax.set_xticklabels(xl)
     
     if vel_acc:
         ax2 = ax.twinx()

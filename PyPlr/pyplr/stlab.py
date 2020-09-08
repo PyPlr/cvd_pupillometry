@@ -9,7 +9,6 @@ See the "LIGHT HUB RESTful API" manual for further functions and more info.
 
 Contains additional functions for working with the STLAB.
 '''
-
 from time import sleep
 from datetime import datetime
 from random import shuffle
