@@ -176,7 +176,8 @@ class LightStamper(Thread):
 
     '''
     
-    def __init__(self, pupil, trigger, threshold, wait_time=None):
+    def __init__(self, pupil, trigger, threshold, 
+                 wait_time=None, subscription='frame.world'):
         '''
         Parameters
         ----------
@@ -199,13 +200,14 @@ class LightStamper(Thread):
         self.trigger = trigger
         self.threshold = threshold
         self.wait_time = wait_time
+        self.subscription = subscription
         self.successful = False
         self.timestamp = None
 
         # a unique, encapsulated subscription to frame.world
         self.subscriber = self.pupil.context.socket(zmq.SUB)
         self.subscriber.connect('tcp://{}:{}'.format(pupil.address, pupil.sub_port))
-        self.subscriber.setsockopt_string(zmq.SUBSCRIBE, 'frame.world')
+        self.subscriber.setsockopt_string(zmq.SUBSCRIBE, self.subscription)
         
     # override threading.Thread.run() method with light detection code
     def run(self):
@@ -220,7 +222,7 @@ class LightStamper(Thread):
         print('Waiting for a light to stamp...')
         while not self.successful and (t2 - t1) < self.wait_time:
             topic, msg = recv_from_subscriber(self.subscriber)
-            if topic == 'frame.world':
+            if topic == self.subscription:
                 recent_world = np.frombuffer(
                     msg['__raw_data__'][0], dtype=np.uint8).reshape(
                         msg['height'], msg['width'], 3)

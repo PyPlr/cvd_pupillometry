@@ -6,25 +6,24 @@ Created on Fri Mar 27 11:16:51 2020
 """
 import numpy as np
 from time import sleep, time
-import restful_apy as apy
-import make_video_files as mvf
+import stlab
 import matplotlib.pyplot as plt
 
 
 # test spectrum
-spectrum     = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
+spectrum     = [0, 0, 0, 0, 0, 0, 4095, 4095, 0, 0]
 spectrum_off = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # make a video file from csv
 mvf.make_video_file('test_mod.csv')
 
 # set up device - strange how it doesn't seem to work first time
-device = apy.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
+device = stlab.STLAB(username='admin', identity=1, password='83e47941d9e930f6')
 
 # 1 second light pulse
-apy.set_spectrum_a(device, spectrum)
+device.set_spectrum_a(spectrum)
 sleep(1)
-apy.turn_off(device)
+device.turn_off()
 
 # as above with 100 ms blink
 apy.set_blink(device, 10)
