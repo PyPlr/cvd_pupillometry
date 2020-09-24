@@ -124,7 +124,7 @@ class LightStamper(Thread):
     A thread-bound class which uses the Pupil Core World Camera to detect the 
     onset of a light and send an annotation (a.k.a 'trigger') to Pupil Capture 
     with the associated Pupil timestamp. Useful for integrating with virtually
-    any light source. Supports extraction of PLRs and calcultion of time-critical 
+    any light source. Supports extraction of PLRs and calculation of time-critical 
     measures such as latency and time-to-peak consctriction. Inherits from 
     threading.Thread and overrides the .run() method. Instantiate a few seconds 
     before administering a light stimulus. Works very well with the following 
@@ -141,7 +141,7 @@ class LightStamper(Thread):
     detected : bool
         Whether a light gets detected
     timestamp : None, float
-        The pupil timestamp associated with the onset of a light
+        The pupil timestamp associated with the frame where the light was detected
     pupil : pupil.PupilCore
         PupilCore class instance
     trigger : dict
@@ -164,6 +164,11 @@ class LightStamper(Thread):
         Use when controlling a light source programmatically. For STLAB, use 
         6.0 s, because on rare occasions it can take about 5 seconds 
         to process a request. The default in None. 
+    subscription : string
+        The camera frames to subscribe to. In most cases this will be 
+        'frame.world', but the method will also work for 'frame.eye.0' and
+        'frame.eye.1' if the light source contains enough near-infrared. 
+        The default is 'frame.world'.
         
     Example
     -------
@@ -176,7 +181,7 @@ class LightStamper(Thread):
 
     '''
     
-    def __init__(self, pupil, trigger, threshold, 
+    def __init__(self, pupil, trigger, threshold=15, 
                  wait_time=None, subscription='frame.world'):
         '''
         Parameters
@@ -189,6 +194,8 @@ class LightStamper(Thread):
             Detection threshold for luminance increase.
         wait_time : float, optional
             Time to wait in seconds before giving up. The default is None.
+        subscription : string
+            The camera frames to subscribe to. The default is 'frame.world'.
 
         Returns
         -------
@@ -204,7 +211,7 @@ class LightStamper(Thread):
         self.successful = False
         self.timestamp = None
 
-        # a unique, encapsulated subscription to frame.world
+        # a unique, encapsulated subscription to avoid race conditions
         self.subscriber = self.pupil.context.socket(zmq.SUB)
         self.subscriber.connect('tcp://{}:{}'.format(pupil.address, pupil.sub_port))
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, self.subscription)
@@ -230,7 +237,8 @@ class LightStamper(Thread):
             if recent_world is not None and recent_world_minus_one is not None:
                 diff = recent_world.mean() - recent_world_minus_one.mean()
                 if diff > self.threshold:
-                    print('Light stamped at {}'.format(recent_world_ts))
+                    print('Light stamped on {} at {}'.format(
+                        self.subscription, recent_world_ts))
                     self.trigger['timestamp'] = recent_world_ts # change trigger timestamp
                     self.pupil.send_trigger(self.trigger)
                     self.timestamp = recent_world_ts
