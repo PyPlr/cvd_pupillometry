@@ -12,6 +12,7 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
+import spectres
 
 def adaptive_measurement(spectrometer, setting={}):
     '''
@@ -180,3 +181,20 @@ def predict_dark_spds(spectra_info, darkcal_file):
         dark_spds.append(dark_spec)
         
     return pd.DataFrame(dark_spds)
+
+def calibrated_radiance(spectra, spectra_info, dark_spectra, cal_per_wl, sensor_area):
+    
+    cal_per_wl.index = spectra.columns
+    dark_spectra.columns = spectra.columns
+    uj_per_pixel = (spectra - dark_spectra) * cal_per_wl.T.values[0]
+    nm_per_pixel = np.median(np.diff(uj_per_pixel.columns.to_numpy(dtype='float')))
+    uj_per_nm = uj_per_pixel / nm_per_pixel
+    uj_per_cm2_per_nm = uj_per_nm / sensor_area.loc[0, 0]
+    uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(spectra_info.integration_time, axis='rows')
+    
+    # # Resample
+    uw_per_cm2_per_nm = spectres.spectres(np.arange(380, 781), spectra.columns.to_numpy(dtype='float'), uw_per_cm2_per_nm.to_numpy())
+    uw_per_cm2_per_nm = np.where(uw_per_cm2_per_nm < 0, 0, uw_per_cm2_per_nm)
+    w_per_m2_per_nm = pd.DataFrame(uw_per_cm2_per_nm * 0.01)
+    
+    return w_per_m2_per_nm
