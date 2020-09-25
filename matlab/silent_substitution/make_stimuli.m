@@ -67,7 +67,7 @@ set1 = xs(1:10);
 set2 = xs(11:20);
 
 %% Calculate
-spd = (csvread('corrected_oo_spectra.csv', 1, 1))
+spd = (csvread('corrected_oo_spectra.csv', 1, 2))
 
 % Load CIE 1931
 load T_xyz1931
