@@ -145,7 +145,7 @@ def predict_dark_spds(spectra_info, darkcal_file):
     '''
     Predict the dark spectra from the temperature and integration times of a
     set of measurements. These must be subtracted from measured pixel counts 
-    during the unit-calibration process.
+    during the unit-calibration process. 
 
     Parameters
     ----------
@@ -180,9 +180,21 @@ def predict_dark_spds(spectra_info, darkcal_file):
 
         dark_spds.append(dark_spec)
         
+    # TODO: add code with function parameter to exclude poorly fitting pixels. 
+    # using a visually determined threshold, for now. 
+    FIT_RMSE_THRESHOLD = 110
+    dark_spds = np.where(c.rmse > FIT_RMSE_THRESHOLD, np.nan, dark_spds)
+        
     return pd.DataFrame(dark_spds)
 
 def calibrated_radiance(spectra, spectra_info, dark_spectra, cal_per_wl, sensor_area):
+    
+
+    
+    # we have no saturated spectra due to adaptive measurement
+    
+    # convert integration time from us to s
+    spectra_info['integration_time'] = spectra_info['integration_time'] / (1000*1000)
     
     cal_per_wl.index = spectra.columns
     dark_spectra.columns = spectra.columns
@@ -190,7 +202,7 @@ def calibrated_radiance(spectra, spectra_info, dark_spectra, cal_per_wl, sensor_
     nm_per_pixel = np.median(np.diff(uj_per_pixel.columns.to_numpy(dtype='float')))
     uj_per_nm = uj_per_pixel / nm_per_pixel
     uj_per_cm2_per_nm = uj_per_nm / sensor_area.loc[0, 0]
-    uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(spectra_info.integration_time, axis='rows')
+    uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(spectra_info['integration_time'], axis='rows')
     
     # # Resample
     uw_per_cm2_per_nm = spectres.spectres(np.arange(380, 781), spectra.columns.to_numpy(dtype='float'), uw_per_cm2_per_nm.to_numpy())

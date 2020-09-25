@@ -1,4 +1,4 @@
-board_temp,micro_temp,integration_time,model,led,intensitiy
+board_temp,micro_temp,integration_time,model,led,intensity
 31.62849426,55.93994904,640000,STS,2,2470
 31.62849426,56.13769531,1152000,STS,0,1430
 31.62849426,56.73095703,768000,STS,3,2340
