@@ -3,6 +3,12 @@
 Created on Wed Jun 17 15:21:46 2020
 
 @author: JTM
+
+Description...
+
+For more info go here:
+https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote
+
 '''
 from time import time
 from threading import Thread
@@ -16,25 +22,46 @@ class PupilCore():
     A Class for Pupil Core and the remote helper.
     
     '''
+    
     def __init__(self, address='127.0.0.1', request_port='50020'):
-        self.context = zmq.Context()
+        '''
+        Initialise the connection with Pupil Core. 
+
+        Parameters
+        ----------
+        address : string, optional
+            The IP address of the device. The default is '127.0.0.1'.
+        request_port : string, optional
+            Pupil Remote accepts requests via a REP socket, by default on 
+            port 50020. Alternatively, you can set a custom port in Pupil Capture
+            or via the --port application argument. The default is '50020'.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.address = address
         self.request_port = request_port
+        
+        # connect to pupil remote
+        self.context = zmq.Context()
         self.remote = zmq.Socket(self.context, zmq.REQ)
         self.remote.connect('tcp://{}:{}'.format(self.address, 
                                                  self.request_port))
 
-        # Request 'SUB_PORT' for reading data
+        # request 'SUB_PORT' for reading data
         self.remote.send_string('SUB_PORT')
         self.sub_port = self.remote.recv_string()
         
-        # Request 'PUB_PORT' for writing data
+        # request 'PUB_PORT' for writing data
         self.remote.send_string('PUB_PORT')
         self.pub_port = self.remote.recv_string()
         
-        # Open socket for publishing
+        # open socket for publishing
         self.pub_socket = zmq.Socket(self.context, zmq.PUB)
-        self.pub_socket.connect('tcp://{}:{}'.format(self.address, self.pub_port))
+        self.pub_socket.connect('tcp://{}:{}'.format(self.address, 
+                                                     self.pub_port))
 
     def command(self, cmd):
         '''
@@ -63,6 +90,9 @@ class PupilCore():
             will be 'Unknown command.'
 
         '''
+        # For every message that you send to Pupil Remote, you need to receive
+        # the response. If you do not call recv(), Pupil Capture might become
+        # unresponsive...
         self.remote.send_string(cmd)
         return self.remote.recv_string()
     
@@ -135,41 +165,7 @@ class LightStamper(Thread):
     3. Auto Exposure mode - Manual Exposure - eye and world
     4. Absolute exposure time 60 for world, 63 for eye
     5. Frame publisher format - BGR
-    
-    Attributes
-    ----------
-    detected : bool
-        Whether a light gets detected
-    timestamp : None, float
-        The pupil timestamp associated with the frame where the light was detected
-    pupil : pupil.PupilCore
-        PupilCore class instance
-    trigger : dict
-        a dictionary with at least the following:
-            
-        {'topic': 'annotation',
-         'label': 'our_label',
-         'timestamp': None}
-        
-        timestamp will be overwritten with the new pupil timestamp for the 
-        detected light. See new_trigger(...) for more info.
-    threshold : int
-        detection threshold for luminance increase. The right value depends on
-        the nature of the light stimulus and the ambient lighting conditions. 
-        Requires some guesswork right now, but it would be good to have a 
-        function that works it out for us. 
-    wait_time : float, optional
-        time to wait in seconds before giving up (will run indefinitely if
-        no value is passed, in which case will require LightStamper.join()). 
-        Use when controlling a light source programmatically. For STLAB, use 
-        6.0 s, because on rare occasions it can take about 5 seconds 
-        to process a request. The default in None. 
-    subscription : string
-        The camera frames to subscribe to. In most cases this will be 
-        'frame.world', but the method will also work for 'frame.eye.0' and
-        'frame.eye.1' if the light source contains enough near-infrared. 
-        The default is 'frame.world'.
-        
+
     Example
     -------
     label = 'LIGHT_ON'
@@ -178,25 +174,48 @@ class LightStamper(Thread):
     wait_time = 5.
     lst = LightStamper(pupil, trigger, threshold, wait_time)
     lst.start()
-
+        
     '''
-    
     def __init__(self, pupil, trigger, threshold=15, 
                  wait_time=None, subscription='frame.world'):
         '''
+        Prepare to stamp a light. Follow up with LightStamper.start() to begin.
+        
         Parameters
         ----------
         pupil : pupil.PupilCore
             PupilCore class instance
         trigger : dict
-            See new_triger(...)
+            a dictionary with at least the following:
+                
+            {'topic': 'annotation',
+             'label': 'our_label',
+             'timestamp': None}
+            
+            timestamp will be overwritten with the new pupil timestamp for the 
+            detected light. See new_trigger(...) for more info.
         threshold : int
-            Detection threshold for luminance increase.
+            detection threshold for luminance increase. The right value depends on
+            the nature of the light stimulus and the ambient lighting conditions. 
+            Requires some guesswork right now, but it would be good to have a 
+            function that works it out for us. 
         wait_time : float, optional
-            Time to wait in seconds before giving up. The default is None.
+            time to wait in seconds before giving up (will run indefinitely if
+            no value is passed, in which case will require LightStamper.join()). 
+            Use when controlling a light source programmatically. For STLAB, use 
+            6.0 s, because on rare occasions it can take about 5 seconds 
+            to process a request. The default in None. 
         subscription : string
-            The camera frames to subscribe to. The default is 'frame.world'.
-
+            The camera frames to subscribe to. In most cases this will be 
+            'frame.world', but the method will also work for 'frame.eye.0' and
+            'frame.eye.1' if the light source contains enough near-infrared. 
+            The default is 'frame.world'.
+        detected : bool
+            Whether a light gets detected.
+        timestamp : None, float
+            The pupil timestamp associated with the frame where the light was
+            detected.
+            
         Returns
         -------
         None.
@@ -216,8 +235,19 @@ class LightStamper(Thread):
         self.subscriber.connect('tcp://{}:{}'.format(pupil.address, pupil.sub_port))
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, self.subscription)
         
-    # override threading.Thread.run() method with light detection code
     def run(self):
+        '''
+        Override the threading.Thread.run() method with light detection code. 
+        This code works by keeping track of the two most recent frames from the 
+        World Camera. When the difference between the two is greater than
+        the given threshold, a trigger is sent via pupil remote with the 
+        timestamp corresponding to the most recent frame. 
+
+        Returns
+        -------
+        None.
+
+        '''
         recent_world = None
         recent_world_minus_one = None
         recent_world_ts = None
@@ -252,20 +282,39 @@ class LightStamper(Thread):
 class PupilGrabber(Thread):
     '''
     A thread-bound class for grabbing data from Pupil Core. 
-    '''
     
-    def __init__(self, pupil, topic, secs):
+    Example
+    -------
+    pupil = PupilCore()
+    pg = PupilGrabber(pupil, topic='pupil.0.3d', secs=10)
+    pg.start()
+    
+    '''
+    def __init__(self, pupil, topic, secs=None):
         '''
-        Start grabbing some data from pupil. 
+        Prepare to start grabbing some data from pupil. Follow up with 
+        PupilGrabber.start() to begin.
 
         Parameters
         ----------
         pupil : pupil.PupilCore
             PupilCore class instance
-        topic : str
-            Grab data with this topic
-        secs : TYPE
-            Ammount of time to spend grabbing data.
+        topic : string
+            Subscription topic. Can be:
+                
+                'pupil.0.2d'   - 2d pupil datum (left)
+                'pupil.1.2d'   - 2d pupil datum (right)  
+                'pupil.0.3d'   - 3d pupil datum (left)
+                'pupil.1.3d'   - 3d pupil datum (right)  
+                'gaze.3d.1.'   - monocular gaze datum
+                'gaze.3d.01.'  - binocular gaze datum
+                'logging'      - logging data
+                
+            Other topics are available from plugins (e.g. fixations, surfaces)
+            and custom topics can be defined. 
+        secs : float, optional
+            Ammount of time to spend grabbing data. Will run indefinitely if 
+            no value is passed, in which case requires PupilGrabber.join().
 
         Returns
         -------
@@ -280,14 +329,26 @@ class PupilGrabber(Thread):
         
         # a unique, encapsulated subscription to frame.world
         self.subscriber = self.pupil.context.socket(zmq.SUB)
-        self.subscriber.connect(f'tcp://{self.pupil.address}:{self.pupil.sub_port}')
-        self.subscriber.subscribe(self.topic)  
+        self.subscriber.connect('tcp://{}:{}'.format(self.pupil.address, 
+                                                     self.pupil.sub_port))
+        self.subscriber.subscribe(self.topic)
+        # TODO: add check on topic subscription
 
-    # override threading.Thread.run() method with code for grabbing data
     def run(self):
+        '''
+        Override the threading.Thread.run() method with code for grabbing data.
+
+        Returns
+        -------
+        None.
+
+        '''
         print('PupilGrabber now grabbing {} seconds of {}'.format(
-            self.secs, self.topic))
-        t1, t2 = time(), time()
+            '?' if not self.secs else self.secs, self.topic))
+        if not self.secs:
+            self.secs, t1, t2 = 0, -1, -2 # dummy values
+        else:
+            t1, t2 = time(), time()
         while t2 - t1 < self.secs:
             topic, payload = self.subscriber.recv_multipart()
             message = msgpack.loads(payload)
@@ -303,16 +364,16 @@ class PupilGrabber(Thread):
         Parameters
         ----------
         what : string
-            The data to get.
+            The key of the data to be accessed. E.g. 'diameter_3d', 'timestamp',
+            'gaze_point_3d'.
 
         Returns
         -------
         np.array()
-            The requested data..
+            The requested data.
 
         '''
         return [entry[what.encode()] for entry in self.data]
-        
             
 def notify(pupil_remote, notification):
     '''

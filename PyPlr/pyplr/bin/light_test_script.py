@@ -8,10 +8,11 @@ import numpy as np
 from time import sleep, time
 import stlab
 import matplotlib.pyplot as plt
+from pyplr import stlab as sl
 
 
 # test spectrum
-spectrum     = [0, 0, 0, 0, 0, 0, 4095, 4095, 0, 0]
+spectrum     = [0, 0, 0, 0, 0, 0, 0, 4095, 0, 0]
 spectrum_off = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # make a video file from csv

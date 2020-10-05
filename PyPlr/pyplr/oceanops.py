@@ -162,7 +162,7 @@ def predict_dark_spds(spectra_info, darkcal_file):
 
     '''
     c = pd.read_table(darkcal_file, skiprows=2, sep='\t', index_col=False)
-    dark_spds = []
+    dark_counts = []
     for idx, row in spectra_info.iterrows():
         x  = spectra_info.loc[idx, 'board_temp']
         y  = spectra_info.loc[idx, 'integration_time']
@@ -178,18 +178,16 @@ def predict_dark_spds(spectra_info, darkcal_file):
             
             dark_spec.append(p00 + p10*x + p01*y + p20*x*x + p11*x*y + p30*x*x*x + p21*x*x*y)
 
-        dark_spds.append(dark_spec)
+        dark_counts.append(dark_spec)
         
     # TODO: add code with function parameter to exclude poorly fitting pixels. 
     # using a visually determined threshold, for now. 
     FIT_RMSE_THRESHOLD = 110
-    dark_spds = np.where(c.rmse > FIT_RMSE_THRESHOLD, np.nan, dark_spds)
+    dark_counts = np.where(c.rmse > FIT_RMSE_THRESHOLD, np.nan, dark_counts)
         
-    return pd.DataFrame(dark_spds)
+    return pd.DataFrame(dark_counts)
 
 def calibrated_radiance(spectra, spectra_info, dark_spectra, cal_per_wl, sensor_area):
-    
-
     
     # we have no saturated spectra due to adaptive measurement
     
@@ -199,7 +197,8 @@ def calibrated_radiance(spectra, spectra_info, dark_spectra, cal_per_wl, sensor_
     cal_per_wl.index = spectra.columns
     dark_spectra.columns = spectra.columns
     uj_per_pixel = (spectra - dark_spectra) * cal_per_wl.T.values[0]
-    nm_per_pixel = np.median(np.diff(uj_per_pixel.columns.to_numpy(dtype='float')))
+    wls = uj_per_pixel.columns.to_numpy(dtype='float')
+    nm_per_pixel = np.hstack([(wls[1]-wls[0]), (wls[2:]-wls[:-2])/2, (wls[-1]-wls[-2])])
     uj_per_nm = uj_per_pixel / nm_per_pixel
     uj_per_cm2_per_nm = uj_per_nm / sensor_area.loc[0, 0]
     uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(spectra_info['integration_time'], axis='rows')
