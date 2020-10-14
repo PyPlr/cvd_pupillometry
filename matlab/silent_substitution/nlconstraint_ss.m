@@ -7,6 +7,7 @@ switch whichMode
     case 'zero'
         ceq = (smlri2(whichToConsider)-smlri1(whichToConsider))./smlri1(whichToConsider);
     case 'targetXYZ'
-        ceq = (smlri2(whichToConsider)-smlri1(whichToConsider))./smlri1(whichToConsider);
+        % Wrong, need to update
+        %ceq = (smlri2(whichToConsider)-smlri1(whichToConsider))./smlri1(whichToConsider);
 end
 c = [];
