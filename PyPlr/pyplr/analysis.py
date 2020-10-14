@@ -37,7 +37,7 @@ def init_subject_analysis(subjdir, out_dir_nm='pyplr_analysis'):
         information for the subject.
         
     '''
-    subjid = op.basename(subjdir[:-1])
+    subjid = op.basename(subjdir)
     print('{}\n{:*^60s}\n{}'.format('*' * 60, subjid, '*' * 60,))
     pl_data_dir = op.join(subjdir, 'exports', '', '000', '') # default for data exported from pupil player
     out_dir = op.join(subjdir, out_dir_nm, '')
