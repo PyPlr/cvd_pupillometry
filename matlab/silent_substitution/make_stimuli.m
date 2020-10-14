@@ -30,8 +30,6 @@ M_XYZToLMS = inv(M_LMSToXYZ);
 %%
 
 %%
-whichToStimulate = 5;
-whichToMatch = [1 2 3];
 
 % Set up an optimization which minimizes the difference to a given
 % tristimulus value while maximizing melanopsin contrast
@@ -53,10 +51,14 @@ lb = lb0; ub = ub0;
 problem = createOptimProblem('fmincon',...
     'objective', @(x)contrast_calc(x, B_primary, B_primary_inputfraction, whichToStimulate, 'max'),...
     'x0', [x0 ; x0], 'lb', [lb ; lb], 'ub', [ub ; ub], ...
-    'nonlcon', @(x)nlconstraint_ss(x, B_primary, B_primary_inputfraction, whichToMatch), ...
+    'nonlcon', @(x)nlconstraint_ss(x, B_primary, B_primary_inputfraction, whichToMatch, 'zero'), ...
     'options', optimoptions(@fmincon,'Algorithm','sqp','Display','iter','TolConSQP',1e-4));
 gs = GlobalSearch('Display', 'on', 'NumTrialPoints', 1000);
 [xs,fval] = run(gs,problem);
+
+% Extract the values for scene 1 (1:10) and scene 2 (11:20)
+set1 = xs(1:10);
+set2 = xs(11:20);
 
 % Get the primaries
 [smlri1, smlri2] = predict_lmsri(xs, B_primary, B_primary_inputfraction)
@@ -72,3 +74,5 @@ spd = (csvread('corrected_oo_spectra.csv', 1, 2))
 % Load CIE 1931
 load T_xyz1931
 T_xyz = SplineCmf(S_xyz1931, 683*T_xyz1931, [380 1 401]);
+
+%% TO DO: Titrate between min and max.
