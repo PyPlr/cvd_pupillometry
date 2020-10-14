@@ -59,7 +59,7 @@ for afile in (df1["Original file"].str.split('.', expand=True)[0]+'.csv').iterit
     darkSpd = np.where(darkcal.SELECT_RMSE > SELECT_RMSE_THRESHOLD, np.nan, darkSpd)
     intensitySpd = specdf['Intensity (counts)']
     
-    # Also remove saturated spectra
+    # Also remove saturated spectra !? 
     if any(intensitySpd > 16379):
         intensitySpd = np.nan
 

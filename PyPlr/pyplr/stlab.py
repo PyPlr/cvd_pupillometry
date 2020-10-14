@@ -9,6 +9,7 @@ See the "LIGHT HUB RESTful API" manual for further functions and more info.
 
 Contains additional functions for working with the STLAB.
 '''
+
 from time import sleep
 from datetime import datetime
 from random import shuffle
@@ -19,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from oceanops import adaptive_measurement
+from pyplr.oceanops import adaptive_measurement
 
 ##########################
 # Device class for STLAB #
@@ -27,11 +28,25 @@ from oceanops import adaptive_measurement
 
 class STLAB():
     '''
-    A class to encapsulate the LEDMOTIVE SpectraTune Lab device and its 
+    A class to encapsulate the LEDMOTIVE Spectra Tune Lab device and its 
     RESTFUL_API. 
     
-    '''
+    Attributes
+    ----------
+    description : string
+        A description of the device.
+    colors : string
+        Closest Matplotlib colornames for the 10 channels.
+    rgb_colors : list
+        rgb colors of the 10 channels
+    wlbins : list
+        The wavelengths output by the on-board spectrometer
+    min_intensity : int
+        The minimum intensity setting for LEDs
+    max_intensity : int
+        The maximum intensity setting for the LEDs
     
+    '''
     # Class attributes
     description = 'Spectrally tuneable light engine with 10 narrow-band primaries'
     colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan', 
@@ -41,25 +56,34 @@ class STLAB():
                   [.194, .792, .639, 1.], [.215, .895, .489, 1.],
                   [.599, .790, .125, 1.], [.980, .580, .005, 1.],
                   [.975, .181, .174, 1.], [.692, .117, .092, 1.]]
-
-    wlbins = [int(val) for val in np.linspace(380,780,81)]
+    
+    wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     min_intensity = 0
     max_intensity = 4095
 
     # Initializer / Instance Attributes
-    def __init__(self, username, identity, password, url='192.168.7.2'):
+    def __init__(self, username, identity, password, lighthub_ip='192.168.7.2'):
         '''
+        Initialize connection with LightHub. 
         
         Parameters
         ----------
-        username : TYPE
-            DESCRIPTION.
-        identity : TYPE
-            DESCRIPTION.
-        password : TYPE
-            DESCRIPTION.
-        url : TYPE, optional
-            DESCRIPTION. The default is '192.168.7.2'.
+        username : string
+            The username for logging in. 
+        identity : int
+            A unique numerical identifier for the device. 
+        password : string
+            The password specific to the device.
+        lightub_ip : string, optional
+            The IP address of the LightHub device. The Mac connection driver 
+            usually creates the network in a way that places the LightHub 
+            device at IP 192.168.6.2 instead of IP 192.168.7.2, so this may need
+            to be changed depending on the platform. If that is not enought, 
+            you might need to also install the two Mac OX drivers required by 
+            the beagleboard (the LightHub motherboard):
+            Network: https://beagleboard.org/static/Drivers/MacOSX/RNDIS/HoRNDIS.pkg
+            Serial: https://beagleboard.org/static/Drivers/MacOSX/FTDI/EnergiaFTDIDrivers2.2.18.pkg
+            The default is '192.168.7.2'.
 
         Returns
         -------
@@ -72,26 +96,26 @@ class STLAB():
         self.info = None
         
         try:
-            cmd_url = 'http://' + url + ':8181/api/login'
+            cmd_url = 'http://' + lighthub_ip + ':8181/api/login'
             a = requests.post(cmd_url, 
-                              json={'username': username,
-                                    'password': password}, 
+                              json={'username' : username,
+                                    'password' : password}, 
                               verify=False)
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
-                'url':url,
-                'id':identity,
-                'cookiejar':cookiejar
+                'lighthub_ip' : lighthub_ip,
+                'id' : identity,
+                'cookiejar' : cookiejar
                 }
             more_info = self.get_device_info()
             self.info = {**self.info, **more_info}
             # for some reason, after first turning on the STLAB, video files 
             # won't play unless you first do something in synchronous mode. A 
-            # default flash of red light at startup gets around this issue, but 
+            # quick call to spectruma at startup gets around this issue, but 
             # it might be a good idea to ask Ledmotive about this. Also, the
             # first time you do play a video file, it often flickers.
-            self.spectruma([0,0,0,0,0,0,0,0,100,100]) 
+            self.spectruma([0,0,0,0,0,0,0,0,10,10]) 
             sleep(.2)
             self.turn_off()
             print('STLAB device setup complete...')
@@ -115,7 +139,7 @@ class STLAB():
         None.
         
         '''
-        data = {'arg':intensity_values}
+        data = {'arg' : intensity_values}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTRUM_A'
         requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
@@ -141,7 +165,7 @@ class STLAB():
         None.
 
         '''
-        data = {'arg':spectrum}
+        data = {'arg' : spectrum}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTRUM_S'
         requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
@@ -522,6 +546,29 @@ class STLAB():
         input_power = dict(r.json())['data'] 
         return input_power
     
+    def set_dimming_level(self, dimming_level):
+        '''
+        Sets an intensity dimmer. This percentage modulates the current intensity 
+        by multiplying the power count of each luminaire channel, i.e. if you 
+        send a spectrum where each channel count is at half level and the dimming 
+        is set at 50%, the final light intensity will be one quarter of the 
+        luminaire full capacity.
+
+        Parameters
+        ----------
+        dimming_level : int
+            Percentage dimming level.
+
+        Returns
+        -------
+        None.
+
+        '''
+        data = {'arg' : dimming_level}
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            str(self.info['id']) + '/command/SET_DIMMING_LEVEL'
+        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
+    
     def get_dimming_level(self):
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_DIMMING_LEVEL'
@@ -658,14 +705,14 @@ class STLAB():
             if not spectra:
                 led, intensity = s[0], s[1]
                 setting = {'led' : led, 'intensity' : intensity}
-                s = [0]*10
+                s = [0] * 10
                 s[led] = intensity
                 print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
-                    i+1, len(settings), led, intensity))
+                    i + 1, len(settings), led, intensity))
             else:
                 setting = {'intensities' : s}
                 print('Measurement: {} / {}, spectrum: {}'.format(
-                    i+1, len(settings), s))
+                    i + 1, len(settings), s))
                        
             # set the spectrum
             self.set_spectrum_a(s)
