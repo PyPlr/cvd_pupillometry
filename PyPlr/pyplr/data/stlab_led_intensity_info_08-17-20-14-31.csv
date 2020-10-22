@@ -1,4 +1,4 @@
-rmv,LEDs_temp,drivers_temp,board_temp,micro_temp,integration_time,input_power,dimming_level,led,intensitiy
+rmv,LEDs_temp,drivers_temp,board_temp,micro_temp,integration_time,input_power,dimming_level,led,intensity
 0.020873882,24.88,26.15,29.52,34.84,748,4718,100,2,2470
 0.019144915,25.52,26.19,29.48,35.13,771,2804,100,0,1430
 0.015399246,25.72,25.99,29.74,35.43,817,4383,100,3,2340

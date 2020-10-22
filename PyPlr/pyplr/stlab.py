@@ -104,7 +104,7 @@ class STLAB():
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
-                'lighthub_ip' : lighthub_ip,
+                'url' : lighthub_ip,
                 'id' : identity,
                 'cookiejar' : cookiejar
                 }
@@ -605,15 +605,16 @@ class STLAB():
         it   = self.get_spectrometer_integration_time()
         dl   = self.get_dimming_level()
         rmv, counts = self.get_spectrometer_spectrum(norm=False)
-        info_dict = {'rmv'              : rmv,
-                     'LEDs_temp'        : tmps[0],
-                     'drivers_temp'     : tmps[1],
-                     'board_temp'       : tmps[2],
-                     'micro_temp'       : tmps[3],
-                     'integration_time' : it,
-                     'input_power'      : ip,
-                     'dimming_level'    : dl
-                     }
+        info_dict = {
+            'rmv'              : rmv,
+            'LEDs_temp'        : tmps[0],
+            'drivers_temp'     : tmps[1],
+            'board_temp'       : tmps[2],
+            'micro_temp'       : tmps[3],
+            'integration_time' : it,
+            'input_power'      : ip,
+            'dimming_level'    : dl
+            }
         info_dict = {**info_dict, **setting}
         return counts, info_dict
     
@@ -738,6 +739,9 @@ class STLAB():
             oo_spectra = pd.DataFrame(oo_spectra)
             oo_spectra.columns = ocean_optics.wavelengths()
             oo_info = pd.DataFrame(oo_info)
+            # TODO: check this works
+            # oo_spectra[['led','intensity']] = oo_info[['led','intensity']]
+
         
         # turn off
         self.turn_off()
@@ -771,7 +775,7 @@ def _get_header(df, repeats=1):
 
 def _get_metadata(df, creator='jtm'):
     return {
-        'creationTime':str(datetime.now()),
+        'creation_time':str(datetime.now()),
         'creator':creator
         }
 
@@ -781,22 +785,36 @@ def _get_spectra(df):
 
 def _get_transitions(df):
     list_of_dicts = []
-    for index , row in df.iterrows():
+    for index, row in df.iterrows():
         list_of_dicts.append({
             'spectrum':index,
             'power':100,
             'time':int(row['time']),
-            'flags':0})
+            'flags':0
+            })
     return list_of_dicts
 
+def get_time_vector(duration):
+    t = np.arange(0, (duration * 1000), 10).astype("int")
+    return t
+
+def sinusoid_modulation(f, duration, Fs=100):
+    x  = np.arange(duration * Fs)
+    sm = np.sin(2 * np.pi * f * x / Fs)
+    return sm
+
+def modulate_intensity_amplitude(sm, background, amplitude):
+    ivals = (background + (sm * amplitude)).astype("int")
+    return ivals
+
 def get_video_cols():
-    cols = ['primary-' + str(val) for val in range(10)]
+    cols = ['LED-' + str(val) for val in range(1, 11)]
     cols.insert(0, 'time')
     return cols
 
 def make_video_file(df, video_nm='our_video_file', repeats=1):
     ''' 
-    Takes a DataFrame with columns 'time', 'primary-1'...'primary-10'
+    Takes a DataFrame with columns 'time', 'LED-1'...'LED-10'
     and save it as a .dsf ('dynamic sequence file') in the current
     working directory. The .dsf file can be loaded and played as a video stream
     with the STLAB.
@@ -907,7 +925,43 @@ def make_video_pulse_background(background_spec,
     make_video_file(df, video_nm)
     if return_df:
         return df
-                 
+            
+
+# def make_video_baden_chirp(led, 
+#                            mintensity=0, 
+#                            maxtensity=4095, 
+#                            Fs=100, 
+#                            videoname='chripstim',
+#                            pulse_duration=1,
+#                            post_pulse_wait=7,
+#                            phase1_params=(0.01, 1, 20),
+#                            phase2_params=(1, 20),
+                           
+#                            ):
+    
+    
+    
+    
+def video_file_to_dict(video_file):
+    '''
+    Unpack a video file into a dictionary with keys ['header', 'metadata', 
+    'spectra', 'transitions'] 
+
+    Parameters
+    ----------
+    video_file : str
+        The video file to unpack.
+
+    Returns
+    -------
+    data : dict
+        the video file as a dictionary.
+
+    '''
+    with open(video_file) as vf:
+        data = json.load(vf)
+    return data
+
 ###################################################
 # ADDITIONAL FUNCTIONS FOR WORKING WITH THE STLAB #
 ###################################################
@@ -1161,3 +1215,10 @@ def explore_spectra(spectra):
 #                       return_df=True,
 #                       pre_background_duration=pre_background_duration,
 #                       post_background_duration=post_background_duration, background_spec=background_spec)
+
+def led_radiance_match(led, intensity, match_led, lkp_tbl):
+    radiance_lkp = lkp_tbl.sum(axis=1)
+    led_radiance = radiance_lkp.loc[(led, intensity)]
+    match_intensity = radiance_lkp.loc[match_led].sub(led_radiance).abs().idxmin()
+    error = radiance_lkp.loc[match_led].sub(led_radiance).abs().min()
+    return error, match_intensity

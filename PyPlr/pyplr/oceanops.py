@@ -141,9 +141,9 @@ def dark_measurement(spectrometer, integration_times=[1000]):
     
     return data
 
-def predict_dark_spds(spectra_info, darkcal_file):
+def predict_dark_counts(spectra_info, darkcal_file):
     '''
-    Predict the dark spectra from the temperature and integration times of a
+    Predict the dark counts from the temperature and integration times of a
     set of measurements. These must be subtracted from measured pixel counts 
     during the unit-calibration process. 
 

@@ -10,6 +10,7 @@ For more info go here:
 https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote
 
 '''
+import sys
 from time import time
 from threading import Thread
 
@@ -49,7 +50,7 @@ class PupilCore():
         self.remote = zmq.Socket(self.context, zmq.REQ)
         self.remote.connect('tcp://{}:{}'.format(self.address, 
                                                  self.request_port))
-
+            
         # request 'SUB_PORT' for reading data
         self.remote.send_string('SUB_PORT')
         self.sub_port = self.remote.recv_string()
