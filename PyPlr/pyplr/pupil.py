@@ -24,7 +24,8 @@ class PupilCore():
     
     '''
     
-    def __init__(self, address='127.0.0.1', request_port='50020'):
+    def __init__(self, address='127.0.0.1', request_port='50020', 
+                 pyplr_defaults=True):
         '''
         Initialise the connection with Pupil Core. 
 
@@ -36,6 +37,14 @@ class PupilCore():
             Pupil Remote accepts requests via a REP socket, by default on 
             port 50020. Alternatively, you can set a custom port in Pupil Capture
             or via the --port application argument. The default is '50020'.
+        pyplr_defaults : bool, optional
+            Whether to configure Pupil Capture with the defaults used for pyplr
+            LightStamper. This includes making sure the Annotation Capture plugin
+            is active, that frames are published in BGR format, and that the
+            world camera is using a frame rate of (320,240) at 120 hz with 
+            exposure mode set to manual. Always manually verify that the settings
+            are appropriate for the application you are running. 
+            The default is True. 
 
         Returns
         -------
@@ -63,6 +72,26 @@ class PupilCore():
         self.pub_socket = zmq.Socket(self.context, zmq.PUB)
         self.pub_socket.connect('tcp://{}:{}'.format(self.address, 
                                                      self.pub_port))
+        # some PyPlr defaults
+        if pyplr_defaults:
+            self.notify({
+                'subject':'start_plugin',
+                'name':'Annotation_Capture',
+                'args':{}
+                }) 
+            self.notify({
+                'subject':'frame_publishing.set_format',
+                'format':'bgr'
+                })
+            self.notify({
+                'subject':'start_plugin',
+                'name':'UVC_Source',
+                'args':{
+                    'frame_size':(320,240),
+                    'frame_rate':120,
+                    'name':'Pupil Cam1 ID2',
+                    'exposure_mode':'manual'}
+                })
 
     def command(self, cmd):
         '''
@@ -328,7 +357,7 @@ class PupilGrabber(Thread):
         self.secs = secs
         self.data = []
         
-        # a unique, encapsulated subscription to frame.world
+        # a unique, encapsulated subscription
         self.subscriber = self.pupil.context.socket(zmq.SUB)
         self.subscriber.connect('tcp://{}:{}'.format(self.pupil.address, 
                                                      self.pupil.sub_port))

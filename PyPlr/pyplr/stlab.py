@@ -115,7 +115,7 @@ class STLAB():
             # quick call to spectruma at startup gets around this issue, but 
             # it might be a good idea to ask Ledmotive about this. Also, the
             # first time you do play a video file, it often flickers.
-            self.spectruma([0,0,0,0,0,0,0,0,10,10]) 
+            self.spectruma([0,0,0,0,0,0,0,0,1,1]) 
             sleep(.2)
             self.turn_off()
             print('STLAB device setup complete...')
@@ -759,6 +759,13 @@ class STLAB():
         else:
             return stlab_spectra, stlab_info
 
+# TODO: add class for calibration data
+# class CalibrationContext():
+#     def __init__(self, data):
+        
+
+    
+    
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #
 #################################
