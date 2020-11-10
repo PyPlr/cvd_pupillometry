@@ -4,12 +4,15 @@ Created on Wed Jun 17 15:21:46 2020
 
 @author: JTM
 
-Description...
+A module to facilitate working with the PupilCore eye tracking headset. 
 
 For more info go here:
 https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote
 
+# TODO: use breakpoint() for debugging!
+
 '''
+
 import sys
 from time import time
 from threading import Thread
@@ -57,8 +60,8 @@ class PupilCore():
         # connect to pupil remote
         self.context = zmq.Context()
         self.remote = zmq.Socket(self.context, zmq.REQ)
-        self.remote.connect('tcp://{}:{}'.format(self.address, 
-                                                 self.request_port))
+        self.remote.connect(
+            'tcp://{}:{}'.format(self.address, self.request_port))
             
         # request 'SUB_PORT' for reading data
         self.remote.send_string('SUB_PORT')
@@ -70,27 +73,28 @@ class PupilCore():
         
         # open socket for publishing
         self.pub_socket = zmq.Socket(self.context, zmq.PUB)
-        self.pub_socket.connect('tcp://{}:{}'.format(self.address, 
-                                                     self.pub_port))
+        self.pub_socket.connect(
+            'tcp://{}:{}'.format(self.address, self.pub_port))
         # some PyPlr defaults
         if pyplr_defaults:
             self.notify({
-                'subject':'start_plugin',
-                'name':'Annotation_Capture',
-                'args':{}
+                'subject': 'start_plugin',
+                'name': 'Annotation_Capture',
+                'args': {}
                 }) 
             self.notify({
-                'subject':'frame_publishing.set_format',
-                'format':'bgr'
+                'subject': 'frame_publishing.set_format',
+                'format': 'bgr'
                 })
             self.notify({
-                'subject':'start_plugin',
-                'name':'UVC_Source',
-                'args':{
-                    'frame_size':(320,240),
-                    'frame_rate':120,
-                    'name':'Pupil Cam1 ID2',
-                    'exposure_mode':'manual'}
+                'subject': 'start_plugin',
+                'name': 'UVC_Source',
+                'args': {
+                     'frame_size': (320,240),
+                     'frame_rate': 120,
+                     'name': 'Pupil Cam1 ID2',
+                     'exposure_mode': 'manual'
+                     }
                 })
 
     def command(self, cmd):
@@ -141,9 +145,9 @@ class PupilCore():
         notification : dict
             the notification dict. Some examples:
                 
-            - {'subject':'start_plugin', 'name':'Annotation_Capture', 'args':{}}) 
-            - {'subject':'recording.should_start', 'session_name':'my session'}
-            - {'subject':'recording.should_stop'}
+            - {'subject': 'start_plugin', 'name': 'Annotation_Capture', 'args': {}}) 
+            - {'subject': 'recording.should_start', 'session_name': 'my session'}
+            - {'subject': 'recording.should_stop'}
             
         Returns
         -------
@@ -164,8 +168,6 @@ class PupilCore():
         
         Parameters
         ----------
-        pub_socket : zmq.sugar.socket.Socket
-            a socket to publish the trigger.
         trigger : dict
             customiseable - see the new_trigger(...) function.
     
@@ -262,7 +264,8 @@ class LightStamper(Thread):
 
         # a unique, encapsulated subscription to avoid race conditions
         self.subscriber = self.pupil.context.socket(zmq.SUB)
-        self.subscriber.connect('tcp://{}:{}'.format(pupil.address, pupil.sub_port))
+        self.subscriber.connect(
+            'tcp://{}:{}'.format(pupil.address, pupil.sub_port))
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, self.subscription)
         
     def run(self):
@@ -287,7 +290,7 @@ class LightStamper(Thread):
             t1 = time()
             t2 = time()
         print('Waiting for a light to stamp...')
-        while not self.successful and (t2 - t1) < self.wait_time:
+        while not self.successful and (t2-t1) < self.wait_time:
             topic, msg = recv_from_subscriber(self.subscriber)
             if topic == self.subscription:
                 recent_world = np.frombuffer(
@@ -332,13 +335,13 @@ class PupilGrabber(Thread):
         topic : string
             Subscription topic. Can be:
                 
-                'pupil.0.2d'   - 2d pupil datum (left)
-                'pupil.1.2d'   - 2d pupil datum (right)  
-                'pupil.0.3d'   - 3d pupil datum (left)
-                'pupil.1.3d'   - 3d pupil datum (right)  
-                'gaze.3d.1.'   - monocular gaze datum
-                'gaze.3d.01.'  - binocular gaze datum
-                'logging'      - logging data
+                'pupil.0.2d'  - 2d pupil datum (left)
+                'pupil.1.2d'  - 2d pupil datum (right)  
+                'pupil.0.3d'  - 3d pupil datum (left)
+                'pupil.1.3d'  - 3d pupil datum (right)  
+                'gaze.3d.1.'  - monocular gaze datum
+                'gaze.3d.01.' - binocular gaze datum
+                'logging'     - logging data
                 
             Other topics are available from plugins (e.g. fixations, surfaces)
             and custom topics can be defined. 
@@ -359,8 +362,8 @@ class PupilGrabber(Thread):
         
         # a unique, encapsulated subscription
         self.subscriber = self.pupil.context.socket(zmq.SUB)
-        self.subscriber.connect('tcp://{}:{}'.format(self.pupil.address, 
-                                                     self.pupil.sub_port))
+        self.subscriber.connect(
+            'tcp://{}:{}'.format(self.pupil.address, self.pupil.sub_port))
         self.subscriber.subscribe(self.topic)
         # TODO: add check on topic subscription
 
@@ -470,9 +473,9 @@ def new_trigger(label, custom_fields={}):
 
     '''
     trigger = {
-        'topic' : 'annotation',
-        'label' : label,
-        'timestamp' : time()
+        'topic': 'annotation',
+        'label': label,
+        'timestamp': time()
         }
     for k, v in custom_fields.items():
         trigger[k] = v
@@ -570,7 +573,7 @@ def detect_light_onset(subscriber,
         t1 = time()
         t2 = time()
     print('Waiting for the light...')
-    while not detected and (t2 - t1) < wait_time:
+    while not detected and (t2-t1) < wait_time:
         topic, msg = recv_from_subscriber(subscriber)
         if topic == 'frame.world':
             recent_world = np.frombuffer(

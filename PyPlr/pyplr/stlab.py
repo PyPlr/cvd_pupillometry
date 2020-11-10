@@ -4,7 +4,7 @@ Created on Thu Mar 26 09:20:38 2020
 
 @author: - JTM
 
-A python wrapper for most of the ledmotive RESTful API. 
+A python wrapper for Ledmotive's Spectra Tune Lab RESTful API. 
 See the "LIGHT HUB RESTful API" manual for further functions and more info.
 
 Contains additional functions for working with the STLAB.
@@ -48,7 +48,6 @@ class STLAB():
     
     '''
     # Class attributes
-    description = 'Spectrally tuneable light engine with 10 narrow-band primaries'
     colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan', 
               'green', 'lime', 'orange', 'red', 'darkred']
     rgb_colors = [[.220, .004, .773, 1.], [.095, .232, .808, 1.],
@@ -56,7 +55,6 @@ class STLAB():
                   [.194, .792, .639, 1.], [.215, .895, .489, 1.],
                   [.599, .790, .125, 1.], [.980, .580, .005, 1.],
                   [.975, .181, .174, 1.], [.692, .117, .092, 1.]]
-    
     wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     min_intensity = 0
     max_intensity = 4095
@@ -98,15 +96,15 @@ class STLAB():
         try:
             cmd_url = 'http://' + lighthub_ip + ':8181/api/login'
             a = requests.post(cmd_url, 
-                              json={'username' : username,
-                                    'password' : password}, 
+                              json={'username': username,
+                                    'password': password}, 
                               verify=False)
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
-                'url' : lighthub_ip,
-                'id' : identity,
-                'cookiejar' : cookiejar
+                'url': lighthub_ip,
+                'id': identity,
+                'cookiejar': cookiejar
                 }
             more_info = self.get_device_info()
             self.info = {**self.info, **more_info}
@@ -139,10 +137,11 @@ class STLAB():
         None.
         
         '''
-        data = {'arg' : intensity_values}
+        data = {'arg': intensity_values}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTRUM_A'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
     
     def set_spectrum_s(self, spectrum):
         '''
@@ -165,10 +164,11 @@ class STLAB():
         None.
 
         '''
-        data = {'arg' : spectrum}
+        data = {'arg': spectrum}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTRUM_S'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
         
     def spectruma(self, intensity_values):
         '''
@@ -242,12 +242,13 @@ class STLAB():
         
         '''
         if flux:
-            data = {'arg':[x, y, flux]}
+            data = {'arg': [x, y, flux]}
         else:
-            data = {'arg':[x, y]}
+            data = {'arg': [x, y]}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_COLOR'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
     
     def turn_off(self):
         '''
@@ -281,10 +282,11 @@ class STLAB():
         None.
         
         '''
-        data = {'arg':blink}
+        data = {'arg': blink}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_BLINK'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False) 
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False) 
   
     def get_pcb_temperature(self):
         '''
@@ -324,8 +326,7 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_SPECTRUM_A'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False) 
-        spectrum = np.array(dict(r.json())['data'][1:])
-        return spectrum
+        return np.array(dict(r.json())['data'][1:])
      
     def get_spectrometer_spectrum(self, norm=False):
         '''
@@ -382,10 +383,9 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_LED_CALIBRATION'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        matrix = dict(r.json())['data'] 
-        return matrix
+        return dict(r.json())['data'] 
         
-    def load_video_file(self, video):
+    def load_video_file(self, fname, return_vf_dict=True):
         '''
         Uploads a video light sequence file to the LIGHT HUB. The video file 
         must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The 
@@ -404,12 +404,15 @@ class STLAB():
         None.
         
         '''
-        args = [('file', (video, open(video, 'rb'), 'application/json'))]
+        args = [('file', (fname, open(fname, 'rb'), 'application/json'))]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/video' 
-        r = requests.post(cmd_url, files=args, cookies=self.info['cookiejar'], verify=False)
+        r = requests.post(
+            cmd_url, files=args, cookies=self.info['cookiejar'], verify=False)
         if 'data' not in r.json():
             raise 'Upload file error'
         print('video file loaded...')
+        if return_vf_dict:
+            return video_file_to_dict(fname)
         
     def play_video_file(self, stop=False):
         '''
@@ -436,7 +439,8 @@ class STLAB():
             data = {'arg': './data/video1.json'}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/PLAY_VIDEO_FILE'
-        requests.post(cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
+        requests.post(
+            cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
         print('playing video file...')
         
     def get_device_info(self):
@@ -452,8 +456,7 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_DEVICE_INFO'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        in4 = dict(r.json())['data'] 
-        return in4
+        return dict(r.json())['data'] 
     
     def set_colour_priority(self, colour_priority):
         '''
@@ -471,10 +474,11 @@ class STLAB():
         None.
 
         '''
-        data = {'arg' : colour_priority}
+        data = {'arg': colour_priority}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_COLOR_PRIORITY'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
 
     def get_colour_priority(self):
         '''
@@ -489,8 +493,7 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_COLOR_PRIORITY'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        colour_priority = dict(r.json())['data'] 
-        return colour_priority
+        return dict(r.json())['data'] 
     
     def get_spectrometer_integration_time(self):
         '''
@@ -505,8 +508,7 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        integration_time = dict(r.json())['data'] 
-        return integration_time
+        return dict(r.json())['data'] 
     
     def set_spectrometer_integration_time(self, integration_time):
         '''
@@ -525,10 +527,11 @@ class STLAB():
         None.
 
         '''
-        data = {'arg' : integration_time}
+        data = {'arg': integration_time}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
         
     def get_input_power(self):
         '''
@@ -543,8 +546,7 @@ class STLAB():
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_INPUT_POWER'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        input_power = dict(r.json())['data'] 
-        return input_power
+        return dict(r.json())['data'] 
     
     def set_dimming_level(self, dimming_level):
         '''
@@ -564,17 +566,17 @@ class STLAB():
         None.
 
         '''
-        data = {'arg' : dimming_level}
+        data = {'arg': dimming_level}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/SET_DIMMING_LEVEL'
-        requests.post(cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
     
     def get_dimming_level(self):
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             str(self.info['id']) + '/command/GET_DIMMING_LEVEL'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
-        dimming_level = dict(r.json())['data'] 
-        return dimming_level
+        return dict(r.json())['data'] 
     
     # see RESTFUL_API for further mehods and define here if needed
     # def new_method_from_restful_api(self)...
@@ -606,14 +608,14 @@ class STLAB():
         dl   = self.get_dimming_level()
         rmv, counts = self.get_spectrometer_spectrum(norm=False)
         info_dict = {
-            'rmv'              : rmv,
-            'LEDs_temp'        : tmps[0],
-            'drivers_temp'     : tmps[1],
-            'board_temp'       : tmps[2],
-            'micro_temp'       : tmps[3],
-            'integration_time' : it,
-            'input_power'      : ip,
-            'dimming_level'    : dl
+            'rmv': rmv,
+            'LEDs_temp': tmps[0],
+            'drivers_temp': tmps[1],
+            'board_temp': tmps[2],
+            'micro_temp': tmps[3],
+            'integration_time': it,
+            'input_power': ip,
+            'dimming_level': dl
             }
         info_dict = {**info_dict, **setting}
         return counts, info_dict
@@ -705,13 +707,13 @@ class STLAB():
         for i, s in enumerate(settings):
             if not spectra:
                 led, intensity = s[0], s[1]
-                setting = {'led' : led, 'intensity' : intensity}
+                setting = {'led': led, 'intensity': intensity}
                 s = [0] * 10
                 s[led] = intensity
                 print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
                     i + 1, len(settings), led, intensity))
             else:
-                setting = {'intensities' : s}
+                setting = {'intensities': s}
                 print('Measurement: {} / {}, spectrum: {}'.format(
                     i + 1, len(settings), s))
                        
@@ -742,7 +744,6 @@ class STLAB():
             # TODO: check this works
             # oo_spectra[['led','intensity']] = oo_info[['led','intensity']]
 
-        
         # turn off
         self.turn_off()
         
@@ -771,20 +772,22 @@ class STLAB():
 #################################
 def _get_header(df, repeats=1):
     return {
-        'version':'1',
-        'model':'VEGA10',
-        'channels':10,
-        'spectracount':len(df),
-        'transitionsCount':len(df),
-        'fluxReference':0,
-        'repeats':repeats
+        'version': 1,
+        'model': 'VEGA10',
+        'channels': 10,
+        'spectracount': len(df),
+        'transitionsCount': len(df),
+        'fluxReference': 0,
+        'repeats': repeats
         }
 
-def _get_metadata(df, creator='jtm'):
-    return {
-        'creation_time':str(datetime.now()),
-        'creator':creator
+def _get_metadata(df, creator='jtm', **metadata):
+    default = {
+        'creation_time': str(datetime.now()),
+        'creator': creator
         }
+    return {**default, **metadata}
+
 
 def _get_spectra(df):
     light_cols = df.columns[1:]
@@ -794,47 +797,30 @@ def _get_transitions(df):
     list_of_dicts = []
     for index, row in df.iterrows():
         list_of_dicts.append({
-            'spectrum':index,
-            'power':100,
-            'time':int(row['time']),
-            'flags':0
+            'spectrum': index,
+            'power': 100,
+            'time': int(row['time']),
+            'flags': 0
             })
     return list_of_dicts
 
 def get_time_vector(duration):
-    t = np.arange(0, (duration * 1000), 10).astype("int")
+    t = np.arange(0, (duration*1000), 10).astype("int")
     return t
 
 def sinusoid_modulation(f, duration, Fs=100):
-    x  = np.arange(duration * Fs)
+    x  = np.arange(duration*Fs)
     sm = np.sin(2 * np.pi * f * x / Fs)
     return sm
 
 def modulate_intensity_amplitude(sm, background, amplitude):
-    ivals = (background + (sm * amplitude)).astype("int")
+    ivals = (background + (sm*amplitude)).astype("int")
     return ivals
 
 def get_video_cols():
     cols = ['LED-' + str(val) for val in range(1, 11)]
     cols.insert(0, 'time')
     return cols
-
-def make_video_file(df, video_nm='our_video_file', repeats=1):
-    ''' 
-    Takes a DataFrame with columns 'time', 'LED-1'...'LED-10'
-    and save it as a .dsf ('dynamic sequence file') in the current
-    working directory. The .dsf file can be loaded and played as a video stream
-    with the STLAB.
-    '''
-    d = {
-        'header':_get_header(df, repeats),
-        'metadata':_get_metadata(df),
-        'spectra':_get_spectra(df),
-        'transitions':_get_transitions(df)
-        }
-    with open(video_nm + '.dsf', 'w') as outfile:
-        json.dump(d, outfile)
-    print('"{}" saved in the current working directory.'.format(video_nm + '.dsf'))
 
 def _video_file_row(time=0, spec=[0,0,0,0,0,0,0,0,0,0]):
     fields = [time] + spec
@@ -845,27 +831,49 @@ def _video_file_row(time=0, spec=[0,0,0,0,0,0,0,0,0,0]):
 
 def _video_file_end(end_time):
     df = pd.DataFrame()
-    df = df.append(_video_file_row(time=end_time))     # two extra dummy rows ensure the light 
-    df = df.append(_video_file_row(time=end_time + 100)) # turns off when video file finishes
+    df = (df.append(_video_file_row(time=end_time))      # two extra dummy rows ensure the light 
+            .append(_video_file_row(time=end_time+100))) # turns off when video file finishes
     return df
 
-def make_video_pulse(pulse_spec, 
-                     pulse_duration, 
-                     video_nm='our_video_file', 
-                     return_df=False):
+def make_video_file(df, fname='our_video_file', repeats=1, **metadata):
+    ''' 
+    Takes a DataFrame with columns 'time', 'LED-1'...'LED-10'
+    and save it as a .dsf ('dynamic sequence file') in the current
+    working directory. The .dsf file can be loaded and played as a video stream
+    with the STLAB.
+    '''
+    d = {
+        'header': _get_header(df, repeats),
+        'metadata': _get_metadata(df, **metadata),
+        'spectra': _get_spectra(df),
+        'transitions': _get_transitions(df)
+        }
+    with open(fname + '.dsf', 'w') as outfile:
+        json.dump(d, outfile)
+    print(
+        '"{}" saved in the current working directory.'.format(fname + '.dsf'))
+    
+def pulse_protocol(pulse_spec, 
+                   pulse_duration, 
+                   fname='our_video_file', 
+                   return_df=False,
+                   metadata={}):
     '''
     Generate a video file to deliver a pulse of light.
 
     Parameters
     ----------
-    pulse_spec : list
+    spec : list
         Sprectrum to use for the pulse of light.
-    pulse_duration : int
-        Duration of the pulse.
-    video_nm : str
+    duration : int
+        Duration of the pulse in ms.
+    video_name : str
         Name for the video file.
     return_df : bool
         Whether to return the DataFrame used to create the video file.
+    metadata : dict
+        Additional info to include in the metadata of the video file (e.g. 
+        'color' : 'blue').
         
     Returns
     -------
@@ -873,63 +881,77 @@ def make_video_pulse(pulse_spec,
         The DataFrame passed to make_video_file (if requested).
 
     '''
+    metadata['protocol'] = 'pulse'
+    metadata['pulse_spec'] = int(pulse_spec)
+    metadata['pulse_duration'] = int(pulse_duration)
     df = pd.DataFrame()
-    df = df.append(_video_file_row(0, pulse_spec))
-    df = df.append(_video_file_row(pulse_duration, pulse_spec))
-    df = df.append(_video_file_end(pulse_duration))     
-    df.reset_index(inplace=True, drop=True)
-    make_video_file(df, video_nm)
+    df = (df.append(_video_file_row(0, pulse_spec))
+            .append(_video_file_row(pulse_duration, pulse_spec))
+            .append(_video_file_end(pulse_duration))
+            .reset_index(drop=True))
+    make_video_file(df, fname, **metadata)
     if return_df:
         return df
     
-def make_video_pulse_background(background_spec, 
-                                pre_background_duration,
-                                pulse_spec, 
-                                pulse_duration, 
-                                post_background_duration, 
-                                video_nm='our_video_file', 
-                                return_df=False):
+def background_pulse_protocol(background_spec, 
+                              pre_pulse_duration,
+                              pulse_spec, 
+                              pulse_duration, 
+                              post_pulse_duration, 
+                              fname='our_video_file', 
+                              return_df=False,
+                              metadata={}):
     '''
-    Generate a video file to deliver a pulse of light against a background
-    of light. Clunky but works well.
+    Generate a video file to deliver a pulse of light (or dark) against a 
+    background of light (or dark). Clunky but works well.
 
     Parameters
     ----------
     background_spec : list
         The background spectrum.
-    pre_background_duration : int
+    pre_pulse_duration : int
         Duration of the background prior to pulse.
     pulse_spec : list
         The pulse spectrum..
     pulse_duration : int
-        Duration of the pulse.
-    post_background_duration : int
+        Duration of the pulse in ms.
+    post_pulse_duration : int
         Duration of the background after the pulse..
+    fname : str, optional
+        Name for the video file. The default is 'our_video_file'.
     return_df : bool, optional
         Whether to return the DataFrame. The default is False.
-    video_nm : str, optional
-        Name for the video file. The default is 'our_video_file'.
-
+    metadata : dict
+        Additional info to include in the metadata field of the video file 
+        (e.g. {'color' : 'blue'}). This info can be extracted when loading the 
+        file during an experiment and included in triggers sent to Pupil Capture.
+        The default is {}.
+        
     Returns
     -------
     df : pd.DataFrame
         The DataFrame passed to make_video_file (if requested).
 
     '''
-    
-    df = pd.DataFrame()
-    onset  = pre_background_duration
+    metadata['protocol'] = 'background_pulse'
+    metadata['background_spec'] = int(background_spec)
+    metadata['pre_pulse_duration'] = int(pre_pulse_duration)
+    metadata['pulse_spec'] = int(pulse_spec)
+    metadata['pulse_duration'] = int(pulse_duration)
+    metadata['post_pulse_duration'] = int(post_pulse_duration)
+    onset  = pre_pulse_duration
     offset = onset+pulse_duration
-    end    = offset+post_background_duration
-    df = df.append(_video_file_row(0, background_spec))
-    df = df.append(_video_file_row(pre_background_duration, background_spec))
-    df = df.append(_video_file_row(pre_background_duration, pulse_spec))
-    df = df.append(_video_file_row(pre_background_duration + pulse_duration, pulse_spec))
-    df = df.append(_video_file_row(pre_background_duration + pulse_duration, background_spec))
-    df = df.append(_video_file_row(end, background_spec))
-    df = df.append(_video_file_end(end))
-    df.reset_index(inplace=True, drop=True)
-    make_video_file(df, video_nm)
+    end = offset+post_pulse_duration
+    df = pd.DataFrame()
+    df = (df.append(_video_file_row(0, background_spec))
+            .append(_video_file_row(pre_pulse_duration, background_spec))
+            .append(_video_file_row(pre_pulse_duration, pulse_spec))
+            .append(_video_file_row(pre_pulse_duration+pulse_duration, pulse_spec))
+            .append(_video_file_row(pre_pulse_duration+pulse_duration, background_spec))
+            .append(_video_file_row(end, background_spec))
+            .append(_video_file_end(end))
+            .reset_index(drop=True))
+    make_video_file(df, fname, **metadata)
     if return_df:
         return df
             
@@ -1031,8 +1053,8 @@ def predict_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None):
         
     '''
     spectrum = np.zeros(81)
-    for led , val in enumerate(intensity):
-        spectrum += lkp_table.loc[(led,val)].to_numpy()
+    for led, val in enumerate(intensity):
+        spectrum += lkp_table.loc[(led, val)].to_numpy()
     return spectrum
 
 def get_led_colors():
@@ -1043,7 +1065,7 @@ def get_led_colors():
 
 def get_wlbins(bin_width=5):
     if bin_width==1:
-        wlbins = [int(val) for val in np.linspace(380, 780, 81 * bin_width)]
+        wlbins = [int(val) for val in np.linspace(380, 780, 81*bin_width)]
     else:
         wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     return wlbins
@@ -1110,7 +1132,8 @@ def spectra_to_peak_wavelengths(spectra):
     pwl = []
     for i, spec in spectra.groupby(by=['led','intensity']):
         idx.append(i)
-        pwl.append(spec.loc[spec['flux']==spec['flux'].max(), 'wavelength'].to_numpy()) 
+        pwl.append(
+            spec.loc[spec['flux']==spec['flux'].max(), 'wavelength'].to_numpy()) 
     pwl = pd.DataFrame(pwl, columns=['wavelength'])
     pwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
     return pwl
