@@ -1,3 +1,25 @@
+# Folder view configuration files
 .DS_Store
-__pycache__
+Desktop.ini
+__pycache__/
+*.py[cod]
 .ipynb_checkpoints
+
+# Thumbnail cache files
+._*
+Thumbs.db
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+cvr_pfr_sim/
+data/
+img/
+leduino/
+lit/
+purchasing/
+questionnaires/
+record/
+safety/
+
