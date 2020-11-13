@@ -13,12 +13,13 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
-cvr_pfr_sim/
-img/
-leduino/
-lit/
-purchasing/
-questionnaires/
-record/
-safety/
-
+/cvr_pfr_sim/
+/img/
+/leduino/
+/lit/
+/purchasing/
+/questionnaires/
+/record/
+/safety/
+/data/
+/code/PyPlr/pyplr/data/corrected_oo_lookup_table.csv
