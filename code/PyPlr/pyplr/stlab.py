@@ -26,7 +26,7 @@ from pyplr.oceanops import adaptive_measurement
 # Device class for STLAB #
 ##########################
 
-class STLAB():
+class SpectraTuneLab():
     '''
     A class to encapsulate the LEDMOTIVE Spectra Tune Lab device and its 
     RESTFUL_API. 
@@ -761,8 +761,53 @@ class STLAB():
             return stlab_spectra, stlab_info
 
 # TODO: add class for calibration data
-# class CalibrationContext():
-#     def __init__(self, data):
+class CalibrationContext():
+    
+    def __init__(self, spectra):
+        self.spectra = pd.read_csv(spectra, index_col=['led','intensity'])
+        self.lkp_tbl = None
+        
+    def create_lookup_table(self):
+        intp_tbl = pd.DataFrame()
+        for led, df in self.spectra.groupby(['led']):
+            intensities = df.index.get_level_values('intensity')
+            new_intensities = np.linspace(
+                intensities.min(), intensities.max(), 4096).astype('int')
+            df.reset_index(inplace=True, drop=True)
+            df.columns = self.spectra.columns
+            df.index = df.index * 63
+            n = df.reindex(new_intensities).interpolate(method='linear')
+            n['intensity'] = n.index
+            n['led'] = led
+            intp_tbl = intp_tbl.append(n)
+        intp_tbl.set_index(['led','intensity'], inplace=True)
+        self.lkp_tbl = intp_tbl
+        
+    def predict_spd(self, intensity=[0,0,0,0,0,0,0,0,0,0]):
+        '''
+        Predict the spectral power distribution for a given list of led 
+        intensities using linear interpolation.
+        
+        Parameters
+        ----------
+        intensity : list
+            List of intensity values for each led. The default is 
+            [0,0,0,0,0,0,0,0,0,0].
+        lkp_table : DataFrame
+            A wide-format DataFrame with hierarchichal pd.MultIndex 
+            [led, intensity] and a column for each of 81 5-nm wavelength bins. 4096*10 rows, containing
+            predicted output for each led at all possible intensities.
+        
+        Returns
+        -------
+        spectrum : np.array
+            Predicted spectrum for given intensities.
+            
+        '''
+        spectrum = np.zeros(len(self.lkp_tbl.columns))
+        for led, val in enumerate(intensity):
+            spectrum += self.lkp_tbl.loc[(led, val)].to_numpy()
+        return spectrum
         
 
     
@@ -882,8 +927,8 @@ def pulse_protocol(pulse_spec,
 
     '''
     metadata['protocol'] = 'pulse'
-    metadata['pulse_spec'] = int(pulse_spec)
-    metadata['pulse_duration'] = int(pulse_duration)
+    metadata['pulse_spec'] = str(pulse_spec)
+    metadata['pulse_duration'] = str(pulse_duration)
     df = pd.DataFrame()
     df = (df.append(_video_file_row(0, pulse_spec))
             .append(_video_file_row(pulse_duration, pulse_spec))

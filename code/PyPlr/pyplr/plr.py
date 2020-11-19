@@ -184,43 +184,7 @@ def recovery_time_75pc(s, sample_rate, onset_idx):
     amp  = constriction_amplitude(s, onset_idx)
     return np.argmax(s[pidx:] > base - (amp / 4)) * (1000 / sample_rate)
 
-##########################################
-# FUNCTIONS FOR CALCULATING PIPR METRICS #
-##########################################
-
-def pipr_amplitude(s, sample_rate, window):
-    return s[window[0]:window[1]].mean()
- 
-def pipr_duration(s, sample_rate, onset_idx, duration):
-    '''
-    Return the time to return to baseline after light offset. ISI should be 
-    between 100 and 660 s to allow pupil to return to baseline (see Adhikari
-    et al., 2015)
-    '''
-    offset_idx = onset_idx + duration
-    base = baseline(s, onset_idx)
-    return np.argmax(s[offset_idx:] >= base) * (1000 / sample_rate)
-
-def pipr_AUC_early(s, sample_rate, onset_idx, duration):
-    '''
-    Unitless - AUC between offset and 10 s post offset
-    '''
-    base = baseline(s, onset_idx)
-    offset_idx = onset_idx + duration
-    auc_idx = offset_idx + (sample_rate * 10)
-    return np.sum(base - abs(s[offset_idx:auc_idx]))
-
-def pipr_AUC_late(s, sample_rate, onset_idx, duration):
-    '''
-    Unitless - AUC between 10-30 s post offset
-    '''
-    base = baseline(s, onset_idx)
-    offset_idx = onset_idx + duration
-    auc_idx = offset_idx + (sample_rate * 10)
-    return np.sum(base - abs(s[auc_idx:auc_idx + (sample_rate * 30)]))
-    
-
-def plr_metrics(s, sample_rate, onset_idx, pc):
+def plr_parameters(s, sample_rate, onset_idx, pc):
     '''
     Collapse a PLR into descriptive parameters.
     
@@ -239,35 +203,35 @@ def plr_metrics(s, sample_rate, onset_idx, pc):
         
     Returns
     -------
-    metrics : pd.DataFrame
-        DataFrame containins the metrics.
+    params : pd.DataFrame
+        DataFrame containins the params.
     '''
     
-    metrics = {
-               'D1'        : baseline(s, onset_idx),
-               'T1a'       : latency_to_constriction_a(s, sample_rate, onset_idx, pc),
-               'T1b'       : latency_to_constriction_b(s, sample_rate, onset_idx),
-               'T2'        : time_to_max_velocity(s, sample_rate, onset_idx),
-               'T3'        : time_to_max_constriction(s, sample_rate, onset_idx),
-               'T4'        : recovery_time_75pc(s, sample_rate, onset_idx),
-               'D2'        : peak_constriction(s),
-               'AMP'       : constriction_amplitude(s, onset_idx),
-               'VelConMax' : max_constriction_velocity(s, sample_rate, onset_idx),
-               'VelConAve' : average_constriction_velocity(s, sample_rate, onset_idx, pc),
-               'AccConMax' : max_constriction_acceleration(s, sample_rate, onset_idx),
-               'CT'        : constriction_time(s, sample_rate, onset_idx, pc),
-               'VelRedMax' : max_redilation_velocity(s, sample_rate),
-               'AccRedMax' : max_redilation_acceleration(s, sample_rate)
-               }
-    metrics = pd.DataFrame.from_dict(metrics, orient='index')
-    return metrics
+    params = {
+        'D1'       : baseline(s, onset_idx),
+        'T1a'      : latency_to_constriction_a(s, sample_rate, onset_idx, pc),
+        'T1b'      : latency_to_constriction_b(s, sample_rate, onset_idx),
+        'T2'       : time_to_max_velocity(s, sample_rate, onset_idx),
+        'T3'       : time_to_max_constriction(s, sample_rate, onset_idx),
+        'T4'       : recovery_time_75pc(s, sample_rate, onset_idx),
+        'D2'       : peak_constriction(s),
+        'AMP'      : constriction_amplitude(s, onset_idx),
+        'VelConMax': max_constriction_velocity(s, sample_rate, onset_idx),
+        'VelConAve': average_constriction_velocity(s, sample_rate, onset_idx, pc),
+        'AccConMax': max_constriction_acceleration(s, sample_rate, onset_idx),
+        'CT'       : constriction_time(s, sample_rate, onset_idx, pc),
+        'VelRedMax': max_redilation_velocity(s, sample_rate),
+        'AccRedMax': max_redilation_acceleration(s, sample_rate)
+        }
+    params = pd.DataFrame.from_dict(params, orient='index')
+    return params
 
 def plot_plr(s, 
              sample_rate,
              onset_idx, 
              stim_dur,
              vel_acc=False,
-             stamp_metrics=False):
+             stamp_params=False):
     '''
     Plot a PLR with option to add descriptive parameters and 
     velocity / acceleration profiles. Useful for exploratory analysis.
@@ -316,12 +280,77 @@ def plot_plr(s,
         ax2.plot(acc, color='r', lw=1)
         ax2.set_ylabel('Velocity / Acceleration')
     
-    if stamp_metrics:
-        m = plr_metrics(s, sample_rate, onset_idx, pc=.01)
+    if stamp_params:
+        m = plr_parameters(s, sample_rate, onset_idx, pc=.01)
         m = m.round(3)
         ax.text(.78, .03, m.to_string(), size=8, transform=ax.transAxes)
             
     return fig
+
+##########################################
+# FUNCTIONS FOR CALCULATING PIPR METRICS #
+##########################################
+
+def pipr_amplitude(s, sample_rate, window):
+    return s[window[0]:window[1]].mean()
+ 
+def pipr_duration(s, sample_rate, onset_idx, duration):
+    '''
+    Return the time to return to baseline after light offset. ISI should be 
+    between 100 and 660 s to allow pupil to return to baseline (see Adhikari
+    et al., 2015)
+    '''
+    offset_idx = onset_idx + duration
+    base = baseline(s, onset_idx)
+    return np.argmax(s[offset_idx:] >= base) * (1000 / sample_rate)
+
+def pipr_AUC_early(s, sample_rate, onset_idx, duration):
+    '''
+    Unitless - AUC between offset and 10 s post offset
+    '''
+    base = baseline(s, onset_idx)
+    offset_idx = onset_idx + duration
+    auc_idx = offset_idx + (sample_rate * 10)
+    return np.sum(base - abs(s[offset_idx:auc_idx]))
+
+def pipr_AUC_late(s, sample_rate, onset_idx, duration):
+    '''
+    Unitless - AUC between 10-30 s post offset
+    '''
+    base = baseline(s, onset_idx)
+    offset_idx = onset_idx + duration
+    auc_idx = offset_idx + (sample_rate * 10)
+    return np.sum(base - abs(s[auc_idx:auc_idx + (sample_rate * 30)]))
+    
+# def pipr_parameters(s, sample_rate, onset_idx, pc):
+#     '''
+#     Collapse a PIPR into descriptive parameters.
+    
+#     Parameters
+#     ----------
+#     s : array-like
+#         data representing a pupil's response to light.
+#     sample_rate : int
+#         sampling rate of the measurement system.
+#     onset_idx : int
+#         index of the onset of the light stimulus.
+#     pc : int, float
+#         the percentage of constriction from baseline to use in calculating
+#         constriction latency. Use float (e.g. pc=0.01) or int (e.g. pc=1)
+#         for data already expressed as %-modulation from baseline.
+        
+#     Returns
+#     -------
+#     params : pd.DataFrame
+#         DataFrame containins the params.
+#     '''
+    
+#     params = {
+
+#         }
+#     params = pd.DataFrame.from_dict(params, orient='index')
+#     return params
+
 
 # def plot_trials(ranges, sample_rate, onset_idx, stim_dur, pupil_col='diameter', out_dir=None):
 #     if not isinstance(ranges.index, pd.MultiIndex):

@@ -75,6 +75,7 @@ class PupilCore():
         self.pub_socket = zmq.Socket(self.context, zmq.PUB)
         self.pub_socket.connect(
             'tcp://{}:{}'.format(self.address, self.pub_port))
+        
         # some PyPlr defaults
         if pyplr_defaults:
             self.notify({
@@ -511,89 +512,7 @@ def recv_from_subscriber(subscriber):
         payload['__raw_data__'] = extra_frames
     return topic, payload
 
-def detect_light_onset(subscriber, 
-                       pub_socket, 
-                       trigger, 
-                       threshold,
-                       wait_time=None):
-    '''
-    Use the Pupil Core World Camera to detect the onset of a light and send 
-    an annotation (a.k.a 'trigger') to Pupil Capture with the associated 
-    Pupil timestamp. Useful for extracting PLRs and calculating time-critical
-    measures such as latency and time-to-peak consctriction. Start this function 
-    before administering a light stimulus, and use a separate thread if controlling
-    the light programmatically from the same script. Tested with the following 
-    settings in Pupil Capture:
-        
-    1. Resolution (320, 240) for eye and world
-    2. Frame rate 120 for eye and world
-    3. Auto Exposure mode - Manual Exposure - eye and wold
-    4. Absolute exposure time 60 for world, 63 for eye
-    5. Frame publisher format - BGR
-    
-    Parameters
-    ----------
-    subscriber : zmq.sugar.socket.Socket
-        a socket subscribed to 'frame.world' 
-    pub_socket : zmq.sugar.socket.Socket
-        a socket to publish the trigger using send_trigger(...)
-    trigger : dict
-        a dictionary with at least the following:
-            
-        {'topic': 'annotation',
-         'label': 'our_label',
-         'timestamp': None}
-        
-        timestamp will be overwritten with the new pupil timestamp for the 
-        detected light. See new_trigger(...) for more info.
-    threshold : int
-        detection threshold for luminance increase. The right value depends on
-        the nature of the light stimulus and the ambient lighting conditions. 
-        Requires some guesswork right now, but it would be good to have a 
-        function that works it out for us. 
-    wait_time : float, optional
-        time to wait in seconds before giving up (will run indefinitely if
-        no value is passed). Use when controlling a light source programmatically 
-        / running the function in its own thread. For STLAB, use 6.0 s, 
-        because on rare occasions it can take about 5 seconds to process a
-        request. The default in None.
-        
-    Returns
-    -------
-    None
-
-    '''
-    recent_world = None
-    recent_world_minus_one = None
-    recent_world_ts = None
-    detected = False
-    if wait_time is None:
-        wait_time, t1, t2 = 0, -1, -2 # dummy values
-    else:
-        t1 = time()
-        t2 = time()
-    print('Waiting for the light...')
-    while not detected and (t2-t1) < wait_time:
-        topic, msg = recv_from_subscriber(subscriber)
-        if topic == 'frame.world':
-            recent_world = np.frombuffer(
-                msg['__raw_data__'][0], dtype=np.uint8).reshape(
-                    msg['height'], msg['width'], 3)
-            recent_world_ts = msg['timestamp']
-        if recent_world is not None and recent_world_minus_one is not None:
-            diff = recent_world.mean() - recent_world_minus_one.mean()
-            if diff > threshold:
-                print('Light detected at {}'.format(recent_world_ts))
-                trigger['timestamp'] = recent_world_ts # change trigger timestamp
-                send_trigger(pub_socket, trigger)
-                detected = True
-                break # not sure if this is required
-        recent_world_minus_one = recent_world
-        if wait_time > 0:
-            t2 = time()
-    if detected == False:
-        print('Failed to detect a light.')
-        
+       
 # def find_threshold(subscriber):
 #     world_data = []
 #     print('Shine a light...')
