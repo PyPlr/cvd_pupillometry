@@ -15,6 +15,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
+import scipy.interpolate as spi
 
 ##########################
 # FUNCTIONS TO LOAD DATA #
@@ -109,6 +110,8 @@ def load_pupil(data_dir, method='3d c++', cols=[]):
         samps.set_index('pupil_timestamp', inplace=True)
         print('Loaded {} samples'.format(len(samps)))
         print('Average confidence: {}'.format(samps.confidence.mean()))
+        print('Timestamp summary (first derivative):')
+        print(samps.index.to_series().diff().describe())
     except FileNotFoundError:
         print('{} does not appear to exist. Check directory and pupil \
               player'.format(fname))
@@ -142,6 +145,34 @@ def load_blinks(data_dir):
 # FUNCTIONS TO CLEAN DATA #
 ###########################
 
+def even_samples(samps, sample_rate, fields=['diameter']):
+    '''
+    Resample the data in fields to a new index with evenly spaced timepoints.
+
+    Parameters
+    ----------
+    samps : TYPE
+        DESCRIPTION.
+    sample_rate : TYPE
+        DESCRIPTION.
+    fields : TYPE, optional
+        DESCRIPTION. The default is ['diameter'].
+
+    Returns
+    -------
+    samps : TYPE
+        DESCRIPTION.
+
+    '''
+    x = samps.index.to_numpy()
+    x = x - x[0]
+    xnew = np.arange(0, len(samps)) * (1/sample_rate)
+    for f in fields:
+        y = samps[f].to_numpy()
+        func = spi.interp1d(x, y)
+        samps[f] = func(xnew)
+    samps.index = xnew
+    return samps
 
 def mask_pupil_first_derivative(samples, 
                                 threshold=3.0,
