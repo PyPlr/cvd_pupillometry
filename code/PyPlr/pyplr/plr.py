@@ -18,6 +18,9 @@ def velocity_profile(s, sample_rate):
     Return the velocity profile of a PLR.
 
     '''
+    # TODO: This assumes the samples are evenly spaced, which is not the 
+    # case with Pupil Labs. The correct calculation may be 
+    # d.diameter_3d.diff() / d.orig_idx.diff()
     t = 1 / sample_rate
     return np.diff(s) / t
 
@@ -26,6 +29,9 @@ def acceleration_profile(s, sample_rate):
     Return the acceleration profile of a PLR.
 
     '''
+    # TODO: This assumes the samples are evenly spaced, which is not the 
+    # case with Pupil Labs. The correct calculation may be 
+    # d.diameter_3d.diff() / d.orig_idx.diff()
     t = 1 / sample_rate
     vel = velocity_profile(s, sample_rate)
     return np.diff(vel) / t
