@@ -9,7 +9,8 @@ See the "LIGHT HUB RESTful API" manual for further functions and more info.
 
 Contains additional functions for working with the STLAB.
 '''
-
+import os
+import os.path as op
 from time import sleep
 from datetime import datetime
 from random import shuffle
@@ -20,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyplr.oceanops import adaptive_measurement
+from pyplr.oceanops import oo_measurement
 
 ##########################
 # Device class for STLAB #
@@ -624,10 +625,12 @@ class SpectraTuneLab():
                leds=[0], 
                intensities=[500], 
                spectra=None,
-               wait_before_sample=.2,
+               wait_before_sample=.3,
                ocean_optics=None,
+               ocean_optics_inegration_times=None,
                randomise=False,
-               save_output=False):
+               save_output=False,
+               settings_override=None):
         '''
         Sample a set of LEDs individually at a range of specified intensities 
         using the STLABs on-board spectrometer. Or, alternatively, sample a set
@@ -652,6 +655,8 @@ class SpectraTuneLab():
             Whether to acquire concurrent measurements from an Ocean Optics 
             spectrometer. Requires the seabreeze package to be installed.
             The default is None.
+        ocean_optics_inegration_times : pd.DataFrame
+            STUFF
         randomise : bool, optional
             Whether to randomise the order in which the LED-intensity settings 
             or spectra are sampled. The default is False.
@@ -698,10 +703,14 @@ class SpectraTuneLab():
             settings = [(l, i) for l in leds for i in intensities]
             print('Sampling {} leds at the following intensities: {}'.format(
                 len(leds), intensities))
-        
+            
         # shuffle
         if randomise:
             shuffle(settings)
+        
+        if settings_override:
+            print('Overriding settings with externally generated settings')
+            settings = settings_override
         
         # begin sampling            
         for i, s in enumerate(settings):
@@ -727,7 +736,12 @@ class SpectraTuneLab():
             stlab_info.append(stlab_info_dict)
             
             if ocean_optics:
-                oo_counts, oo_info_dict = adaptive_measurement(
+                if ocean_optics_inegration_times:
+                    t = ocean_optics_inegration_times.loc[(led, setting)]
+                    oo_counts, oo_info_dict = oo_measurement(
+                    ocean_optics, integration_time=t, setting=setting)
+                else:
+                    oo_counts, oo_info_dict = oo_measurement(
                     ocean_optics, setting=setting)
                 oo_spectra.append(oo_counts)
                 oo_info.append(oo_info_dict)
@@ -736,24 +750,33 @@ class SpectraTuneLab():
         stlab_spectra = pd.DataFrame(stlab_spectra)
         stlab_spectra.columns = self.wlbins
         stlab_info = pd.DataFrame(stlab_info)
-        
+        stlab_spectra[['led','intensity']] = stlab_info[['led','intensity']]
+
         if ocean_optics:
             oo_spectra = pd.DataFrame(oo_spectra)
             oo_spectra.columns = ocean_optics.wavelengths()
             oo_info = pd.DataFrame(oo_info)
             # TODO: check this works
-            # oo_spectra[['led','intensity']] = oo_info[['led','intensity']]
+            oo_spectra[['led','intensity']] = oo_info[['led','intensity']]
 
         # turn off
         self.turn_off()
         
         if save_output:
             fid = datetime.now().strftime('%D-%H-%M').replace('/','-')
-            stlab_spectra.to_csv('stlab_spectra_' + fid + '.csv')
-            stlab_info.to_csv('stlab_info_' + fid + '.csv')
+            stlab_spectra.to_csv(
+                op.join(os.getcwd(), 'stlab_spectra_' + fid + '.csv'),
+                index=False)
+            stlab_info.to_csv(
+                op.join(os.getcwd(), 'stlab_info_' + fid + '.csv'),
+                index=False)
             if ocean_optics:
-                oo_spectra.to_csv('oo_spectra_' + fid + '.csv')
-                oo_info.to_csv('oo_info_' + fid + '.csv')
+                oo_spectra.to_csv(
+                    op.join(os.getcwd(), 'oo_spectra_' + fid + '.csv'),
+                index=False)
+                oo_info.to_csv(
+                    op.join(os.getcwd(), 'oo_info_' + fid + '.csv'),
+                index=False)
             
         if ocean_optics:
             return stlab_spectra, stlab_info, oo_spectra, oo_info
@@ -763,25 +786,25 @@ class SpectraTuneLab():
 # TODO: add class for calibration data
 class CalibrationContext():
     
-    def __init__(self, spectra):
-        self.spectra = pd.read_csv(spectra, index_col=['led','intensity'])
-        self.lkp_tbl = None
+    def __init__(self, data):
+        self.data = pd.read_csv(data, index_col=['led','intensity'])
+        self.lkp_tbl = self.create_lookup_table()
         
     def create_lookup_table(self):
         intp_tbl = pd.DataFrame()
-        for led, df in self.spectra.groupby(['led']):
+        for led, df in self.data.groupby(['led']):
             intensities = df.index.get_level_values('intensity')
             new_intensities = np.linspace(
                 intensities.min(), intensities.max(), 4096).astype('int')
             df.reset_index(inplace=True, drop=True)
-            df.columns = self.spectra.columns
+            df.columns = self.data.columns
             df.index = df.index * 63
             n = df.reindex(new_intensities).interpolate(method='linear')
             n['intensity'] = n.index
             n['led'] = led
             intp_tbl = intp_tbl.append(n)
         intp_tbl.set_index(['led','intensity'], inplace=True)
-        self.lkp_tbl = intp_tbl
+        return intp_tbl
         
     def predict_spd(self, intensity=[0,0,0,0,0,0,0,0,0,0]):
         '''
