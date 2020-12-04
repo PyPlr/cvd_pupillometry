@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 from pyplr.oceanops import oo_measurement
+from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 
 ##########################
 # Device class for STLAB #
@@ -785,12 +786,40 @@ class SpectraTuneLab():
 
 # TODO: add class for calibration data
 class CalibrationContext():
+    '''
+    Create a context based on spectrometer measurements. Currently this
+    requires the measurements to be for each LED in steps of 65.
     
-    def __init__(self, data):
+    
+    '''
+    def __init__(self, data, ):
+        '''
+        
+
+        Parameters
+        ----------
+        data : str
+            Path to a csv file of calibrated spectrometer data.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.data = pd.read_csv(data, index_col=['led','intensity'])
-        self.lkp_tbl = self.create_lookup_table()
+        self.lkp = self.create_lookup_table()
         
     def create_lookup_table(self):
+        '''
+        Create a lookup table from original measurements using linear interpolation.
+
+        Returns
+        -------
+        intp_tbl : TYPE
+            DESCRIPTION.
+
+        '''
+        #TODO: generalise and improve flexibility
         intp_tbl = pd.DataFrame()
         for led, df in self.data.groupby(['led']):
             intensities = df.index.get_level_values('intensity')
@@ -806,7 +835,7 @@ class CalibrationContext():
         intp_tbl.set_index(['led','intensity'], inplace=True)
         return intp_tbl
         
-    def predict_spd(self, intensity=[0,0,0,0,0,0,0,0,0,0]):
+    def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0]):
         '''
         Predict the spectral power distribution for a given list of led 
         intensities using linear interpolation.
@@ -827,12 +856,68 @@ class CalibrationContext():
             Predicted spectrum for given intensities.
             
         '''
-        spectrum = np.zeros(len(self.lkp_tbl.columns))
-        for led, val in enumerate(intensity):
-            spectrum += self.lkp_tbl.loc[(led, val)].to_numpy()
+        spectrum = np.zeros(len(self.lkp.columns))
+        for led, val in enumerate(intensities):
+            spectrum += self.lkp.loc[(led, val)].to_numpy()
         return spectrum
         
+    def match(self, target_led, target_led_intensity, match_led, 
+                  match_type='radiance'):
+        '''
+        Determine the appropriate intensity setting for match_led so that its 
+        output will match target_led at target_led_intensity in terms of 
+        match_type.
 
+        Parameters
+        ----------
+        target_led : int
+            The led to be matched.
+        target_led_intensity : int
+            The intensity of the led to be matched.
+        match_led : int
+            The led whose intensity is to be determined.
+        match_type : str, optional
+            The type of match to be performed. Currently must be one of:
+                
+                * 'radiance'
+                * 'lux'
+                * 'melanopic'
+                
+            The default is 'radiance'.
+
+        Returns
+        -------
+        error : float
+            The absolute matching error.
+        match_intensity : int
+            The required intensity for match_led.
+
+        '''
+        if match_type=='radiance':
+            values = self.lkp.sum(axis=1)
+            target = values.loc[(target_led, target_led_intensity)]
+        
+        elif match_type=='lux':
+            vl = get_CIE_1924_photopic_vl(asdf=True)
+            values = self.lkp.dot(vl.values)*683
+            target = values.loc[(target_led, target_led_intensity)]
+        
+        elif match_type=='melanopic':
+            _, mel = get_CIES026(asdf=True)
+            mel = mel['Mel']
+            values = self.lkp.dot(mel.values)
+            target = values.loc[(target_led, target_led_intensity)]
+        
+        match_intensity = (values.loc[match_led]
+                                 .sub(target)
+                                 .abs()
+                                 .idxmin())
+        error = (values.loc[match_led]
+                       .sub(target)
+                       .abs()
+                       .min())
+        
+        return error, match_intensity
     
     
 #################################
