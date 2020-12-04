@@ -750,14 +750,12 @@ class SpectraTuneLab():
         stlab_spectra = pd.DataFrame(stlab_spectra)
         stlab_spectra.columns = self.wlbins
         stlab_info = pd.DataFrame(stlab_info)
-        stlab_spectra[['led','intensity']] = stlab_info[['led','intensity']]
 
         if ocean_optics:
             oo_spectra = pd.DataFrame(oo_spectra)
             oo_spectra.columns = ocean_optics.wavelengths()
             oo_info = pd.DataFrame(oo_info)
             # TODO: check this works
-            oo_spectra[['led','intensity']] = oo_info[['led','intensity']]
 
         # turn off
         self.turn_off()

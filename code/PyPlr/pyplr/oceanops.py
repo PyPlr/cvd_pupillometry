@@ -47,6 +47,7 @@ def oo_measurement(spectrometer, integration_time=None, setting={}):
     
     if integration_time:
         # set the spectrometer integration time
+        intgt = integration_time
         spectrometer.integration_time_micros(integration_time)
         sleep(.05)
         
@@ -80,8 +81,8 @@ def oo_measurement(spectrometer, integration_time=None, setting={}):
         while max_reported < lower_bound or max_reported > upper_bound:
             
             # save a couple of mins on dark measurements
-            if setting['intensity'] == 0:
-                intgt = intgtlims[1]
+            # if setting['intensity'] == 0:
+            #     intgt = intgtlims[1]
                 
             # if the current integration time is greater than the upper 
             # limit, set it too the upper limit
