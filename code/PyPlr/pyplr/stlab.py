@@ -20,6 +20,7 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from pyplr.oceanops import oo_measurement
 from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
@@ -790,7 +791,7 @@ class CalibrationContext():
     
     
     '''
-    def __init__(self, data, ):
+    def __init__(self, data):
         '''
         
 
@@ -805,8 +806,27 @@ class CalibrationContext():
 
         '''
         self.data = pd.read_csv(data, index_col=['led','intensity'])
+        self.data.columns = self.data.columns.astype('int')
         self.lkp = self.create_lookup_table()
+    
+    def plot_calibrated_spectra(self):
+        colors = get_led_colors()
+        data = (self.data.reset_index()
+                    .melt(id_vars=['led','intensity'], 
+                          value_name='flux',
+                          var_name='wavelength'))
         
+        # set up figure
+        fig, ax = plt.subplots(figsize=(14,5))
+        
+        # plot SPDs
+        _ = sns.lineplot(x='wavelength', y='flux', data=data, hue='led',
+                     palette=colors, units='intensity', ax=ax, 
+                     lw=.1, estimator=None)
+        ax.set_ylabel('SPD (W/m2/nm)')
+        ax.set_xlabel('Wavelength (nm)')
+        return fig    
+    
     def create_lookup_table(self):
         '''
         Create a lookup table from original measurements using linear interpolation.
@@ -845,8 +865,9 @@ class CalibrationContext():
             [0,0,0,0,0,0,0,0,0,0].
         lkp_table : DataFrame
             A wide-format DataFrame with hierarchichal pd.MultIndex 
-            [led, intensity] and a column for each of 81 5-nm wavelength bins. 4096*10 rows, containing
-            predicted output for each led at all possible intensities.
+            [led, intensity] and a column for each of 81 5-nm wavelength bins. 
+            4096*10 rows, containing predicted output for each led at all
+            possible intensities.
         
         Returns
         -------
