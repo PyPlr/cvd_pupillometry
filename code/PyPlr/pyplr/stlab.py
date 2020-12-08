@@ -757,7 +757,6 @@ class SpectraTuneLab():
             oo_spectra = pd.DataFrame(oo_spectra)
             oo_spectra.columns = ocean_optics.wavelengths()
             oo_info = pd.DataFrame(oo_info)
-            # TODO: check this works
 
         # turn off
         self.turn_off()
@@ -783,17 +782,14 @@ class SpectraTuneLab():
         else:
             return stlab_spectra, stlab_info
 
-# TODO: add class for calibration data
 class CalibrationContext():
     '''
-    Create a context based on spectrometer measurements. Currently this
-    requires the measurements to be for each LED in steps of 65.
-    
+    Create a calibration context based on spectrometer measurements. Currently 
+    this requires the measurements to be for each LED in steps of 65.
     
     '''
     def __init__(self, data):
         '''
-        
 
         Parameters
         ----------
@@ -808,9 +804,11 @@ class CalibrationContext():
         self.data = pd.read_csv(data, index_col=['led','intensity'])
         self.data.columns = self.data.columns.astype('int')
         self.lkp = self.create_lookup_table()
+        self.aopic = self.create_alphaopic_irradiances_table()
+        self.lux = self.create_lux_table()
     
     def plot_calibrated_spectra(self):
-        colors = get_led_colors()
+        colors = get_led_colors(rgb=True)
         data = (self.data.reset_index()
                     .melt(id_vars=['led','intensity'], 
                           value_name='flux',
@@ -829,7 +827,8 @@ class CalibrationContext():
     
     def create_lookup_table(self):
         '''
-        Create a lookup table from original measurements using linear interpolation.
+        Create a lookup table from original measurements using linear 
+        interpolation.
 
         Returns
         -------
@@ -852,6 +851,15 @@ class CalibrationContext():
             intp_tbl = intp_tbl.append(n)
         intp_tbl.set_index(['led','intensity'], inplace=True)
         return intp_tbl
+    
+    def create_alphaopic_irradiances_table(self):
+        _ , sss = get_CIES026(asdf=True)
+        sss = sss.fillna(0)
+        return self.lkp.dot(sss)
+    
+    def create_lux_table(self):
+        vl = get_CIE_1924_photopic_vl(asdf=True)
+        return self.lkp.dot(vl.values)*683
         
     def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0]):
         '''
@@ -1229,8 +1237,15 @@ def predict_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None):
         spectrum += lkp_table.loc[(led, val)].to_numpy()
     return spectrum
 
-def get_led_colors():
-    colors = ['blueviolet', 'royalblue', 'darkblue',
+def get_led_colors(rgb=False):
+    if rgb:
+        colors = [[.220, .004, .773, 1.], [.095, .232, .808, 1.],
+                  [.098, .241, .822, 1.], [.114, .401, .755, 1.],
+                  [.194, .792, .639, 1.], [.215, .895, .489, 1.],
+                  [.599, .790, .125, 1.], [.980, .580, .005, 1.],
+                  [.975, .181, .174, 1.], [.692, .117, .092, 1.]]
+    else:
+        colors = ['blueviolet', 'royalblue', 'darkblue',
               'blue', 'cyan', 'green', 'lime',
               'orange','red','darkred']
     return colors
