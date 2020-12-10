@@ -501,27 +501,31 @@ def extract(samples,
         raise ValueError('Duration must be >0')
         
     # get the list of start time indices
-    e_starts = events.index.to_series()
+    event_starts = events.index.to_series()
 
     # find the indexes of the event starts, and offset by sample count
-    r_idxs = np.searchsorted(samples.index, e_starts.iloc[:], 'left') + offset
-    r_dur = duration
+    range_idxs = np.searchsorted(
+        samples.index, event_starts.iloc[:], 'left') + offset
+    range_duration = duration
     
     # make a hierarchical index
     samples['orig_idx'] = samples.index
     midx = pd.MultiIndex.from_product(
-        [list(range(len(e_starts))), list(range(r_dur))],
+        [list(range(len(event_starts))), list(range(range_duration))],
         names=['event', 'onset'])
     
     # get the samples
     df = pd.DataFrame()
     idx = 0
-    for s_idx in r_idxs:
+    for start_idx in range_idxs:
         # get the start time and add the required number of indices
-        e_idx = s_idx + r_dur - 1  # pandas.loc indexing is inclusive
+        end_idx = start_idx + range_duration - 1  # pandas.loc indexing is inclusive
+        print(end_idx-start_idx)
         # deepcopy for old bugs
         new_df = deepcopy(
-            samples.loc[samples.index[s_idx] : samples.index[e_idx]])
+            samples.loc[samples.index[start_idx] : samples.index[end_idx]])
+        new_df = new_df.iloc[0:range_duration]
+        assert len(new_df) == range_duration, 'Extracted range is biger than expected'
         for ba in borrow_attributes:
             new_df[ba] = events.iloc[idx].get(ba, float('nan'))
         df = pd.concat([df, new_df])
@@ -560,13 +564,15 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         {'interpolated':lambda x: float(x.sum())/len(x)*100})
     print('Percentage of data interpolated for each trial (mean = {:.2f}): \n'.format(
         pct_interp.mean()[0]), pct_interp)
-    reject_idxs = pct_interp.loc[pct_interp['interpolated'] > interp_thresh].index.to_list()
+    reject_idxs = (pct_interp.loc[pct_interp['interpolated'] > interp_thresh]
+                             .index.to_list())
     ranges['reject'] = 0
     if reject_idxs:
         ranges.loc[reject_idxs, 'reject'] = 1
     if drop:
         ranges = ranges.drop(index=reject_idxs)
-        print('{} trials were dropped from the DataFrame'.format(len(reject_idxs)))
+        print('{} trials were dropped from the DataFrame'.format(
+            len(reject_idxs)))
     else:
         print('{} trials were marked for rejection'.format(len(reject_idxs)))
     return ranges
