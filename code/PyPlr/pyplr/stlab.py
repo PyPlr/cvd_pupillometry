@@ -41,7 +41,7 @@ class SpectraTuneLab():
     colors : string
         Closest Matplotlib colornames for the 10 channels.
     rgb_colors : list
-        rgb colors of the 10 channels
+        rgb colors of the 10 channels taken from photographs
     wlbins : list
         The wavelengths output by the on-board spectrometer
     min_intensity : int
@@ -806,18 +806,26 @@ class CalibrationContext():
         self.lkp = self.create_lookup_table()
         self.aopic = self.create_alphaopic_irradiances_table()
         self.lux = self.create_lux_table()
+        self.irradiance = self.lkp.sum(axis=1) 
     
     def plot_calibrated_spectra(self):
+        '''
+        Plot the ca;ibrated spectra.
+
+        Returns
+        -------
+        fig : Matplotlib Figure
+            The plot.
+
+        '''
         colors = get_led_colors(rgb=True)
         data = (self.data.reset_index()
                     .melt(id_vars=['led','intensity'], 
                           value_name='flux',
                           var_name='wavelength'))
         
-        # set up figure
         fig, ax = plt.subplots(figsize=(14,5))
         
-        # plot SPDs
         _ = sns.lineplot(x='wavelength', y='flux', data=data, hue='led',
                      palette=colors, units='intensity', ax=ax, 
                      lw=.1, estimator=None)
@@ -888,29 +896,33 @@ class CalibrationContext():
             spectrum += self.lkp.loc[(led, val)].to_numpy()
         return spectrum
         
-    def match(self, target_led, target_led_intensity, match_led, 
-                  match_type='radiance'):
+    def match(self, match_led, match_led_intensity, 
+              target_led, match_type='irrad'):
         '''
-        Determine the appropriate intensity setting for match_led so that its 
-        output will match target_led at target_led_intensity in terms of 
+        Determine the appropriate intensity setting for target_led so that its 
+        output will match tmatch_led at match_led_intensity in terms of 
         match_type.
 
         Parameters
         ----------
-        target_led : int
-            The led to be matched.
-        target_led_intensity : int
-            The intensity of the led to be matched.
         match_led : int
+            The led to be matched.
+        match_led_intensity : int
+            The intensity of the led to be matched.
+        target_led : int
             The led whose intensity is to be determined.
         match_type : str, optional
-            The type of match to be performed. Currently must be one of:
+            The type of match to be performed. One of:
                 
-                * 'radiance'
-                * 'lux'
-                * 'melanopic'
+                * 'irrad' - overall (unweighted) irradiance
+                * 'lux'   - lux
+                * 'mel'   - melanopic irradiance
+                * 'rhod'  - rhodopic irradiance
+                * 's'     - s-cone-opic irradiance
+                * 'm'     - m-cone-opic irradiance
+                * 'l'     - l-cone-opic irradiance
                 
-            The default is 'radiance'.
+            The default is 'irrad'.
 
         Returns
         -------
@@ -920,26 +932,39 @@ class CalibrationContext():
             The required intensity for match_led.
 
         '''
-        if match_type=='radiance':
-            values = self.lkp.sum(axis=1)
-            target = values.loc[(target_led, target_led_intensity)]
+        if match_type=='irrad':
+            values = self.irradiance
+            target = values.loc[(match_led, match_led_intensity)]
         
         elif match_type=='lux':
-            vl = get_CIE_1924_photopic_vl(asdf=True)
-            values = self.lkp.dot(vl.values)*683
-            target = values.loc[(target_led, target_led_intensity)]
+            values = self.lux
+            target = values.loc[(match_led, match_led_intensity)]
         
-        elif match_type=='melanopic':
-            _, mel = get_CIES026(asdf=True)
-            mel = mel['Mel']
-            values = self.lkp.dot(mel.values)
-            target = values.loc[(target_led, target_led_intensity)]
+        elif match_type=='mel':
+            values = self.aopic.Mel
+            target = values.loc[(match_led, match_led_intensity)]
         
-        match_intensity = (values.loc[match_led]
+        elif match_type=='rhod':
+            values = self.aopic.Rods
+            target = values.loc[(match_led, match_led_intensity)]      
+            
+        elif match_type=='s':
+            values = self.aopic.S
+            target = values.loc[(match_led, match_led_intensity)]
+
+        elif match_type=='m':
+            values = self.aopic.M
+            target = values.loc[(match_led, match_led_intensity)]
+            
+        elif match_type=='l':
+            values = self.aopic.L
+            target = values.loc[(match_led, match_led_intensity)]
+            
+        match_intensity = (values.loc[target_led]
                                  .sub(target)
                                  .abs()
                                  .idxmin())
-        error = (values.loc[match_led]
+        error = (values.loc[target_led]
                        .sub(target)
                        .abs()
                        .min())

@@ -13,7 +13,6 @@ https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote
 
 '''
 
-import sys
 from time import time
 from threading import Thread
 
@@ -76,7 +75,7 @@ class PupilCore():
         self.pub_socket.connect(
             'tcp://{}:{}'.format(self.address, self.pub_port))
         
-        # some PyPlr defaults
+        # some useful defaults
         if pyplr_defaults:
             self.notify({
                 'subject': 'start_plugin',
