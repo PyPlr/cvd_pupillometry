@@ -227,18 +227,18 @@ def even_samples(samps, sample_rate, fields=['diameter']):
     samps.index = xnew
     return samps
 
-def even_samples(rangs, sample_rate, fields=[]):
-    for idx, df in rangs.groupby(level=['event']):
-        for f in fields:
-            x = df.orig_idx.to_numpy()
-            x = x - x[0]
-            xnew = np.arange(0, len(df)) * (1/sample_rate)
-            y = df.loc[idx, f]
-            func = spi.interp1d(x, y)
-            rangs.loc[idx, f] = func(xnew)
-            rangs.loc[idx, 'even_onset'] = xnew
-    rangs = rangs.reset_index().set_index(['event','even_onset'])
-    return rangs
+# def even_samples(rangs, sample_rate, fields=[]):
+#     for idx, df in rangs.groupby(level=['event']):
+#         for f in fields:
+#             x = df.orig_idx.to_numpy()
+#             x = x - x[0]
+#             xnew = np.arange(0, len(df)) * (1/sample_rate)
+#             y = df.loc[idx, f]
+#             func = spi.interp1d(x, y)
+#             rangs.loc[idx, f] = func(xnew)
+#             rangs.loc[idx, 'even_onset'] = xnew
+#     rangs = rangs.reset_index().set_index(['event','even_onset'])
+#     return rangs
 
 def mask_pupil_first_derivative(samples, 
                                 threshold=3.0,
