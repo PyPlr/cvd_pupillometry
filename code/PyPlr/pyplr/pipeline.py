@@ -1,11 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Created on Mon Mar 30 17:05:47 2020
-@author: JTM
-note: credit to Acland BT, Braver TS (2014) for some of this code
-https://github.com/beOn/cili
-Acland BT, Braver TS (2014). Cili (v0.5.4) [Software] 
-Available from http://doi.org/10.5281/zenodo.48843. doi:10.5281/zenodo.48843
+pyplr.pipeline
+==============
+
+Tools for implementing a pupillometry analysis pipeline.
+
 '''
 
 import os
@@ -21,62 +21,66 @@ import scipy.interpolate as spi
 # FUNCTIONS TO LOAD DATA #
 ##########################
 
-class Subject():    
-    def __init__(self, subjdir, export='000', out_dir_nm='pyplr_analysis'):
-        '''
-        Get a handle on a subject for data analysis.
-        
-        Parameters
-        ----------
-        subjdir : str
-            Full path to a Pupil Labs recording directory for a given subject.
-        export : str
-            The export folder in which to look for files (in case of multiple 
-            exports). The default is '000'.
-        out_dir_nm : str, optional
-            Name for the folder where output will be saved. The default is
-            'pyplr_analysis'.
+def new_subject(rec_dir, export='000', out_dir_nm='pyplr_analysis'):
+    '''
+    Begin data analysis for a new subject.
+    
+    Parameters
+    ----------
+    rec_dir : str
+        Full path to a Pupil Labs recording directory for a given subject.
+    export : str
+        The export folder in which to look for files (in case of multiple 
+        exports). The default is '000'.
+    out_dir_nm : str, optional
+        Name for the folder where output will be saved. The default is
+        'pyplr_analysis'.
 
-        Raises
-        ------
-        FileNotFoundError
-            If subjdir does not exist.
+    Raises
+    ------
+    FileNotFoundError
+        If subjdir does not exist.
 
-        Returns
-        -------
-        None.
+    Returns
+    -------
+    s : dict
+        Dictionary of subject information.
 
-        '''
-        self.root = subjdir
-        self.export = export
-        self.out_dir_nm = out_dir_nm
-        self.id = op.basename(self.root)
-        self.pl_data_dir = op.join(self.root, 'exports', '', self.export, '')
-        self.out_dir = op.join(self.root, self.out_dir_nm, '')
-        if not op.isdir(self.root):
-            raise FileNotFoundError(
-                '"{}" does not appear to exist.'.format(self.root))
-        if os.path.exists(self.out_dir):
-            shutil.rmtree(self.out_dir)
-        os.mkdir(self.out_dir)
-        print('{}\n{:*^60s}\n{}'.format('*'*60, ' ' + self.id + ' ', '*'*60))
+    '''
+    if not op.isdir(rec_dir):
+        raise FileNotFoundError(
+            '"{}" does not appear to exist.'.format(rec_dir))
+    root = op.abspath(rec_dir)
+    identifier = op.basename(rec_dir)
+    pl_data_dir = op.abspath(op.join(rec_dir, 'exports', '', export, ''))
+    out_dir = op.abspath(op.join(rec_dir, out_dir_nm, ''))
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+    os.mkdir(out_dir)
+    print('{}\n{:*^60s}\n{}'.format('*'*60, ' ' + identifier + ' ', '*'*60))
+    return {
+        'root':root,
+        'id':identifier,
+        'pl_data_dir':pl_data_dir,
+        'out_dir':out_dir
+        }
 
-    def print_file_structure(self):
-        '''
-        Print the file structure of the recording directory.
+def print_file_structure(rec_dir):
+    '''
+    Print the file structure of a recording directory.
 
-        Returns
-        -------
-        None.
+    Returns
+    -------
+    None.
 
-        '''
-        for root, dirs, files in os.walk(self.root):
-            level = root.replace(self.root, '').count(os.sep)
-            indent = ' ' * 4 * (level)
-            print(f'{indent}{os.path.basename(root)}/')
-            subindent = ' ' * 4 * (level + 1)
-            for f in sorted(files):
-                print(f'{subindent}{f}')
+    '''
+    for root, dirs, files in os.walk(rec_dir):
+        level = root.replace(rec_dir, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        print(f'{indent}{os.path.basename(root)}/')
+        subindent = ' ' * 4 * (level + 1)
+        for f in sorted(files):
+            print(f'{subindent}{f}')
 
 def load_annotations(data_dir):
     '''

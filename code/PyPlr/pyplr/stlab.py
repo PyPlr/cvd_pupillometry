@@ -1,13 +1,14 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Created on Thu Mar 26 09:20:38 2020
+pyplr.stlab
+===========
 
-@author: - JTM
+A python wrapper for Ledmotive's Spectra Tune Lab light engine and RESTful API.
+Also contains other useful functions for working with STLAB. See the "LIGHT HUB 
+RESTful API" manual for further functions and more info. Note that a license is 
+required to develop against the RESTful API.
 
-A python wrapper for Ledmotive's Spectra Tune Lab RESTful API. 
-See the "LIGHT HUB RESTful API" manual for further functions and more info.
-
-Contains additional functions for working with the STLAB.
 '''
 import os
 import os.path as op
@@ -79,7 +80,7 @@ class SpectraTuneLab():
             The IP address of the LightHub device. The Mac connection driver 
             usually creates the network in a way that places the LightHub 
             device at IP 192.168.6.2 instead of IP 192.168.7.2, so this may need
-            to be changed depending on the platform. If that is not enought, 
+            to be changed depending on the platform. If that is not enough, 
             you might need to also install the two Mac OX drivers required by 
             the beagleboard (the LightHub motherboard):
             Network: https://beagleboard.org/static/Drivers/MacOSX/RNDIS/HoRNDIS.pkg

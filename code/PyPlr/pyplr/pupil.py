@@ -1,15 +1,10 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Created on Wed Jun 17 15:21:46 2020
+pyplr.pupil
+===========
 
-@author: JTM
-
-A module to facilitate working with the PupilCore eye tracking headset. 
-
-For more info go here:
-https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote
-
-# TODO: use breakpoint() for debugging!
+A module for interfacing with a Pupil Core eye tracker.
 
 '''
 

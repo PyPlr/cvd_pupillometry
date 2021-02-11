@@ -1,11 +1,15 @@
-#,-*-,coding:,utf-8,-*-
-"""
-Created,on,Wed,Jun,,3,09:28:47,2020
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+'''
+pyplr.CIE
+=========
 
-@author:,JTM
+Convenience functions for accessing CIE standards.
+
 note:,https://scipython.com/blog/converting-a-spectrum-to-a-colour/
 note: http://cvrl.ioo.ucl.ac.uk/cmfs.htm
-"""
+
+'''
 
 import numpy as np
 import pandas as pd
@@ -13,6 +17,20 @@ import pandas as pd
 # The CIE colour matching function for 380 - 780 nm in 5 nm intervals
 
 def get_CIE_CMF(asdf=False):
+    '''
+    Get the CIE color matching functions as a numpy array or pandas DataFrame.
+
+    Parameters
+    ----------
+    asdf : bool, optional
+        Return as a pandas DataFrame. The default is False.
+
+    Returns
+    -------
+    cmf : np.array
+        The CIE CMFs.
+
+    '''
     
     colnames = ["index", "X", "Y", "Z"]
     

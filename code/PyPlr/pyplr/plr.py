@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Sep 28 15:08:28 2020
-
-@author: jtm
+'''
+pyplr.plr
+=========
 
 A module to assist with parametrising and plotting pupillary light reflexes.
-"""
+
+'''
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 def velocity_profile(s, sample_rate):
     '''
