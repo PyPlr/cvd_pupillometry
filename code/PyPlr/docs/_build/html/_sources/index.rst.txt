@@ -17,7 +17,7 @@ Welcome to PyPlr's documentation!
    examples
    api
    developers
-   credits
+   acknowledgements
    todo
 
 Indices and tables

@@ -10,6 +10,7 @@ RESTful API" manual for further functions and more info. Note that a license is
 required to develop against the RESTful API.
 
 '''
+
 import os
 import os.path as op
 from time import sleep
@@ -803,7 +804,8 @@ class CalibrationContext():
 
         '''
         self.data = pd.read_csv(data, index_col=['led','intensity'])
-        self.data.columns = self.data.columns.astype('int')
+        self.wls = self.data.columns.astype('int')
+        self.data.columns = self.wls
         self.lkp = self.create_lookup_table()
         self.aopic = self.create_alphaopic_irradiances_table()
         self.lux = self.create_lux_table()
@@ -811,7 +813,7 @@ class CalibrationContext():
     
     def plot_calibrated_spectra(self):
         '''
-        Plot the ca;ibrated spectra.
+        Plot the calibrated spectra.
 
         Returns
         -------
@@ -819,6 +821,7 @@ class CalibrationContext():
             The plot.
 
         '''
+        # TODO: move to graphing?
         colors = get_led_colors(rgb=True)
         data = (self.data.reset_index()
                     .melt(id_vars=['led','intensity'], 
@@ -836,17 +839,17 @@ class CalibrationContext():
     
     def create_lookup_table(self):
         '''
-        Create a lookup table from original measurements using linear 
+        Using `self.data`, create a lookup table for all settings with linear 
         interpolation.
 
         Returns
         -------
-        intp_tbl : TYPE
-            DESCRIPTION.
+        lkp_tbl : pd.DataFrame
+            Interpolated data.
 
         '''
         #TODO: generalise and improve flexibility
-        intp_tbl = pd.DataFrame()
+        lkp_tbl = pd.DataFrame()
         for led, df in self.data.groupby(['led']):
             intensities = df.index.get_level_values('intensity')
             new_intensities = np.linspace(
@@ -857,34 +860,49 @@ class CalibrationContext():
             n = df.reindex(new_intensities).interpolate(method='linear')
             n['intensity'] = n.index
             n['led'] = led
-            intp_tbl = intp_tbl.append(n)
-        intp_tbl.set_index(['led','intensity'], inplace=True)
-        return intp_tbl
+            lkp_tbl = lkp_tbl.append(n)
+        lkp_tbl.set_index(['led','intensity'], inplace=True)
+        return lkp_tbl
     
     def create_alphaopic_irradiances_table(self):
+        '''
+        Using the CIE026 spectral sensetivities, calculate alphaopic irradiances
+        (S, M, L, Rhod and Melanopic) for every spectrum in `self.lkp`.
+        
+        Returns
+        -------
+        pd.DataFrame
+            Alphaopic irradiances.
+
+        '''
         _ , sss = get_CIES026(asdf=True)
         sss = sss.fillna(0)
         return self.lkp.dot(sss)
     
     def create_lux_table(self):
+        '''
+        Using the CIE1924 photopic luminosity function, calculate lux for every 
+        spectrum in `self.lkp`.
+
+        Returns
+        -------
+        pd.DataFrame
+            Lux values.
+
+        '''
         vl = get_CIE_1924_photopic_vl(asdf=True)
         return self.lkp.dot(vl.values)*683
         
-    def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0]):
+    def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
         '''
-        Predict the spectral power distribution for a given list of led 
-        intensities using linear interpolation.
+        Using `self.lkp`, predict the spectral power distribution for a given list
+        of led intensities.
         
         Parameters
         ----------
-        intensity : list
+        intensities : list
             List of intensity values for each led. The default is 
-            [0,0,0,0,0,0,0,0,0,0].
-        lkp_table : DataFrame
-            A wide-format DataFrame with hierarchichal pd.MultIndex 
-            [led, intensity] and a column for each of 81 5-nm wavelength bins. 
-            4096*10 rows, containing predicted output for each led at all
-            possible intensities.
+            `[0,0,0,0,0,0,0,0,0,0]`.
         
         Returns
         -------
@@ -895,14 +913,17 @@ class CalibrationContext():
         spectrum = np.zeros(len(self.lkp.columns))
         for led, val in enumerate(intensities):
             spectrum += self.lkp.loc[(led, val)].to_numpy()
-        return spectrum
+        if asdf:
+            return pd.DataFrame(spectrum, index=self.wls).T
+        else:
+            return spectrum
         
     def match(self, match_led, match_led_intensity, 
               target_led, match_type='irrad'):
         '''
-        Determine the appropriate intensity setting for target_led so that its 
-        output will match tmatch_led at match_led_intensity in terms of 
-        match_type.
+        Determine the appropriate intensity setting for `target_led` so that its 
+        output will match `match_led` at `match_led_intensity` with respect to
+        `match_type`.
 
         Parameters
         ----------
@@ -930,7 +951,7 @@ class CalibrationContext():
         error : float
             The absolute matching error.
         match_intensity : int
-            The required intensity for match_led.
+            The required intensity for `match_led`.
 
         '''
         if match_type=='irrad':

@@ -3,6 +3,7 @@ API documentation
 
 .. automodule:: pyplr.pupil
    :members:
+   :special-members:
 
 .. automodule:: pyplr.stlab
    :members:

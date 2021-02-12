@@ -15,38 +15,33 @@ import numpy as np
 import msgpack
 import zmq
 
-class PupilCore():
+class PupilCore:
     '''
-    A Class for Pupil Core and the remote helper.
-    
+    A class for Pupil Core and the Remote Helper.
+        
     '''
     
     def __init__(self, address='127.0.0.1', request_port='50020', 
                  pyplr_defaults=True):
         '''
-        Initialise the connection with Pupil Core. 
-
+        
         Parameters
         ----------
         address : string, optional
-            The IP address of the device. The default is '127.0.0.1'.
+            The IP address of the device. The default is `127.0.0.1`.
         request_port : string, optional
             Pupil Remote accepts requests via a REP socket, by default on 
             port 50020. Alternatively, you can set a custom port in Pupil Capture
-            or via the --port application argument. The default is '50020'.
+            or via the `--port` application argument. The default is `50020`.
         pyplr_defaults : bool, optional
-            Whether to configure Pupil Capture with the defaults used for pyplr
+            Whether to configure Pupil Capture with the defaults used for pyplr.
             LightStamper. This includes making sure the Annotation Capture plugin
             is active, that frames are published in BGR format, and that the
             world camera is using a frame rate of (320,240) at 120 hz with 
             exposure mode set to manual. Always manually verify that the settings
             are appropriate for the application you are running. 
             The default is True. 
-
-        Returns
-        -------
-        None.
-
+            
         '''
         self.address = address
         self.request_port = request_port
@@ -95,27 +90,30 @@ class PupilCore():
     def command(self, cmd):
         '''
         Send a command via Pupil Remote. 
-
+        
+        Click `here <https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote>`_
+        for more information on Pupil Remote.
+        
         Parameters
         ----------
         cmd : string
             Must be one of the following:
                 
-            'R'          - start recording with auto generated session name
-            'R rec_name' - start recording named "rec_name" 
-            'r'          - stop recording
-            'C'          - start currently selected calibration
-            'c'          - stop currently selected calibration
-            'T 1234.56'  - resets current Pupil time to given timestamp
-            't'          - get current Pupil time; returns a float as string
-            'v'          - get the Pupil Core software version string
-            'PUB_PORT'   - return the current pub port of the IPC Backbone 
-            'SUB_PORT'   - return the current sub port of the IPC Backbone
+            * 'R'          - start recording with auto generated session name
+            * 'R rec_name' - start recording named `rec_name` 
+            * 'r'          - stop recording
+            * 'C'          - start currently selected calibration
+            * 'c'          - stop currently selected calibration
+            * 'T 1234.56'  - resets current Pupil time to given timestamp
+            * 't'          - get current Pupil time; returns a float as string
+            * 'v'          - get the Pupil Core software version string
+            * 'PUB_PORT'   - return the current pub port of the IPC Backbone 
+            * 'SUB_PORT'   - return the current sub port of the IPC Backbone
 
         Returns
         -------
         string
-            the result of the command. If the command was not acceptable, this
+            The result of the command. If the command was not acceptable, this
             will be 'Unknown command.'
 
         '''
@@ -127,27 +125,32 @@ class PupilCore():
     
     def notify(self, notification):
         '''
-        Send a notification to Pupil Remote. Every notification has a topic 
-        and can contain potential payload data. The payload data has to be 
-        serializable, so not every Python object will work. To find out which
-        plugins send and receive notifications, open the codebase and search 
-        for `.notify_all(` and `def on_notify(`. 
-    
+        Send a notification to Pupil Remote. 
+        
+        Every notification has a topic and 
+        can contain potential payload data. The payload data has to be serializable,
+        so not every Python object will work. To find out which plugins send and
+        receive notifications, open the codebase and search for `.notify_all(` and 
+        `def on_notify(`. 
+        
+        Click `here <https://docs.pupil-labs.com/developer/core/network-api/#notification-message>`_
+        for more info on notifications.
+        
         Parameters
         ----------
-        pupil_remote : zmq.sugar.socket.Socket
-            the pupil remote helper.
         notification : dict
-            the notification dict. Some examples:
+            The notification dict. For example::
                 
-            - {'subject': 'start_plugin', 'name': 'Annotation_Capture', 'args': {}}) 
-            - {'subject': 'recording.should_start', 'session_name': 'my session'}
-            - {'subject': 'recording.should_stop'}
+                {
+                 'subject': 'start_plugin',
+                 'name': 'Annotation_Capture',
+                 'args': {}})
+                }
             
         Returns
         -------
         string
-            the response.
+            The response.
 
         '''
         topic = 'notify.' + notification['subject']
@@ -156,101 +159,101 @@ class PupilCore():
         self.remote.send(payload)
         return self.remote.recv_string()
     
-    def send_trigger(self, trigger):
+    def send_annotation(self, annotation):
         '''
-        Send an annotation (a.k.a 'trigger') to Pupil Capture. Use to mark the 
-        timing of events.
+        Send an annotation (a.k.a 'trigger', event marker, etc.) to Pupil Capture. 
+        Use to mark the timing of events.
         
         Parameters
         ----------
-        trigger : dict
-            customiseable - see the new_trigger(...) function.
-    
+        annotation : dict
+            customiseable - see the `new_annotation(...)` function.
+
+        Click `here <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+        for more info on annotations.
+        
         Returns
         -------
         None.
     
         '''
-        payload = msgpack.dumps(trigger, use_bin_type=True)
-        self.pub_socket.send_string(trigger['topic'], flags=zmq.SNDMORE)
+        payload = msgpack.dumps(annotation, use_bin_type=True)
+        self.pub_socket.send_string(annotation['topic'], flags=zmq.SNDMORE)
         self.pub_socket.send(payload)
     
 
 class LightStamper(Thread):
-    '''
-    A thread-bound class which uses the Pupil Core World Camera to detect the 
-    onset of a light and send an annotation (a.k.a 'trigger') to Pupil Capture 
-    with the associated Pupil timestamp. Useful for integrating with virtually
-    any light source. Supports extraction of PLRs and calculation of time-critical 
-    measures such as latency and time-to-peak consctriction. Inherits from 
-    threading.Thread and overrides the .run() method. Instantiate a few seconds 
-    before administering a light stimulus. Works very well with the following 
-    settings in Pupil Capture:
-        
-    1. Resolution (320, 240) for eye and world
-    2. Frame rate 120 for eye and world
-    3. Auto Exposure mode - Manual Exposure - eye and world
-    4. Absolute exposure time 60 for world, 63 for eye
-    5. Frame publisher format - BGR
+    '''Detect and time-stamp light onsets using the Pupil Core World Camera. 
+    
+    Currently implemented as a sublclass of threading.Thread for easy 
+    access to data after the task is complete. Supports extraction of PLRs and 
+    calculation of time-critical measures such as latency and time-to-peak 
+    consctriction. Instantiate a few seconds before administering a light 
+    stimulus. 
 
     Example
     -------
-    label = 'LIGHT_ON'
-    trigger = new_trigger(label)
-    threshold = 15
-    wait_time = 5.
-    lst = LightStamper(pupil, trigger, threshold, wait_time)
-    lst.start()
+    >>> label = 'LIGHT_ON'
+    >>> annotation = new_annotation(label)
+    >>> threshold = 15
+    >>> wait_time = 5.
+    >>> lst = LightStamper(pupil, annotation, threshold, wait_time)
+    >>> lst.start()
+    
+    Notes
+    ----
+    Requires a suitable geometry and for the World Camera to be pointed at the 
+    light source. Also requires the following settings in Pupil Capture:
         
+    * Auto Exposure mode - Manual Exposure (eye and world)
+    * Frame publisher format - BGR
+    
     '''
-    def __init__(self, pupil, trigger, threshold=15, 
+    def __init__(self, pupil, annotation, threshold=15, 
                  wait_time=None, subscription='frame.world'):
-        '''
-        Prepare to stamp a light. Follow up with LightStamper.start() to begin.
+        '''Set up subscription and prepare to stamp a light. 
         
         Parameters
         ----------
         pupil : pupil.PupilCore
-            PupilCore class instance
-        trigger : dict
-            a dictionary with at least the following:
+            `PupilCore` class instance.
+        annotation : dict
+            A dictionary with at least the following::
                 
-            {'topic': 'annotation',
-             'label': 'our_label',
-             'timestamp': None}
-            
+                {
+                 'topic': 'annotation',
+                 'label': '<your label>',
+                 'timestamp': None
+                 }
+                
             timestamp will be overwritten with the new pupil timestamp for the 
-            detected light. See new_trigger(...) for more info.
+            detected light. See `new_annotation(...)` for more info.
         threshold : int
-            detection threshold for luminance increase. The right value depends on
+            Detection threshold for luminance increase. The right value depends on
             the nature of the light stimulus and the ambient lighting conditions. 
             Requires some guesswork right now, but it would be good to have a 
             function that works it out for us. 
         wait_time : float, optional
-            time to wait in seconds before giving up (will run indefinitely if
-            no value is passed, in which case will require LightStamper.join()). 
+            Time to wait in seconds before giving up (will run indefinitely if
+            no value is passed, in which case will require `LightStamper.join()`). 
             Use when controlling a light source programmatically. For STLAB, use 
             6.0 s, because on rare occasions it can take about 5 seconds 
             to process a request. The default in None. 
         subscription : string
             The camera frames to subscribe to. In most cases this will be 
-            'frame.world', but the method will also work for 'frame.eye.0' and
-            'frame.eye.1' if the light source contains enough near-infrared. 
-            The default is 'frame.world'.
+            `'frame.world'`, but the method will also work for `'frame.eye.0'`
+            and `'frame.eye.1'` if the light source contains enough near-infrared. 
+            The default is `'frame.world'`.
         detected : bool
             Whether a light gets detected.
         timestamp : None, float
             The pupil timestamp associated with the frame where the light was
             detected.
             
-        Returns
-        -------
-        None.
-
         '''
         super(LightStamper, self).__init__()
         self.pupil = pupil
-        self.trigger = trigger
+        self.annotation = annotation
         self.threshold = threshold
         self.wait_time = wait_time
         self.subscription = subscription
@@ -264,18 +267,26 @@ class LightStamper(Thread):
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, self.subscription)
         
     def run(self):
-        '''
-        Override the threading.Thread.run() method with light detection code. 
-        This code works by keeping track of the two most recent frames from the 
-        World Camera. When the difference between the two is greater than
-        the given threshold, a trigger is sent via pupil remote with the 
-        timestamp corresponding to the most recent frame. 
-
-        Returns
-        -------
-        None.
+        '''This method has been overridden with the `stamp_light()` method.
+        
+        Note
+        ----
+        This is an isiosyncratic approach which we adopt because it simplifies
+        access to data from the thread.
 
         '''
+        self.stamp_light()
+        
+    def stamp_light(self):
+        '''The light detection algorithm.
+        
+        Keeps track of the two most recent frames from the World Camera. When
+        the difference between the two is greater than `self.threshold`, an 
+        annotation is sent via pupil remote with the timestamp corresponding to 
+        the most recent frame. 
+        
+        '''
+        # TODO: review this algo
         recent_world = None
         recent_world_minus_one = None
         recent_world_ts = None
@@ -297,8 +308,8 @@ class LightStamper(Thread):
                 if diff > self.threshold:
                     print('Light stamped on {} at {}'.format(
                         self.subscription, recent_world_ts))
-                    self.trigger['timestamp'] = recent_world_ts # change trigger timestamp
-                    self.pupil.send_trigger(self.trigger)
+                    self.annotation['timestamp'] = recent_world_ts # change annotation timestamp
+                    self.pupil.send_annotation(self.annotation)
                     self.timestamp = recent_world_ts
                     self.successful = True
             recent_world_minus_one = recent_world
@@ -308,45 +319,42 @@ class LightStamper(Thread):
             print('LightStamper failed to detect a light...')
 
 class PupilGrabber(Thread):
-    '''
-    A thread-bound class for grabbing data from Pupil Core. 
-    
+    '''Start grabbing data from Pupil Core.
+        
     Example
     -------
-    pupil = PupilCore()
-    pg = PupilGrabber(pupil, topic='pupil.0.3d', secs=10)
-    pg.start()
+    >>> pupil = PupilCore()
+    >>> pgr = PupilGrabber(pupil, topic='pupil.0.3d', secs=10)
+    >>> pgr.start()
+    >>> sleep(10.)
+    >>> data = pgr.get('diameter_3d')
     
     '''
     def __init__(self, pupil, topic, secs=None):
         '''
-        Prepare to start grabbing some data from pupil. Follow up with 
-        PupilGrabber.start() to begin.
+        Prepare subscriptions for data grabbing. Follow up with 
+        `PupilGrabber.start()`.
 
         Parameters
         ----------
         pupil : pupil.PupilCore
-            PupilCore class instance
+            PupilCore class instance.
         topic : string
             Subscription topic. Can be:
                 
-                'pupil.0.2d'  - 2d pupil datum (left)
-                'pupil.1.2d'  - 2d pupil datum (right)  
-                'pupil.0.3d'  - 3d pupil datum (left)
-                'pupil.1.3d'  - 3d pupil datum (right)  
-                'gaze.3d.1.'  - monocular gaze datum
-                'gaze.3d.01.' - binocular gaze datum
-                'logging'     - logging data
+                * 'pupil.0.2d'  - 2d pupil datum (left)
+                * 'pupil.1.2d'  - 2d pupil datum (right)  
+                * 'pupil.0.3d'  - 3d pupil datum (left)
+                * 'pupil.1.3d'  - 3d pupil datum (right)  
+                * 'gaze.3d.1.'  - monocular gaze datum
+                * 'gaze.3d.01.' - binocular gaze datum
+                * 'logging'     - logging data
                 
             Other topics are available from plugins (e.g. fixations, surfaces)
             and custom topics can be defined. 
         secs : float, optional
             Ammount of time to spend grabbing data. Will run indefinitely if 
             no value is passed, in which case requires PupilGrabber.join().
-
-        Returns
-        -------
-        None.
 
         '''
         super(PupilGrabber, self).__init__()
@@ -363,14 +371,23 @@ class PupilGrabber(Thread):
         # TODO: add check on topic subscription
 
     def run(self):
-        '''
-        Override the threading.Thread.run() method with code for grabbing data.
+        '''This method has been overridden with the `grab()` method.
+        
+        Note
+        ----
+        This is an isiosyncratic approach which we adopt because it simplifies
+        access to data from the thread.
 
-        Returns
-        -------
-        None.
-
         '''
+        self.grab()
+        
+    def grab(self):
+        '''The pupil grabbing algorithm.
+        
+        Grabs all messages which match `self.topic` and dumps them in `self.data`
+        
+        '''
+        # TODO: review algo
         print('PupilGrabber now grabbing {} seconds of {}'.format(
             '?' if not self.secs else self.secs, self.topic))
         if not self.secs:
@@ -386,13 +403,12 @@ class PupilGrabber(Thread):
             self.secs, self.topic))
         
     def get(self, what):
-        '''
-        Get grabbed data.
+        '''Get grabbed data.
 
         Parameters
         ----------
         what : string
-            The key of the data to be accessed. E.g. 'diameter_3d', 'timestamp',
+            The key of the data to be accessed. E.g., 'diameter_3d', 'timestamp',
             'gaze_point_3d'.
 
         Returns
@@ -401,58 +417,18 @@ class PupilGrabber(Thread):
             The requested data.
 
         '''
+        # TODO: allow for accessing multiple data types and return a dict
         return [entry[what.encode()] for entry in self.data]
             
-def notify(pupil_remote, notification):
+def new_annotation(label, custom_fields={}):
     '''
-    Send a notification to Pupil Remote.
-
-    Parameters
-    ----------
-    pupil_remote : zmq.sugar.socket.Socket
-        the pupil remote helper.
-    notification : dict
-        the notification dict. 
-        e.g. {'subject':'start_plugin', 'name':'Annotation_Capture'}
-    Returns
-    -------
-    string
-        the response.
-
-    '''
-    topic = 'notify.' + notification['subject']
-    payload = msgpack.dumps(notification, use_bin_type=True)
-    pupil_remote.send_string(topic, flags=zmq.SNDMORE)
-    pupil_remote.send(payload)
-    return pupil_remote.recv_string()
-
-def send_trigger(pub_socket, trigger):
-    '''
-    Send an annotation (a.k.a 'trigger') to Pupil Capture. Use to mark the 
-    timing of events.
-    
-    Parameters
-    ----------
-    pub_socket : zmq.sugar.socket.Socket
-        a socket to publish the trigger.
-    trigger : dict
-        customiseable - see the new_trigger(...) function.
-
-    Returns
-    -------
-    None.
-
-    '''
-    payload = msgpack.dumps(trigger, use_bin_type=True)
-    pub_socket.send_string(trigger['topic'], flags=zmq.SNDMORE)
-    pub_socket.send(payload)
-    
-def new_trigger(label, custom_fields={}):
-    '''
-    Create a new trigger / annotation / message / event marker / whatever 
-    you want to call it. Send it to Pupil Capture with the send_trigger(...) 
+    Create a new annotation (a.k.a. message / event marker / whatever 
+    you want to call it). Send it to Pupil Capture with the `send_annotation(...)` 
     function.
 
+    Click `here <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+    for more info on annotations.
+        
     Parameters
     ----------
     label : string
@@ -463,18 +439,18 @@ def new_trigger(label, custom_fields={}):
 
     Returns
     -------
-    trigger : dict
-        The trigger dictionary, ready to be sent.
+    annotation : dict
+        The annotation dictionary, ready to be sent.
 
     '''
-    trigger = {
+    annotation = {
         'topic': 'annotation',
         'label': label,
         'timestamp': time()
         }
     for k, v in custom_fields.items():
-        trigger[k] = v
-    return trigger
+        annotation[k] = v
+    return annotation
 
 def recv_from_subscriber(subscriber):
     '''
@@ -494,7 +470,7 @@ def recv_from_subscriber(subscriber):
         Any addional message frames will be added as a list in the payload 
         dictionary with key: '__raw_data__'. To use frame data, say: 
         np.frombuffer(msg['__raw_data__'][0], dtype=np.uint8).reshape(
-                msg['height'], msg['width'], 3)
+        msg['height'], msg['width'], 3)
         
     '''
     topic = subscriber.recv_string()
