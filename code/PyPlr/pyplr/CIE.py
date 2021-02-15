@@ -6,16 +6,16 @@ pyplr.CIE
 
 Convenience functions for accessing CIE standards.
 
-note:,https://scipython.com/blog/converting-a-spectrum-to-a-colour/
-note: http://cvrl.ioo.ucl.ac.uk/cmfs.htm
+:note: https://scipython.com/blog/converting-a-spectrum-to-a-colour/
+:note: http://cvrl.ioo.ucl.ac.uk/cmfs.htm
 
 '''
 
 import numpy as np
 import pandas as pd
 
-# The CIE colour matching function for 380 - 780 nm in 5 nm intervals
-
+# TODO: check this file contains the right data
+ 
 def get_CIE_CMF(asdf=False):
     '''
     Get the CIE color matching functions as a numpy array or pandas DataFrame.
@@ -31,7 +31,6 @@ def get_CIE_CMF(asdf=False):
         The CIE CMFs.
 
     '''
-    
     colnames = ["index", "X", "Y", "Z"]
     
     cmf = np.array([
@@ -127,11 +126,30 @@ def get_CIE_CMF(asdf=False):
         
     return cmf
 
-def get_CIES026(asdf=False):
+def get_CIES026(asdf=False, binwidth=1):
+    '''Convenience function to access CIE026 spectral sensitivities.
+
+    Parameters
+    ----------
+    asdf : bool, optional
+        Whether to return the results as a pandas DataFrame. The default is
+        False.
+    binwidth : int, optional
+        Width of the wavelength bins in nanometers (must be `1` or `5`). The 
+        default is `1`.
+
+    Returns
+    -------
+    sss : np.array or pd.DataFrame
+        CIES026 spectral sensitivities for s, m, l, rods, and melanopsin.
+
+    '''
+    if binwidth not in [1,5]:
+        raise ValueError('Must specify 1 or 5 for binwidth')
+        
+    colnames = ['nm','S','M','L','Rods','Mel']
     
-    colnames = ["index","S","M","L","Rods","Mel"]
-    
-    T_cies026 = np.array([
+    sss = np.array([
     380,np.nan,np.nan,np.nan,0.000589,0.00091816,
     381,np.nan,np.nan,np.nan,0.000665,0.0010456,
     382,np.nan,np.nan,np.nan,0.000752,0.0011786,
@@ -535,20 +553,35 @@ def get_CIES026(asdf=False):
     780,np.nan,1.46E-06,1.86E-05,1.39E-07,2.05E-08
     ])
     
-    S_cies026 = np.array([380, 1, 401])
-    
+    sss = sss.reshape(401,6).astype(np.float64).T
+    sss = sss[:,::binwidth]
     if asdf:
-        T_cies026 = T_cies026.reshape(401,6).astype(np.float64)
-        T_cies026 = pd.DataFrame(data=T_cies026, columns=colnames)
-        T_cies026.set_index("index", inplace=True)
-    else:
-        T_cies026 = T_cies026.reshape(401,6).astype(np.float64).T
-        
-    return S_cies026, T_cies026
+        sss = pd.DataFrame(data=sss.T, columns=colnames)
+        sss.set_index('nm', inplace=True)
+        sss.index = pd.Int64Index(sss.index)
+    return sss
 
-def get_CIE_1924_photopic_vl(asdf=False):
+def get_CIE_1924_photopic_vl(asdf=False, binwidth=1):
+    '''Convenience function to access CIE1924 photopic luminosity function.
     
-    colnames = ['index', 'vl']
+    Parameters
+    ----------
+    asdf : bool, optional
+        Whether to return the results as a pandas DataFrame. The default is
+        False.
+    binwidth : int, optional
+        Width of the wavelength bins in nanometers (must be `1` or `5`). The 
+        default is `1`.
+    Returns
+    -------
+    vl : np.array or pd.DataFrame
+        The CIE1924 photopic luminosity function.
+
+    '''
+    if binwidth not in [1,5]:
+        raise ValueError('Must specify 1 or 5 for binwidth')  
+        
+    colnames = ['nm', 'vl']
     
     vl = np.array([
     380, 0.0000390000000,
@@ -954,11 +987,10 @@ def get_CIE_1924_photopic_vl(asdf=False):
     780, 0.0000149900000
     ])
     
+    vl = vl.reshape(401,2).astype(np.float64).T
+    vl = vl[:,::binwidth]    
     if asdf:
-        vl = vl.reshape(401,2).astype(np.float64)
-        vl = pd.DataFrame(data=vl, columns=colnames)
-        vl.set_index("index", inplace=True)
-    else:
-        vl = vl.reshape(401,2).astype(np.float64).T
-        
+        vl = pd.DataFrame(data=vl.T, columns=colnames)
+        vl.set_index('nm', inplace=True)
+        vl.index = pd.Int64Index(vl.index)
     return vl

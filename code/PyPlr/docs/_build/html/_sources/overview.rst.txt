@@ -10,5 +10,6 @@ Hardware interfacing
    :maxdepth: 2
    :caption: List of Notebooks:
 
-   plr_with_pupil_core
-   STLAB_introduction
+   pupil_core
+   stlab_and_sphere
+   ocean_optics_calibration

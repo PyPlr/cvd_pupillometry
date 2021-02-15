@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import spectres
 
+# TODO: possibly sublclass Seabreeze functionality
 
 def oo_measurement(spectrometer, integration_time=None, setting={}):
     '''

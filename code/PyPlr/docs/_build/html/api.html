@@ -56,13 +56,15 @@ stimulus.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </pre></div>
 </div>
-<p class="rubric">Notes</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Requires a suitable geometry and for the World Camera to be pointed at the
 light source. Also requires the following settings in Pupil Capture:</p>
 <ul class="simple">
 <li><p>Auto Exposure mode - Manual Exposure (eye and world)</p></li>
 <li><p>Frame publisher format - BGR</p></li>
 </ul>
+</div>
 <dl class="py method">
 <dt id="pyplr.pupil.LightStamper.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil</span></em>, <em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">wait_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subscription</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.LightStamper.__init__" title="Permalink to this definition">¶</a></dt>
@@ -130,6 +132,14 @@ the most recent frame.</p>
 <dt id="pyplr.pupil.PupilCore">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">PupilCore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">'127.0.0.1'</span></em>, <em class="sig-param"><span class="n">request_port</span><span class="o">=</span><span class="default_value">'50020'</span></em>, <em class="sig-param"><span class="n">pyplr_defaults</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for Pupil Core and the Remote Helper.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># A two second recording</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R my_recording&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="pyplr.pupil.PupilCore.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">'127.0.0.1'</span></em>, <em class="sig-param"><span class="n">request_port</span><span class="o">=</span><span class="default_value">'50020'</span></em>, <em class="sig-param"><span class="n">pyplr_defaults</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.__init__" title="Permalink to this definition">¶</a></dt>
@@ -162,12 +172,15 @@ The default is True.</p></li>
 <dt id="pyplr.pupil.PupilCore.command">
 <code class="sig-name descname">command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cmd</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a command via Pupil Remote.</p>
-<p>Click <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">here</a>
-for more information on Pupil Remote.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">here</a> for more information on Pupil Remote.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>cmd</strong> (<em>string</em>) – <p>Must be one of the following:</p>
-<ul class="simple">
+<blockquote>
+<div><ul class="simple">
 <li><p>’R’          - start recording with auto generated session name</p></li>
 <li><p>’R rec_name’ - start recording named <cite>rec_name</cite></p></li>
 <li><p>’r’          - stop recording</p></li>
@@ -179,6 +192,7 @@ for more information on Pupil Remote.</p>
 <li><p>’PUB_PORT’   - return the current pub port of the IPC Backbone</p></li>
 <li><p>’SUB_PORT’   - return the current sub port of the IPC Backbone</p></li>
 </ul>
+</div></blockquote>
 </p>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -192,6 +206,82 @@ will be ‘Unknown command.’</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="pyplr.pupil.PupilCore.detect_light_onset">
+<code class="sig-name descname">detect_light_onset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span></em>, <em class="sig-param"><span class="n">timeout</span></em>, <em class="sig-param"><span class="n">subscription</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.detect_light_onset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Algorithm to detect onset of light stimulus with the World Camera.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.lightstamper">
+<code class="sig-name descname">lightstamper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subscription</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.lightstamper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect the onset of a luminance increase with the World Camera.</p>
+<p>Calls the <code class="docutils literal notranslate"><span class="pre">detect_light_onset(...)</span></code> method in a thread with
+concurrent.futures.ThreadPoolExecutor(), to allow future access to the
+return value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>annotation</strong> (<em>dict</em>) – <p>A dictionary with at least the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+ <span class="s1">&#39;topic&#39;</span><span class="p">:</span> <span class="s1">&#39;annotation&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;your label&gt;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="kc">None</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>timestamp will be overwritten with the new pupil timestamp for the
+detected light. See <cite>new_annotation(…)</cite> for more info.</p>
+</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – Detection threshold for luminance increase. The right value depends on
+the nature of the light stimulus and the ambient lighting conditions.
+Requires some guesswork right now, but it would be good to have a
+function that works it out for us.</p></li>
+<li><p><strong>wait_time</strong> (<em>float</em><em>, </em><em>optional</em>) – Time to wait in seconds before giving up (will run indefinitely if
+no value is passed, in which case will require <cite>LightStamper.join()</cite>).
+Use when controlling a light source programmatically. For STLAB, use
+6.0 s, because on rare occasions it can take about 5 seconds
+to process a request. The default in None.</p></li>
+<li><p><strong>subscription</strong> (<em>string</em>) – The camera frames to subscribe to. In most cases this will be
+<cite>‘frame.world’</cite>, but the method will also work for <cite>‘frame.eye.0’</cite>
+and <cite>‘frame.eye.1’</cite> if the light source contains enough near-infrared.
+The default is <cite>‘frame.world’</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;LIGHT_ON&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">annotation</span> <span class="o">=</span> <span class="n">new_annotation</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">threshold</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">timeout</span> <span class="o">=</span> <span class="mf">10.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># light stimulus here</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Requires a suitable geometry and for the World Camera to be pointed at
+the light source. Also requires the following settings in Pupil Capture:</p>
+<ul class="simple">
+<li><p>Auto Exposure mode - Manual Exposure (eye and world)</p></li>
+<li><p>Frame publisher format - BGR</p></li>
+</ul>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An object that can be used to access the result of thread</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>concurrent.futures._base_Future</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="pyplr.pupil.PupilCore.notify">
 <code class="sig-name descname">notify</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">notification</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.notify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a notification to Pupil Remote.</p>
@@ -200,11 +290,14 @@ can contain potential payload data. The payload data has to be serializable,
 so not every Python object will work. To find out which plugins send and
 receive notifications, open the codebase and search for <cite>.notify_all(</cite> and
 <cite>def on_notify(</cite>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Click <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#notification-message">here</a>
 for more info on notifications.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>notification</strong> (<em>dict</em>) – <p>the notification dict. For example:</p>
+<dd class="field-odd"><p><strong>notification</strong> (<em>dict</em>) – <p>The notification dict. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
  <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;start_plugin&#39;</span><span class="p">,</span>
  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Annotation_Capture&#39;</span><span class="p">,</span>
@@ -215,7 +308,7 @@ for more info on notifications.</p>
 </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the response.</p>
+<dd class="field-even"><p>The response.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>string</p>
@@ -226,15 +319,11 @@ for more info on notifications.</p>
 <dl class="py method">
 <dt id="pyplr.pupil.PupilCore.send_annotation">
 <code class="sig-name descname">send_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.send_annotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an annotation (a.k.a ‘trigger’, event marker, etc.) to Pupil Capture.
-Use to mark the timing of events.</p>
+<dd><p>Send an annotation (a.k.a trigger, event marker) to Pupil Capture.</p>
+<p>Use to mark the timing of events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>annotation</strong> (<em>dict</em>) – customiseable - see the <cite>new_annotation(…)</cite> function.</p></li>
-<li><p><strong>`here &lt;https</strong> (<em>Click</em>) – </p></li>
-<li><p><strong>more info on annotations.</strong> (<em>for</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>annotation</strong> (<em>dict</em>) – Customiseable - see the <cite>new_annotation(…)</cite> function.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>
@@ -334,8 +423,11 @@ access to data from the thread.</p>
 <dd><p>Create a new annotation (a.k.a. message / event marker / whatever
 you want to call it). Send it to Pupil Capture with the <cite>send_annotation(…)</cite>
 function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Click <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">here</a>
-for more info on annotations.</p>
+for more information on annotations.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -349,27 +441,6 @@ The default is {}.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.pupil.notify">
-<code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">notify</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil_remote</span></em>, <em class="sig-param"><span class="n">notification</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.notify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send a notification to Pupil Remote.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pupil_remote</strong> (<em>zmq.sugar.socket.Socket</em>) – the pupil remote helper.</p></li>
-<li><p><strong>notification</strong> (<em>dict</em>) – the notification dict.
-e.g. {‘subject’:’start_plugin’, ‘name’:’Annotation_Capture’}</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the response.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>string</p>
 </dd>
 </dl>
 </dd></dl>
@@ -406,13 +477,43 @@ required to develop against the RESTful API.</p>
 <dl class="py class">
 <dt id="pyplr.stlab.CalibrationContext">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">CalibrationContext</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a calibration context based on spectrometer measurements. Currently
-this requires the measurements to be for each LED in steps of 65.</p>
+<dd><p>Create a calibration context based on spectrometer measurements.</p>
+<p>Automatically creates a forward model of the device using linear interpolation.
+Currently this requires the measurements to be for each LED in steps of 65.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="pyplr.stlab.CalibrationContext.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>str</em>) – Path to a csv file of calibrated spectrometer data. Must contain
+columns ‘led’ and ‘intensity’.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyplr.stlab.CalibrationContext.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#pyplr.stlab.CalibrationContext.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="py method">
 <dt id="pyplr.stlab.CalibrationContext.create_alphaopic_irradiances_table">
 <code class="sig-name descname">create_alphaopic_irradiances_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext.create_alphaopic_irradiances_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the CIE026 spectral sensetivities, calculate alphaopic irradiances
-(S, M, L, Rhod and Melanopic) for every spectrum in <cite>self.lkp</cite>.</p>
+<dd><p>Using the CIE026 spectral sensetivities, calculate alphaopic
+irradiances (S, M, L, Rhod and Melanopic) for every spectrum in
+<cite>self.lkp</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Alphaopic irradiances.</p>
@@ -441,8 +542,8 @@ interpolation.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.CalibrationContext.create_lux_table">
 <code class="sig-name descname">create_lux_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext.create_lux_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the CIE1924 photopic luminosity function, calculate lux for every
-spectrum in <cite>self.lkp</cite>.</p>
+<dd><p>Using the CIE1924 photopic luminosity function, calculate lux for
+every spectrum in <cite>self.lkp</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Lux values.</p>
@@ -456,9 +557,9 @@ spectrum in <cite>self.lkp</cite>.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.CalibrationContext.match">
 <code class="sig-name descname">match</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">match_led</span></em>, <em class="sig-param"><span class="n">match_led_intensity</span></em>, <em class="sig-param"><span class="n">target_led</span></em>, <em class="sig-param"><span class="n">match_type</span><span class="o">=</span><span class="default_value">'irrad'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext.match" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate intensity setting for <cite>target_led</cite> so that its
-output will match <cite>match_led</cite> at <cite>match_led_intensity</cite> with respect to
-<cite>match_type</cite>.</p>
+<dd><p>Determine the appropriate intensity setting for <cite>target_led</cite> so that
+its output will match <cite>match_led</cite> at <cite>match_led_intensity</cite> with respect
+to <cite>match_type</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -500,7 +601,7 @@ output will match <cite>match_led</cite> at <cite>match_led_intensity</cite> wit
 <dd class="field-odd"><p><strong>fig</strong> – The plot.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Matplotlib Figure</p>
+<dd class="field-even"><p>Matplotlib.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -508,12 +609,12 @@ output will match <cite>match_led</cite> at <cite>match_led_intensity</cite> wit
 <dl class="py method">
 <dt id="pyplr.stlab.CalibrationContext.predict_spd">
 <code class="sig-name descname">predict_spd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intensities</span><span class="o">=</span><span class="default_value">[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]</span></em>, <em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.CalibrationContext.predict_spd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using <cite>self.lkp</cite>, predict the spectral power distribution for a given list
-of led intensities.</p>
+<dd><p>Using <cite>self.lkp</cite>, predict the spectral power distribution for a
+given list of led intensities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>intensities</strong> (<em>list</em>) – List of intensity values for each led. The default is
-<cite>[0,0,0,0,0,0,0,0,0,0]</cite>.</p>
+<code class="docutils literal notranslate"><span class="pre">[0,0,0,0,0,0,0,0,0,0]</span></code>.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>spectrum</strong> – Predicted spectrum for given intensities.</p>
@@ -529,23 +630,12 @@ of led intensities.</p>
 <dl class="py class">
 <dt id="pyplr.stlab.SpectraTuneLab">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">SpectraTuneLab</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span></em>, <em class="sig-param"><span class="n">identity</span></em>, <em class="sig-param"><span class="n">password</span></em>, <em class="sig-param"><span class="n">lighthub_ip</span><span class="o">=</span><span class="default_value">'192.168.7.2'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class to encapsulate the LEDMOTIVE Spectra Tune Lab device and its
-RESTFUL_API.</p>
-<dl class="py attribute">
-<dt id="pyplr.stlab.SpectraTuneLab.description">
-<code class="sig-name descname">description</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.description" title="Permalink to this definition">¶</a></dt>
-<dd><p>A description of the device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>string</p>
-</dd>
-</dl>
-</dd></dl>
-
+<dd><p>Wrapper for LEDMOTIVE Spectra Tune Lab RESTFUL_API.</p>
+<p>Includes other useful methods for working with the device.</p>
 <dl class="py attribute">
 <dt id="pyplr.stlab.SpectraTuneLab.colors">
 <code class="sig-name descname">colors</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.colors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Closest Matplotlib colornames for the 10 channels.</p>
+<dd><p>Matplotlib colornames for the 10 channels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>string</p>
@@ -556,7 +646,7 @@ RESTFUL_API.</p>
 <dl class="py attribute">
 <dt id="pyplr.stlab.SpectraTuneLab.rgb_colors">
 <code class="sig-name descname">rgb_colors</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.rgb_colors" title="Permalink to this definition">¶</a></dt>
-<dd><p>rgb colors of the 10 channels taken from photographs</p>
+<dd><p>RGB colors of the 10 channels taken from photographs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>list</p>
@@ -567,7 +657,7 @@ RESTFUL_API.</p>
 <dl class="py attribute">
 <dt id="pyplr.stlab.SpectraTuneLab.wlbins">
 <code class="sig-name descname">wlbins</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.wlbins" title="Permalink to this definition">¶</a></dt>
-<dd><p>The wavelengths output by the on-board spectrometer</p>
+<dd><p>The wavelength bins for the on-board spectrometer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>list</p>
@@ -578,7 +668,7 @@ RESTFUL_API.</p>
 <dl class="py attribute">
 <dt id="pyplr.stlab.SpectraTuneLab.min_intensity">
 <code class="sig-name descname">min_intensity</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.min_intensity" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum intensity setting for LEDs</p>
+<dd><p>The minimum intensity setting for LEDs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
@@ -589,7 +679,7 @@ RESTFUL_API.</p>
 <dl class="py attribute">
 <dt id="pyplr.stlab.SpectraTuneLab.max_intensity">
 <code class="sig-name descname">max_intensity</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.max_intensity" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum intensity setting for the LEDs</p>
+<dd><p>The maximum intensity setting for the LEDs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
@@ -597,21 +687,84 @@ RESTFUL_API.</p>
 </dl>
 </dd></dl>
 
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Synchronous mode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set each LED to maximum for a few seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="n">identitiy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">led</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">spectrum</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
+<span class="gp">... </span>    <span class="n">spectrum</span><span class="p">[</span><span class="n">led</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4095</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">.</span><span class="n">set_spectrum_a</span><span class="p">(</span><span class="n">spectrum</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">turn_off</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Asynchronous mode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create and play a video file setting all LEDs to maximum for 1 second</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="p">[</span><span class="mi">4095</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">video_name</span><span class="o">=</span><span class="s1">&#39;my_video_file&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="n">identitiy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="s1">&#39;my_video_file&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="pyplr.stlab.SpectraTuneLab.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span></em>, <em class="sig-param"><span class="n">identity</span></em>, <em class="sig-param"><span class="n">password</span></em>, <em class="sig-param"><span class="n">lighthub_ip</span><span class="o">=</span><span class="default_value">'192.168.7.2'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize connection with LightHub.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>username</strong> (<em>string</em>) – The username for logging in.</p></li>
+<li><p><strong>identity</strong> (<em>int</em>) – A unique numerical identifier for the device.</p></li>
+<li><p><strong>password</strong> (<em>string</em>) – The password specific to the LightHub.</p></li>
+<li><p><strong>lightub_ip</strong> (<em>string</em><em>, </em><em>optional</em>) – The IP address of the LightHub device. The default is <cite>‘192.168.7.2’</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Mac connection driver usually creates the network in a way that
+places the LightHub device at IP 192.168.6.2 instead of IP 192.168.7.2,
+so this may need to be changed depending on the platform. If that is not
+enough, you might need to also install the two (
+<a class="reference external" href="https://beagleboard.org/static/Drivers/MacOSX/RNDIS/HoRNDIS.pkg">Network</a>
+and
+<a class="reference external" href="https://beagleboard.org/static/Drivers/MacOSX/FTDI/EnergiaFTDIDrivers2.2.18.pkg">Serial</a>
+) Mac OX drivers required by the BeagleBone (the LightHub motherboard).</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyplr.stlab.SpectraTuneLab.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.color_xy">
 <code class="sig-name descname">color_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intensity_values</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.color_xy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Similar to the ‘spectruma’ command, but allows setting a target x, y
+<dd><p>Similar to the <cite>spectruma</cite> command, but allows setting a target x, y
 coordinates in the CIE1931 color space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>intensity_values</strong> (<em>list</em>) – the desired spectrum as a list of integers.</p></li>
-<li><p><strong>x</strong> (<em>float</em>) – desired target CIE1931 x coordinate as a decimal number.</p></li>
-<li><p><strong>y</strong> (<em>float</em>) – desired target CIE1931 y coordinate as a decimal number.</p></li>
+<li><p><strong>intensity_values</strong> (<em>list</em>) – The desired spectrum as a list of integers.</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – Desired target CIE1931 <cite>x</cite> coordinate as a decimal number.</p></li>
+<li><p><strong>y</strong> (<em>float</em>) – Desired target CIE1931 <cite>y</cite> coordinate as a decimal number.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -621,19 +774,22 @@ coordinates in the CIE1931 color space.</p>
 
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.full_readout">
-<code class="sig-name descname">full_readout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.full_readout" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">full_readout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">setting</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.full_readout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a full readout from the STLAB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>setting</strong> (<em>dict</em><em>, </em><em>optional</em>) – The current setting of the luminaire (if known), to be included in
-the info_dict. For example {‘led’ : 5, ‘intensity’ : 3000}, or
-{‘intensities’ : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}.
-The default is {}.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm</strong> (<em>bool</em>) – Whether to normalise the spectrum to the peak radiometric value.</p></li>
+<li><p><strong>setting</strong> (<em>dict</em><em>, </em><em>optional</em>) – The current setting of the luminaire (if known), to be included in
+the <cite>info_dict</cite>. For example <code class="docutils literal notranslate"><span class="pre">{'led'</span> <span class="pre">:</span> <span class="pre">5,</span> <span class="pre">'intensity'</span> <span class="pre">:</span> <span class="pre">3000}</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">{'intensities'</span> <span class="pre">:</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">300,</span> <span class="pre">4000,</span> <span class="pre">200,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]}</span></code>.
+The default is <cite>{}</cite>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>counts</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>info_dict</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
+<li><p><strong>spec</strong> (<em>np.array</em>) – The spectrum.</p></li>
+<li><p><strong>info_dict</strong> (<em>dict</em>) – Dictionary of information for spectrometer reading.</p></li>
 </ul>
 </p>
 </dd>
@@ -661,8 +817,31 @@ The default is {}.</p>
 the serial code, the model code, the number of channels for this
 luminaire and the device feedback type (whether it is colorimeter or
 spectrometer). How are the serial and model codes is yet to be defined,
-but we expect a maximum 50 character length code for serial and 30 for
+but expect a maximum 50 character length code for serial and 30 for
 model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The device info.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.stlab.SpectraTuneLab.get_dimming_level">
+<code class="sig-name descname">get_dimming_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.get_dimming_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the user intensity dimmer. See <cite>set_dimming_level(…)</cite> for
+more info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -671,7 +850,7 @@ model.</p>
 <dd><p>Returns the current consumed electrical power of the luminaire in mW.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>input_power</strong> – The electrical power at the luminaire in mW..</p>
+<dd class="field-odd"><p><strong>input_power</strong> – The electrical power at the luminaire in mW.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>int</p>
@@ -686,14 +865,11 @@ model.</p>
 (for each channel) and 81 columns (intensity value from 380 to 780 nm
 in steps of 5 nm).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>None.</strong> – </p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>matrix</strong> – 10 x 81 calibration matrix.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>matrix</strong> – 10 x 81 calibration matrix.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -701,8 +877,8 @@ in steps of 5 nm).</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.get_pcb_temperature">
 <code class="sig-name descname">get_pcb_temperature</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.get_pcb_temperature" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the PCB temperature in Celsius degrees (ºC). Returns a list of
-4 elements in this order: LEDs, Drivers, Spectrometer and Microcontroller
+<dd><p>Returns the PCB temperature in Celsius degrees (ºC). Returns a list
+of 4 elements in this order: LEDs, Drivers, Spectrometer and Microcontroller
 temperature sensors close to these elements. If one sensor or its readout
 is not available a null value is returned for that element.</p>
 <dl class="field-list simple">
@@ -710,7 +886,7 @@ is not available a null value is returned for that element.</p>
 <dd class="field-odd"><p><strong>None.</strong> – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>temperatures</strong> – [  Number,  Number,  Number,  Number  ].</p>
+<dd class="field-even"><p><strong>temperatures</strong> – [Number, Number, Number, Number].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
@@ -721,10 +897,12 @@ is not available a null value is returned for that element.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.get_spectrometer_integration_time">
 <code class="sig-name descname">get_spectrometer_integration_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.get_spectrometer_integration_time" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the current integration time used by the spectrometer for gathering data.</p>
+<dd><p>Get the current integration time used by the spectrometer for
+gathering data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>integration_time</strong> – A positive integer ranging from 50 to 140000 in tenths of millisecond.</p>
+<dd class="field-odd"><p><strong>integration_time</strong> – A positive integer ranging from 50 to 140000 in tenths of
+millisecond.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>int</p>
@@ -737,22 +915,22 @@ is not available a null value is returned for that element.</p>
 <code class="sig-name descname">get_spectrometer_spectrum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.get_spectrometer_spectrum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the spectrum readout from the internal spectrometer. If the
 luminaire does only contain a colorimeter sensor, a theoretical spectrum
-based on the current channels power is obtained instead.
-The data is returned in 81 elements that represents a 5 nm wavelength
-bins from 380 nm to 780 nm. Each element is a value ranging from 0 to
-65535 abstracting the light intensity at each point and allowing the
-reconstruction of the spectral shape. An additional element represents
-the radiometric value in milliWatts (mW) at the peak of a max value of
-a spectrum at which the abstracted values are normalized, i.e. the flux
-corresponding to a 65535 value in the array. This flux depends on multiple
-factors, as current channels power, dimming level, power protection and
-maximum power of the lighted LEDs.</p>
+based on the current channel’s power is obtained instead. The data is
+returned in 81 elements that represents a 5 nm wavelength bins from 380
+nm to 780 nm. Each element is a value ranging from 0 to 65535 abstracting
+the light intensity at each point and allowing the reconstruction of the
+spectral shape. An additional element represents the radiometric value
+in milliWatts (mW) at the peak of a max value of a spectrum at which the
+abstracted values are normalized, i.e. the flux corresponding to a 65535
+value in the array. This flux depends on multiple factors, as current
+channels power, dimming level, power protection and maximum power of the
+lighted LEDs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>norm</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to normalize the spectrum to its peak radiometric value</p>
+<dd class="field-odd"><p><strong>norm</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to normalize the spectrum to its peak radiometric value</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>spectrum</strong> – [Number, Number, …, Number, Number] with 81 elements</p>
+<dd class="field-even"><p><strong>spectrum</strong> – [Number, Number, …, Number, Number] with 81 elements.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>list</p>
@@ -765,11 +943,11 @@ maximum power of the lighted LEDs.</p>
 <code class="sig-name descname">get_spectrum_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.get_spectrum_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current amplitude for each of the luminaire channels. The
 array returned has a length equal to the channel count of the luminaire.
-Each value in the array is a representation of electrical counts,
-ranging from 0 to 4095 counts.</p>
+Each value in the array is a representation of electrical counts, ranging
+from 0 to 4095 counts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>None.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None.</p>
@@ -782,19 +960,19 @@ ranging from 0 to 4095 counts.</p>
 <code class="sig-name descname">load_video_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">return_vf_dict</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.load_video_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uploads a video light sequence file to the LIGHT HUB. The video file
 must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The
-uploaded file must be a json file (.dsf files are json files), and
+uploaded file must be a json file (.dsf files are json files), with
 weight less than 2 MB. The file must be uploaded using the multipart /
-form-data standard convention. See play_video_file later about how
-to play the uploaded file in a luminaire.</p>
+form-data standard convention. See <cite>play_video_file(…)</cite> for how to
+play the uploaded file in a luminaire.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>video</strong> (<em>string</em>) – name of the video file.</p>
+<dd class="field-odd"><p><strong>video</strong> (<em>string</em>) – Name of the video file.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>Video file dictionary if <cite>return_vf_dict</cite> is True else None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None.</p>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -802,18 +980,18 @@ to play the uploaded file in a luminaire.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.play_video_file">
 <code class="sig-name descname">play_video_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stop</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.play_video_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Starts the execution of a light video sequence in the specified luminaire
-or multicast address. If no video is in the LIGHT HUB, an error response
-is raised, and the command ignored. If the video is already playing, the
-play is interrupted, and the video is reproduced back from the beginning.
-To stop the video, set ‘stop’ to True. See load_video_file for how to
-load a video file.</p>
+<dd><p>Starts the execution of a light video sequence in the specified
+luminaire or multicast address. If no video is in the LIGHT HUB, an
+error response is raised, and the command ignored. If the video is
+already playing, the play is interrupted, and the video is reproduced
+back from the beginning. To stop the video, use <cite>stop=True</cite>. See
+<cite>load_video_file(…)</cite> for how to load a video file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>stop</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether the command should stop the video. The default is False.</p>
+<dd class="field-odd"><p><strong>stop</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the command should stop the video. The default is False.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -864,14 +1042,15 @@ working directory.</p></li>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.set_blink">
 <code class="sig-name descname">set_blink</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blink</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_blink" title="Permalink to this definition">¶</a></dt>
-<dd><p>Commands the luminaire to blink. The value provided as an argument is the
-number of times the light blinks in one second.</p>
+<dd><p>Commands the luminaire to blink. The value provided as an argument
+is the number of times the light blinks in one second.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>blink</strong> (<em>int</em><em>, </em><em>optional</em>) – number of times the light should blink in one second. The default is 1.</p>
+<dd class="field-odd"><p><strong>blink</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of times the light should blink in one second. The default
+is 1.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -882,22 +1061,22 @@ number of times the light blinks in one second.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.set_color">
 <code class="sig-name descname">set_color</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">flux</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_color" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a light color represented in the CIE1931 color space. The x and y
-coordinates are the mathematical index that represents the target color to
-be achieved. If the x,y provided values are not available by the system,
-it will find its nearest available x,y coordinates. If flux is provided as
-an argument, it will be adjusted automatically, otherwise the current flux
-will be used.</p>
+<dd><p>Executes a light color represented in the CIE1931 color space. The
+<cite>x</cite> and <cite>y</cite> coordinates are the mathematical index that represents the
+target color to be achieved. If the <cite>x,y</cite> provided values are not available
+by the system, it will find its nearest available x,y coordinates. If
+flux is provided as an argument, it will be adjusted automatically,
+otherwise the current flux will be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>float</em>) – desired target CIE1931 x coordinate as a decimal number.</p></li>
-<li><p><strong>y</strong> (<em>float</em>) – desired target CIE1931 y coordinate as a decimal number.</p></li>
-<li><p><strong>flux</strong> (<em>int</em><em>, </em><em>optional</em>) – value between 0 and 4095. The default is None.</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – Desired target CIE1931 <cite>x</cite> coordinate as a decimal number.</p></li>
+<li><p><strong>y</strong> (<em>float</em>) – Desired target CIE1931 <cite>y</cite> coordinate as a decimal number.</p></li>
+<li><p><strong>flux</strong> (<em>int</em><em>, </em><em>optional</em>) – Value between 0 and 4095. The default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -908,15 +1087,15 @@ will be used.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.set_colour_priority">
 <code class="sig-name descname">set_colour_priority</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">colour_priority</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_colour_priority" title="Permalink to this definition">¶</a></dt>
-<dd><p>Command the luminaire to always first approximate to the desired color
-of the spectrum to set before setting the spectrum channel values.
+<dd><p>Command the luminaire to always first approximate to the desired
+color of the spectrum to set before setting the spectrum channel values.
 This function is set to true or false (enabled or disabled).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>colour_priority</strong> (<em>bool</em>) – whether to enable or disable colour priority</p>
+<dd class="field-odd"><p><strong>colour_priority</strong> (<em>bool</em>) – Whether to enable or disable colour priority.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -927,17 +1106,17 @@ This function is set to true or false (enabled or disabled).</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.set_dimming_level">
 <code class="sig-name descname">set_dimming_level</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dimming_level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_dimming_level" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets an intensity dimmer. This percentage modulates the current intensity
-by multiplying the power count of each luminaire channel, i.e. if you
-send a spectrum where each channel count is at half level and the dimming
-is set at 50%, the final light intensity will be one quarter of the
-luminaire full capacity.</p>
+<dd><p>Sets an intensity dimmer. This percentage modulates the current
+intensity by multiplying the power count of each luminaire channel, i.e.
+if you send a spectrum where each channel count is at half level and
+the dimming is set at 50%, the final light intensity will be one quarter
+of the luminaire full capacity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>dimming_level</strong> (<em>int</em>) – Percentage dimming level.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -957,7 +1136,7 @@ signal saturation.</p>
 <dd class="field-odd"><p><strong>integration_time</strong> (<em>int</em>) – A positive integer ranging from 50 to 140000 in tenths of millisecond.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -968,14 +1147,15 @@ signal saturation.</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.set_spectrum_a">
 <code class="sig-name descname">set_spectrum_a</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intensity_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_spectrum_a" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a spectrum based on the intensity values provided for each of the
-channels. Each channel can be set between 0 and 4095 (only integer values).</p>
+<dd><p>Executes a spectrum based on the intensity values provided for each
+of the channels. Each channel can be set between 0 and 4095 (only integer
+values).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>intensity_values</strong> (<em>list</em>) – list of 10 integer values between 0 and 4095</p>
+<dd class="field-odd"><p><strong>intensity_values</strong> (<em>list</em>) – List of 10 integer values between 0 and 4095.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -990,16 +1170,16 @@ channels. Each channel can be set between 0 and 4095 (only integer values).</p>
 81 elements that represents 5 nm wavelength bins from 380 nm to 780 nm.
 The values are an abstraction of the light intensity at each point
 that allows the reconstruction of the spectrum shape. Each value ranges
-between 0 and 65535, being 0 no intensity and 65535 full intensity at
-the corresponding wavelength bin (prior application of dimming and
+between 0 and 65535, 0 being no intensity and 65535 being full intensity
+at the corresponding wavelength bin (prior application of dimming and
 power protection caps).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectrum</strong> (<em>list</em>) – list of 81 (the 380 nm to 780 nm bins) integer values between
+<dd class="field-odd"><p><strong>spectrum</strong> (<em>list</em>) – List of 81 (the 380 nm to 780 nm bins) integer values between
 0 and 65535.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -1010,17 +1190,17 @@ power protection caps).</p>
 <dl class="py method">
 <dt id="pyplr.stlab.SpectraTuneLab.spectruma">
 <code class="sig-name descname">spectruma</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intensity_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.spectruma" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a spectrum based on the intensity values provided for each of
-the channels. Each channel can be set between 0 and 4095. This is an
-alternative way to the command SET_SPECTRUM_A that allows setting a
-spectrum issuing a GET command (which allows access to the luminaire by
+<dd><p>Executes a spectrum based on the intensity values provided for each
+of the channels. Each channel can be set between 0 and 4095. This is an
+alternative way to the command <cite>set_spectrum_a</cite> that allows setting a
+spectrum issuing a <cite>GET</cite> command (which allows access to the luminaire by
 typing a url in any browser).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>intensity_values</strong> (<em>list</em>) – list of 10 integer values between 0 and 4095.</p>
+<dd class="field-odd"><p><strong>intensity_values</strong> (<em>list</em>) – List of 10 integer values between 0 and 4095.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -1037,7 +1217,7 @@ typing a url in any browser).</p>
 <dd class="field-odd"><p><strong>None.</strong> – </p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None.</p>
@@ -1222,8 +1402,58 @@ spectra. The DataFrame must have columns (or multi index) with names</p>
 <span class="target" id="module-pyplr.CIE"></span><div class="section" id="pyplr-cie">
 <h2>pyplr.CIE<a class="headerlink" href="#pyplr-cie" title="Permalink to this headline">¶</a></h2>
 <p>Convenience functions for accessing CIE standards.</p>
-<p>note:,https://scipython.com/blog/converting-a-spectrum-to-a-colour/
-note: http://cvrl.ioo.ucl.ac.uk/cmfs.htm</p>
+<dl class="field-list simple">
+<dt class="field-odd">note</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://scipython.com/blog/converting-a-spectrum-to-a-colour/">https://scipython.com/blog/converting-a-spectrum-to-a-colour/</a></p>
+</dd>
+<dt class="field-even">note</dt>
+<dd class="field-even"><p><a class="reference external" href="http://cvrl.ioo.ucl.ac.uk/cmfs.htm">http://cvrl.ioo.ucl.ac.uk/cmfs.htm</a></p>
+</dd>
+</dl>
+<dl class="py function">
+<dt id="pyplr.CIE.get_CIES026">
+<code class="sig-prename descclassname">pyplr.CIE.</code><code class="sig-name descname">get_CIES026</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">binwidth</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.CIE.get_CIES026" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to access CIE026 spectral sensitivities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asdf</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the results as a pandas DataFrame. The default is
+False.</p></li>
+<li><p><strong>binwidth</strong> (<em>int</em><em>, </em><em>optional</em>) – Width of the wavelength bins in nanometers (must be <cite>1</cite> or <cite>5</cite>). The
+default is <cite>1</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sss</strong> – CIES026 spectral sensitivities for s, m, l, rods, and melanopsin.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array or pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pyplr.CIE.get_CIE_1924_photopic_vl">
+<code class="sig-prename descclassname">pyplr.CIE.</code><code class="sig-name descname">get_CIE_1924_photopic_vl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">binwidth</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.CIE.get_CIE_1924_photopic_vl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to access CIE1924 photopic luminosity function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asdf</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the results as a pandas DataFrame. The default is
+False.</p></li>
+<li><p><strong>binwidth</strong> (<em>int</em><em>, </em><em>optional</em>) – Width of the wavelength bins in nanometers (must be <cite>1</cite> or <cite>5</cite>). The
+default is <cite>1</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>vl</strong> – The CIE1924 photopic luminosity function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array or pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt id="pyplr.CIE.get_CIE_CMF">
 <code class="sig-prename descclassname">pyplr.CIE.</code><code class="sig-name descname">get_CIE_CMF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.CIE.get_CIE_CMF" title="Permalink to this definition">¶</a></dt>

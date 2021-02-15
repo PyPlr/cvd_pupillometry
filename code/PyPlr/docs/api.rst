@@ -7,6 +7,7 @@ API documentation
 
 .. automodule:: pyplr.stlab
    :members:
+   :special-members:
 
 .. automodule:: pyplr.CIE
    :members:
