@@ -25,7 +25,7 @@ import pandas as pd
 import seaborn as sns
 
 from pyplr.oceanops import oo_measurement
-from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
+from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026, get_CIE_CMF
 
 ##########################
 # Device class for STLAB #
@@ -412,7 +412,7 @@ class SpectraTuneLab:
         must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The 
         uploaded file must be a json file (.dsf files are json files), with 
         weight less than 2 MB. The file must be uploaded using the multipart / 
-        form-data standard convention. See `play_video_file(...)` for how to 
+        form-data standard convention. See ``play_video_file(...)`` for how to 
         play the uploaded file in a luminaire.  
     
         Parameters
@@ -782,8 +782,11 @@ class SpectraTuneLab:
         
         # make dfs
         stlab_spectra = pd.DataFrame(stlab_spectra)
-        stlab_spectra.columns = self.wlbins
+        stlab_spectra.columns = pd.Int64Index(self.wlbins)
         stlab_info = pd.DataFrame(stlab_info)
+        stlab_spectra['led'] = stlab_info['led']
+        stlab_spectra['intensity'] = stlab_info['intensity']
+        stlab_spectra.set_index(['led','intensity'], inplace=True)
 
         if ocean_optics:
             oo_spectra = pd.DataFrame(oo_spectra)
@@ -1338,25 +1341,20 @@ def get_wlbins(bin_width=5):
         wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     return wlbins
 
-def spec_to_xyz(spec):
-    '''
-    Convert a spectrum to an xyz point.
+def spec_to_xyz(spec, cmf):
+    '''Convert a spectrum to an xyz point.
 
     The spectrum must be on the same grid of points as the colour-matching
     function, cmf: 380-780 nm in 5 nm steps.
 
-    '''
-    from CIE import get_CIE_CMF
-    
-    cmf = get_CIE_CMF()[1:]
-    cmf = cmf.T
+    '''    
     XYZ = np.sum(spec[:, np.newaxis] * cmf, axis=0)
     den = np.sum(XYZ)
     if den == 0.:
         return XYZ
     return XYZ / den
 
-def spectra_to_xyz(spectra):
+def spectra_to_xyz(spectra, binwidth):
     '''
     Calculate the CIE 1931 xy chromaticity coordinates for a collection of
     spectra. The DataFrame must have columns (or multi index) with names
@@ -1364,7 +1362,7 @@ def spectra_to_xyz(spectra):
     Parameters
     ----------
     spectra : DataFrame
-        As output by stlab.sample_leds
+        As output by stlab.sample
 
     Returns
     -------
@@ -1372,44 +1370,27 @@ def spectra_to_xyz(spectra):
         The xyz values for each spectrum.
         
     '''
+    cmf = get_CIE_CMF(binwidth=binwidth)[1:].T
     idx = []    
     xyz = []
     for i, spec in spectra.groupby(by=['led','intensity']):
         idx.append(i)
-        xyz.append(spec_to_xyz(spec['flux'].to_numpy()))
+        xyz.append(spec_to_xyz(spec.to_numpy()[0], cmf=cmf))
     xyz = pd.DataFrame(xyz, columns=['X','Y','Z'])
     xyz.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
     return xyz
 
 def spectra_to_peak_wavelengths(spectra):
-    '''
-    Calculate the peak wavelengths for a given set of spectra.
-
-    Parameters
-    ----------
-    spectra : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    pwl : TYPE
-        DESCRIPTION.
+    '''Calculate the peak wavelengths for a given set of spectra.
 
     '''
-    idx = []    
-    pwl = []
-    for i, spec in spectra.groupby(by=['led','intensity']):
-        idx.append(i)
-        pwl.append(
-            spec.loc[spec['flux']==spec['flux'].max(), 'wavelength'].to_numpy()) 
-    pwl = pd.DataFrame(pwl, columns=['wavelength'])
-    pwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
-    return pwl
+    return spectra.idxmax(axis=1)
 
-def spectra_to_dominant_wavelength(spectra, ref_white=[0.3333, 0.3333]):
+def spectra_to_dominant_wavelength(spectra, binwidth, 
+                                   ref_white=[0.3333, 0.3333]):
     from colour.colorimetry.dominant import dominant_wavelength
     
-    xyz = spectra_to_xyz(spectra)
+    xyz = spectra_to_xyz(spectra, binwidth=binwidth)
     idx = []
     dwl = []
     for i, row in xyz.iterrows():
@@ -1420,16 +1401,14 @@ def spectra_to_dominant_wavelength(spectra, ref_white=[0.3333, 0.3333]):
     dwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
     return dwl
 
-def spectra_to_melanopic_irradiance(spectra, grouper=['led','intensity']):
-    from CIE import get_CIES026
-    
+def spectra_to_melanopic_irradiance(spectra, binwidth):
     # get melanopsin sensitivity
-    _ , sss = get_CIES026(asdf=True)
+    sss = get_CIES026(asdf=True, binwidt=binwidth)
     mel = sss['Mel']
-    mel = mel[::5]
     
     # aggregate to melanopic irradiance
-    mi = spectra.groupby(by=grouper)['flux'].agg(lambda x: x.dot(mel.values.T))
+    mi = spectra.groupby(by=['led','intensity'])['flux'].agg(
+        lambda x: x.dot(mel.values.T))
     return mi
 
 def spectra_to_luminance(spectra, grouper=['led','intensity']):
@@ -1444,7 +1423,7 @@ def spectra_to_luminance(spectra, grouper=['led','intensity']):
     return lum    
 
  
-def explore_spectra(spectra):
+def explore_spectra(spectra, binwidth):
     '''
     This function takes a DataFrame of spectra and plots them, along with other
     useful info.
@@ -1453,25 +1432,25 @@ def explore_spectra(spectra):
     import seaborn as sns
     
     # get xy chromaticities
-    xyz = spectra_to_xyz(spectra)
+    xyz = spectra_to_xyz(spectra, binwidth)
     
     # get peak wavelength
     pwl = spectra_to_peak_wavelengths(spectra)
     
     # get dominant wavelength
-    dwl = spectra_to_dominant_wavelength(spectra)
+    dwl = spectra_to_dominant_wavelength(spectra, binwidth=binwidth)
     
     # get malanopic irradiances
-    mi = spectra_to_melanopic_irradiance(spectra)
+    mi = spectra_to_melanopic_irradiance(spectra, binwidth=binwidth)
 
     # set up figure
     fig , ax = plt.subplots(10, 4, figsize=(16,36))
     colors = get_led_colors()
-
+    long_spectra = spectra_wide_to_long(spectra)
     for i, led in enumerate(ax):
     
         # plot spectra
-        sns.lineplot(x='wavelength', y='flux', data=spectra[spectra.led==i], color=colors[i], units='intensity',ax=ax[i, 0], lw=.1, estimator=None)
+        sns.lineplot(x='wavelength', y='flux', data=long_spectra[long_spectra.led==i], color=colors[i], units='intensity',ax=ax[i, 0], lw=.1, estimator=None)
         ax[i, 0].set_ylim((0,3500))
         ax[i, 0].set_xlabel('Wavelength $\lambda$ (nm)')
         ax[i, 0].set_ylabel('Flux (mW)')
@@ -1483,8 +1462,8 @@ def explore_spectra(spectra):
         ax[i, 1].scatter(xyz.loc[i,'X'], xyz.loc[i,'Y'], c='k', s=3)
         
         # plot peak and dominant wavelength as a function of input
-        inpt = spectra['intensity'] / 4095
-        inpt = np.linspace(0, 1, len(spectra.intensity.unique()))
+        inpt = long_spectra['intensity'] / 4095
+        inpt = np.linspace(0, 1, len(long_spectra.intensity.unique()))
         ax[i, 2].plot(inpt, pwl.loc[i, 'wavelength'], color=colors[i], lw=1, label='Peak')
         ax[i, 2].set_xlabel('Input')
         
@@ -1504,19 +1483,10 @@ def explore_spectra(spectra):
     
     return fig    
 
-# pulse_spec=[300,300,300,300,300,3000,3000,3000,300,300]
-# pulse_duration =1000
-# background_spec = [300,300,300,300,300,300,300,300,300,300]
-# pre_background_duration=3000
-# post_background_duration=3000
-# df = make_video_pulse_background(pulse_spec=pulse_spec, pulse_duration=pulse_duration,
-#                       return_df=True,
-#                       pre_background_duration=pre_background_duration,
-#                       post_background_duration=post_background_duration, background_spec=background_spec)
+def spectra_wide_to_long(wide_spectra):
+    return (wide_spectra.reset_index()
+                        .melt(id_vars=['led','intensity'], 
+                              var_name='wavelength', value_name='flux')
+                        .sort_values(by=['led','intensity'])
+                        .reset_index(drop=True))
 
-def led_radiance_match(led, intensity, match_led, lkp_tbl):
-    radiance_lkp = lkp_tbl.sum(axis=1)
-    led_radiance = radiance_lkp.loc[(led, intensity)]
-    match_intensity = radiance_lkp.loc[match_led].sub(led_radiance).abs().idxmin()
-    error = radiance_lkp.loc[match_led].sub(led_radiance).abs().min()
-    return error, match_intensity

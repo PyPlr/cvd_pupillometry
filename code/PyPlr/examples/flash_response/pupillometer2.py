@@ -24,6 +24,10 @@ from pyplr import stlab
 from pyplr.pupil import new_trigger, PupilCore, LightStamper, PupilGrabber
 from pyplr.pipeline import butterworth_series
 from pyplr.plr import plr_parameters, plot_plr
+<<<<<<< Updated upstream:code/PyPlr/examples/flash_response/pupillometer2.py
+=======
+
+>>>>>>> Stashed changes:code/PyPlr/pyplr/bin/pupillometer2.py
 
 def main(subjid='000', baseline=2., duration=10, record=False, control=False):
     
@@ -36,8 +40,14 @@ def main(subjid='000', baseline=2., duration=10, record=False, control=False):
     pupil = PupilCore()
     
     # # setup stlab
+<<<<<<< Updated upstream:code/PyPlr/examples/flash_response/pupillometer2.py
     d = stlab.SpectraTuneLab(username='admin', identity=1, lighthub_ip='192.168.6.2', password='83e47941d9e930f6')
     d.load_video_file('./stims/PLR-3000-180-mw.dsf')
+=======
+    stlab.pulse_protocol([1000]*10, 1000, '1s_pulse')
+    d = stlab.SpectraTuneLab(username='admin', identity=1, password='83e47941d9e930f6')
+    d.load_video_file('1s_pulse.dsf')
+>>>>>>> Stashed changes:code/PyPlr/pyplr/bin/pupillometer2.py
     
     # # set up pupil trigger
     trigger = new_trigger('LIGHT_ON')
