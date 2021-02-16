@@ -8,6 +8,7 @@ Created on Wed Dec 16 14:12:12 2020
 
 import matplotlib.pyplot as plt
 
+import stlab
 
 def pupil_preprocessing(nrows, **kwargs):
     f, axs = plt.subplots(nrows=nrows, ncols=1, sharex=True, figsize=(14,14))
@@ -17,3 +18,5 @@ def pupil_preprocessing(nrows, **kwargs):
     axs[0].legend(loc='upper right', labels=['pixels','mm'])
     f.suptitle('Data cleaning for subject: ' )
     return f, axs
+
+

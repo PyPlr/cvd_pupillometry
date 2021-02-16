@@ -13,11 +13,9 @@ Convenience functions for accessing CIE standards.
 
 import numpy as np
 import pandas as pd
-
-# TODO: check this file contains the right data
  
 def get_CIE_CMF(asdf=False, binwidth=1):
-    '''Convenience function to access CIE 1931 XYZ 2-deg color matching functions.
+    '''Convenience to access CIE 1931 XYZ 2-deg color matching functions.
 
     Parameters
     ----------

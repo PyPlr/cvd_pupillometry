@@ -10,7 +10,7 @@ A module for interfacing with a Pupil Core eye tracker.
 
 from time import time
 from threading import Thread
-import concurrent.futures
+from concurrent import futures
 
 import numpy as np
 import msgpack
@@ -190,14 +190,55 @@ class PupilCore:
         payload = msgpack.dumps(annotation, use_bin_type=True)
         self.pub_socket.send_string(annotation['topic'], flags=zmq.SNDMORE)
         self.pub_socket.send(payload)
-    
+        
+    # TODO: Finish this
+    def pupilgrabber(self, subscription, timeout):
+        '''Start grabbing data from Pupil Core.
+        
+        Example
+        -------
+        >>> pupil = PupilCore()
+        >>> timeout = 10.
+        >>> pgr = pupil.pupilgrabber(topic='pupil.0.3d', timeout=timeout)
+        >>> sleep(timeout)
+        >>> data = pgr.result()
+        
+        Parameters
+        ----------
+        topic : string
+            Subscription topic. Can be:
+                
+                * 'pupil.0.2d'  - 2d pupil datum (left)
+                * 'pupil.1.2d'  - 2d pupil datum (right)  
+                * 'pupil.0.3d'  - 3d pupil datum (left)
+                * 'pupil.1.3d'  - 3d pupil datum (right)  
+                * 'gaze.3d.1.'  - monocular gaze datum
+                * 'gaze.3d.01.' - binocular gaze datum
+                * 'logging'     - logging data
+                
+            Other topics are available from plugins (e.g., fixations, surfaces)
+            and custom topics can be defined. 
+        timeout : float, optional
+            Ammount of time to spend grabbing data. Will run indefinitely if 
+            no value is passed, in which case requires pupilgrabber.join().
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        '''
+        args = (subscription, timeout)
+        with futures.ThreadPoolExecutor() as executor:
+            return executor.submit(self.grab_pupil_data, *args)
+        
     def lightstamper(self, annotation, threshold=15, timeout=None, 
-                         subscription='frame.world'):
+                     subscription='frame.world'):
         '''Mark the onset of a luminance increase with the World Camera. 
         
         Executes the ``detect_light_onset(...)`` method in a thread using
         ``concurrent.futures.ThreadPoolExecutor()``, which allows future access 
-        to the return value.
+        to the functions return value.
         
         Parameters
         ----------
@@ -242,6 +283,7 @@ class PupilCore:
         >>> sleep(timeout)
         >>> # light stimulus here
         >>> p.command('r')
+        >>> lst.result()
         
         Note
         ----
@@ -254,11 +296,11 @@ class PupilCore:
         Returns
         -------
         concurrent.futures._base_Future
-            An object that can be used to access the result of thread
+            An object that can be used to access the result of thread.
 
         '''
         args = (annotation, threshold, timeout, subscription)
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with futures.ThreadPoolExecutor() as executor:
             return executor.submit(self.detect_light_onset, *args)
     
     def detect_light_onset(self, annotation, threshold, timeout, subscription):
