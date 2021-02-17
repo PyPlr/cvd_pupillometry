@@ -191,21 +191,20 @@ class PupilCore:
         self.pub_socket.send_string(annotation['topic'], flags=zmq.SNDMORE)
         self.pub_socket.send(payload)
         
-    # TODO: Finish this
-    def pupilgrabber(self, subscription, timeout):
+    def pupilgrabber(self, subscription, timeout=None):
         '''Start grabbing data from Pupil Core.
         
         Example
         -------
         >>> pupil = PupilCore()
         >>> timeout = 10.
-        >>> pgr = pupil.pupilgrabber(topic='pupil.0.3d', timeout=timeout)
+        >>> pgr = pupil.pupilgrabber(subscription='pupil.0.3d', timeout=timeout)
         >>> sleep(timeout)
         >>> data = pgr.result()
         
         Parameters
         ----------
-        topic : string
+        subscription : string
             Subscription topic. Can be:
                 
                 * 'pupil.0.2d'  - 2d pupil datum (left)
@@ -224,16 +223,28 @@ class PupilCore:
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        concurrent.futures._base_Future
+            An object that can be used to access the result of thread.
 
         '''
         args = (subscription, timeout)
-        with futures.ThreadPoolExecutor() as executor:
-            return executor.submit(self.grab_pupil_data, *args)
-        
+        return futures.ThreadPoolExecutor().submit(self.grab_data, *args)
+       
+    def grab_data(self, topic, seconds=None):
+        print('Grabbing {} seconds of {}'.format(seconds, topic))
+        subscriber = self.subscribe_to_topic(topic)
+        data = []
+        start_time = time()
+        while (time() - start_time < seconds):
+            target, payload = subscriber.recv_multipart()
+            message = msgpack.loads(payload)
+            data.append(message)
+        print('PupilGrabber done grabbing {} seconds of {}'.format(
+                seconds, topic))
+        return data
+    
     def lightstamper(self, annotation, threshold=15, timeout=None, 
-                     subscription='frame.world'):
+                     topic='frame.world'):
         '''Mark the onset of a luminance increase with the World Camera. 
         
         Executes the ``detect_light_onset(...)`` method in a thread using
@@ -299,24 +310,24 @@ class PupilCore:
             An object that can be used to access the result of thread.
 
         '''
-        args = (annotation, threshold, timeout, subscription)
-        with futures.ThreadPoolExecutor() as executor:
-            return executor.submit(self.detect_light_onset, *args)
+        args = (annotation, threshold, timeout, topic)
+        return futures.ThreadPoolExecutor().submit(
+            self.detect_light_onset, *args)
     
-    def detect_light_onset(self, annotation, threshold, timeout, subscription):
+    def detect_light_onset(self, annotation, threshold, timeout, topic):
         '''Algorithm to detect onset of light stimulus with the World Camera.
         
         '''
-        subscriber = self.subscribe_to_camera_frames(subscription)
+        subscriber = self.subscribe_to_topic(topic)
         print('Waiting for a light to stamp...')
         start_time = time()
         previous_frame, _ = self.get_next_frame_from_worldcam(
-            subscriber, subscription)
+            subscriber, topic)
         while True:
             current_frame, timestamp = self.get_next_frame_from_worldcam(
-                subscriber, subscription)
+                subscriber, topic)
             if self._luminance_jump(current_frame, previous_frame, threshold):
-                self._stamp_light(timestamp, annotation, subscription)
+                self._stamp_light(timestamp, annotation, topic)
                 return (True, timestamp)
             if timeout:
                 if (time() - start_time > timeout):
@@ -324,21 +335,21 @@ class PupilCore:
                     return (False,)
                 previous_frame = current_frame
                 
-    def subscribe_to_camera_frames(self, subscription):
+    def subscribe_to_topic(self, topic):
         subscriber = self.context.socket(zmq.SUB)
         subscriber.connect(
             'tcp://{}:{}'.format(self.address, self.sub_port))
-        subscriber.setsockopt_string(zmq.SUBSCRIBE, subscription)
+        subscriber.setsockopt_string(zmq.SUBSCRIBE, topic)
         return subscriber    
 
-    def get_next_frame_from_worldcam(self, subscriber, subscription):
+    def get_next_frame_from_worldcam(self, subscriber, topic):
         # This assumes that we're guaranteed to get a message with
         # the subscribed topic at some point
-        topic = ''
+        target = ''
         # Would it be possible to get subscription from subscriber?
         # This way could get rid of variable "subscription"
-        while topic != subscription:
-            topic, msg = recv_from_subscriber(subscriber)
+        while target != topic:
+            target, msg = recv_from_subscriber(subscriber)
         recent_world = np.frombuffer(
             msg['__raw_data__'][0], dtype=np.uint8).reshape(
                 msg['height'], msg['width'], 3)
@@ -651,7 +662,7 @@ def recv_from_subscriber(subscriber):
         
     '''
     topic = subscriber.recv_string()
-    payload = msgpack.unpackb(subscriber.recv(), encoding='utf-8')
+    payload = msgpack.unpackb(subscriber.recv())
     extra_frames = []
     while subscriber.get(zmq.RCVMORE):
         extra_frames.append(subscriber.recv())

@@ -14,7 +14,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/jtmbeta/PyPlr',
-    install_requires=['scipy','matplotlib','msgpack==0.5.6','pyzmq','requests','numpy','seaborn','seabreeze','spectres','numexpr','tables','pandas'],
+    install_requires=['scipy','matplotlib','msgpack','pyzmq','requests','numpy','seaborn','seabreeze','spectres','numexpr','tables','pandas'],
     packages=setuptools.find_packages(),
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

@@ -5,7 +5,7 @@ Installation
 
 .. code-block:: bash
 
-    $ git clone https://github.com/spitschan/PyPlr
+    $ git clone https://github.com/PyPlr
     $ cd PyPlr
     $ pip install -r requirements.txt
     $ python setup.py install
