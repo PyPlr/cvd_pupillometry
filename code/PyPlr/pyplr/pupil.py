@@ -12,6 +12,7 @@ from time import time
 from threading import Thread
 from concurrent import futures
 
+import pandas as pd
 import numpy as np
 import msgpack
 import zmq
@@ -134,6 +135,17 @@ class PupilCore:
         self.remote.send_string(cmd)
         return self.remote.recv_string()
     
+    #TODO: is this correct?
+    def get_corrected_pupil_time(self):
+        '''Get the current Pupil Timestamp, corrected for transmission delay.
+        
+        '''
+        t_before = time()
+        t = float(self.command('t'))
+        t_after = time()
+        delay = (t_after - t_before) / 2.0
+        return t + delay
+        
     def notify(self, notification):
         '''
         Send a notification to Pupil Remote. 
@@ -172,6 +184,39 @@ class PupilCore:
         self.remote.send(payload)
         return self.remote.recv_string()
     
+    def new_annotation(self, label, custom_fields={}):
+        '''Create a new annotation (a.k.a. message / event marker / whatever 
+        you want to call it). Send it to Pupil Capture with the 
+        `send_annotation(...)` method.
+    
+        Note
+        ----
+        Click `here <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+        for more information on annotations.
+            
+        Parameters
+        ----------
+        label : string
+            A label for the event.
+        custom_fields : dict, optional
+            Any additional information to add (e.g. {'duration':2, 'color':'blue'}). 
+            The default is {}.
+    
+        Returns
+        -------
+        annotation : dict
+            The annotation dictionary, ready to be sent.
+    
+        '''
+        annotation = {
+            'topic': 'annotation',
+            'label': label,
+            'timestamp': self.get_corrected_pupil_time()
+            }
+        for k, v in custom_fields.items():
+            annotation[k] = v
+        return annotation
+    
     def send_annotation(self, annotation):
         '''Send an annotation (a.k.a trigger, event marker) to Pupil Capture. 
         
@@ -191,20 +236,20 @@ class PupilCore:
         self.pub_socket.send_string(annotation['topic'], flags=zmq.SNDMORE)
         self.pub_socket.send(payload)
         
-    def pupilgrabber(self, subscription, timeout=None):
+    def pupil_grabber(self, topic, seconds=None):
         '''Start grabbing data from Pupil Core.
         
         Example
         -------
         >>> pupil = PupilCore()
         >>> timeout = 10.
-        >>> pgr = pupil.pupilgrabber(subscription='pupil.0.3d', timeout=timeout)
+        >>> pgr = pupil.pupilgrabber(topic='pupil.0.3d', timeout=timeout)
         >>> sleep(timeout)
         >>> data = pgr.result()
         
         Parameters
         ----------
-        subscription : string
+        topic : string
             Subscription topic. Can be:
                 
                 * 'pupil.0.2d'  - 2d pupil datum (left)
@@ -227,7 +272,7 @@ class PupilCore:
             An object that can be used to access the result of thread.
 
         '''
-        args = (subscription, timeout)
+        args = (topic, seconds)
         return futures.ThreadPoolExecutor().submit(self.grab_data, *args)
        
     def grab_data(self, topic, seconds=None):
@@ -243,7 +288,7 @@ class PupilCore:
                 seconds, topic))
         return data
     
-    def lightstamper(self, annotation, threshold=15, timeout=None, 
+    def light_stamper(self, annotation, threshold=15, timeout=None, 
                      topic='frame.world'):
         '''Mark the onset of a luminance increase with the World Camera. 
         
@@ -606,40 +651,6 @@ class PupilGrabber(Thread):
         # TODO: allow for accessing multiple data types and return a dict
         return [entry[what.encode()] for entry in self.data]
             
-def new_annotation(label, custom_fields={}):
-    '''
-    Create a new annotation (a.k.a. message / event marker / whatever 
-    you want to call it). Send it to Pupil Capture with the `send_annotation(...)` 
-    function.
-
-    Note
-    ----
-    Click `here <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
-    for more information on annotations.
-        
-    Parameters
-    ----------
-    label : string
-        A label for the event.
-    custom_fields : dict, optional
-        Any additional information to add (e.g. {'duration':2, 'color':'blue'}). 
-        The default is {}.
-
-    Returns
-    -------
-    annotation : dict
-        The annotation dictionary, ready to be sent.
-
-    '''
-    annotation = {
-        'topic': 'annotation',
-        'label': label,
-        'timestamp': time()
-        }
-    for k, v in custom_fields.items():
-        annotation[k] = v
-    return annotation
-
 def recv_from_subscriber(subscriber):
     '''
     Receive a message with topic and payload.
@@ -680,3 +691,10 @@ def recv_from_subscriber(subscriber):
 #             msg['__raw_data__'][0], dtype=np.uint8).reshape(
 #                 msg['height'], msg['width'], 3)
 #         world_data.append(recent_world.mean())
+
+def unpack_data_numpy(data, what):
+    return np.array([entry[what] for entry in data])
+
+def unpack_data_pandas(data):
+    return (pd.DataFrame(data)
+              .set_index('timestamp')) 
