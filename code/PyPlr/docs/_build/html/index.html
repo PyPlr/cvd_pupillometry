@@ -5,13 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PyPlr &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <title>Welcome to PyPlr’s documentation! &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -32,14 +33,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="pyplr">
-<h1>PyPlr<a class="headerlink" href="#pyplr" title="Permalink to this headline">¶</a></h1>
-<p>PyPlr is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking ecosystem.</p>
-<p>The code is here:</p>
-<p>The documentation is here:</p>
-</div>
-<div class="section" id="welcome-to-pyplr-s-documentation">
-<h1>Welcome to PyPlr’s documentation!<a class="headerlink" href="#welcome-to-pyplr-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="welcome-to-pyplr-s-documentation">
+<h1>Welcome to <em>PyPlr</em>’s documentation!<a class="headerlink" href="#welcome-to-pyplr-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
@@ -50,13 +45,21 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="overview.html#hardware-interfacing">Hardware interfacing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html"><em>PyPlr</em> and Pupil Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html">Spectra Tune Lab light source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integrating_sphere.html">Integrating sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_optics_calibration.html">Calibration with Ocean Optics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Example Protocols</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#pupil-flash-response-light-switch-in-dark-room">Pupil flash response (light switch in dark room)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#pupil-flash-response-stlab">Pupil flash response (STLAB)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#post-illumination-pupil-response-stlab">Post-illumination pupil response (STLAB)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_protocols.html">Example Protocols</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plr_lightswitch.html">PLR with a lightswitch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plr_stlab.html">PLR with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipr_stlab.html">PIPR with STLAB</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example_analyses.html">Example analyses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a><ul>
@@ -105,7 +108,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Example Protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_protocols.html">Example Protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_analyses.html">Example analyses</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developers.html">Developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
@@ -146,7 +150,7 @@
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -5,9 +5,10 @@ This work was supported by grants from the Engineering and Physical Sciences Res
 
 Thanks to Thibault Lestang and OxRSE for helpful input at various stages of development.
 
-:mod:`PyPlr` was inspired by other pupillometry packages:
-- cili:  Acland BT, Braver TS (2014) https://github.com/beOn/cili
-Acland BT, Braver TS (2014). Cili (v0.5.4) [Software] 
-Available from http://doi.org/10.5281/zenodo.48843. doi:10.5281/zenodo.48843
-- pypillometry
+Thanks to Grahame Faulkner for expert advice on safety.
+
+*PyPlr* was inspired by other great pupillometry packages:
+
+* `cili <https://github.com/beOn/cili/>`_ - Acland and Braver TS (2014)
+* `pypillometry <https://github.com/ihrke/pypillometry>`_ - `Mittner (2020) <https://joss.theoj.org/papers/10.21105/joss.02348>`_
 

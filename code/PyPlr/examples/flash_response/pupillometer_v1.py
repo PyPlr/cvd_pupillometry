@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
-A script to measure the PLR
+Script for measuring the pupil flash response. 
+==============================================
+
 '''
 
 import sys
@@ -15,7 +17,7 @@ from pyplr.pupil import PupilCore, unpack_data_pandas
 from pyplr.pipeline import butterworth_series
 from pyplr.plr import plr_parameters, plot_plr
 
-def main(subjid='000', baseline=2., duration=10, record=False, control=False):
+def main(subjid='000', baseline=2., duration=5, record=False, control=False):
     
     outdir = op.join(os.getcwd(), subjid)
     # check for output directory

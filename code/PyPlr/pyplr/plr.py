@@ -221,7 +221,7 @@ def plr_parameters(s, sample_rate, onset_idx, pc):
         'T4'       : recovery_time_75pc(s, sample_rate, onset_idx),
         'D2'       : peak_constriction(s),
         'AMP'      : constriction_amplitude(s, onset_idx),
-        'VelConMax': max_constriction_velocity(s, sample_rate, onset_idx),
+        #'VelConMax': max_constriction_velocity(s, sample_rate, onset_idx),
         'VelConAve': average_constriction_velocity(s, sample_rate, onset_idx, pc),
         'AccConMax': max_constriction_acceleration(s, sample_rate, onset_idx),
         'CT'       : constriction_time(s, sample_rate, onset_idx, pc),

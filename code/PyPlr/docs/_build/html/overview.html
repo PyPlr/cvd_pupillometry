@@ -6,16 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Overview &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Measuring the pupillary light reflex with a Pupil Core headset" href="pupil_core.html" />
+    <link rel="next" title="PyPlr and Pupil Core" href="pyplr_and_pupil_core.html" />
     <link rel="prev" title="Installation" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -35,29 +36,27 @@
             
   <div class="section" id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>PyPlr is a package is divided into modules that interface with hardware and assist with analysing data.</p>
-<div class="section" id="hardware-interfacing">
-<h2>Hardware interfacing<a class="headerlink" href="#hardware-interfacing" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">List of Notebooks:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pupil_core.html">Measuring the pupillary light reflex with a Pupil Core headset</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pupil_core.html#Accessing-data-in-real-time-with-the-IPC-Backbone"><strong>Accessing data in real-time with the IPC Backbone</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="pupil_core.html#Annotations-and-notifications"><strong>Annotations and notifications</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="pupil_core.html#Using-the-World-Camera-to-detect-light-onset"><strong>Using the World Camera to detect light onset</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="pupil_core.html#Notes-on-latency"><strong>Notes on latency</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyplr_and_pupil_core.html"><em>PyPlr</em> and Pupil Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html#PyPlr’s-pupil.py-module"><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html#Annotations-and-notifications">Annotations and notifications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html#Getting-pupil-data-in-real-time">Getting pupil data in real-time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html#Timestamping-a-light-stimulus">Timestamping a light stimulus</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="stlab_and_sphere.html"><strong>Introduction to the STLAB light engine</strong></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="stlab_and_sphere.html#Forward-model"><strong>Forward model</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="stlab_and_sphere.html#Device-stability"><strong>Device stability</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="stlab_and_sphere.html#Timing-in-synchronous-mode"><strong>Timing in synchronous mode</strong></a></li>
-<li class="toctree-l2"><a class="reference internal" href="stlab_and_sphere.html#Making-video-files-to-play-in-asynchronous-mode"><strong>Making video files to play in asynchronous mode</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="stlab_light_source.html">Spectra Tune Lab light source</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html#PyPlr’s-stlab.py-module"><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html#Device-timing-in-synchronous-mode">Device timing in synchronous mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html#Using-video-files-in-asynchronous-mode">Using video files in asynchronous mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html#Other-light-source-options">Other light source options</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ocean_optics_calibration.html">Calibration with OceanOptics VIS spectrometer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="integrating_sphere.html">Integrating sphere</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocean_optics_calibration.html">Calibration with Ocean Optics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 </ul>
-</div>
 </div>
 </div>
 
@@ -82,10 +81,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#hardware-interfacing">Hardware interfacing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyplr_and_pupil_core.html"><em>PyPlr</em> and Pupil Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html">Spectra Tune Lab light source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integrating_sphere.html">Integrating sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocean_optics_calibration.html">Calibration with Ocean Optics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Example Protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_protocols.html">Example Protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_analyses.html">Example analyses</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developers.html">Developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
@@ -97,7 +101,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
-      <li>Next: <a href="pupil_core.html" title="next chapter">Measuring the pupillary light reflex with a Pupil Core headset</a></li>
+      <li>Next: <a href="pyplr_and_pupil_core.html" title="next chapter"><em>PyPlr</em> and Pupil Core</a></li>
   </ul></li>
 </ul>
 </div>
@@ -127,7 +131,7 @@
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

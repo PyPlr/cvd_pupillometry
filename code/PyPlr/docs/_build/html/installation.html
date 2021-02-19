@@ -6,17 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Installation &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Overview" href="overview.html" />
-    <link rel="prev" title="PyPlr" href="index.html" />
+    <link rel="prev" title="Welcome to PyPlr’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -35,27 +36,27 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">PyPlr</span></code> and its dependencies are easy to install. For Mac OS X or Linux, simply run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/spitschan/PyPlr
+<p><em>PyPlr</em> and its dependencies are easy to install. For Mac OS X or Linux, simply run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/PyPlr
 $ <span class="nb">cd</span> PyPlr
 $ pip install -r requirements.txt
 $ python setup.py install
 </pre></div>
 </div>
-<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">PyPlr</span></code> is also registered on <a class="reference external" href="https://pypi.org/">PyPI</a> and the latest release can be installed with <cite>pip</cite> (this will also install the dependencies automatically):</p>
+<p><em>PyPlr</em> is also registered on <a class="reference external" href="https://pypi.org/">PyPI</a> and the latest release can be installed with <em>pip</em> (this will also install the dependencies automatically):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install pyplr
 </pre></div>
 </div>
 <p>(<a class="reference external" href="https://pypi.org/project/pyplr/">link to the PyPI project page</a>).</p>
-<p>The latest development version can also be installed from GitHub with <cite>pip</cite></p>
+<p>The latest development version can also be installed from GitHub with <em>pip</em></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/spitschan/PyPlr.git
 </pre></div>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">PyPlr</span></code> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
+<p><em>PyPlr</em> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <em>requirements.txt</em>)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">matplotlib</span><span class="o">==</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">0</span>
-<span class="n">msgpack</span><span class="o">==</span><span class="mf">0.5</span><span class="o">.</span><span class="mi">6</span>
+<span class="n">msgpack</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">2</span>
 <span class="n">numexpr</span><span class="o">==</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">1</span>
 <span class="n">numpy</span><span class="o">==</span><span class="mf">1.19</span><span class="o">.</span><span class="mi">1</span>
 <span class="n">pandas</span><span class="o">==</span><span class="mf">1.0</span><span class="o">.</span><span class="mi">5</span>
@@ -77,20 +78,23 @@ $ python setup.py install
 </div>
 <div class="section" id="virtual-environments">
 <h2>Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
-<p>We recommend installing <code class="xref py py-mod docutils literal notranslate"><span class="pre">PyPlr</span></code> in a virtual environment. This can be done using either <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">Python’s virtual environments</a> or <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+<p>We recommend installing <em>PyPlr</em> in a virtual environment. This can be done using either <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">Python’s virtual environments</a> or <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda create -n pyplr <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7.7
 $ conda activate pyplr
 $ conda install --file requirements.txt
 </pre></div>
 </div>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">spectres</span></code> package may need to be installed using <cite>pip</cite></p>
+<p>The <em>spectres</em> package may need to be installed using <em>pip</em></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install spectres
 </pre></div>
 </div>
 </div>
 <div class="section" id="notes-potential-issues">
 <h2>Notes/Potential Issues<a class="headerlink" href="#notes-potential-issues" title="Permalink to this headline">¶</a></h2>
-<p>Various… put them all here</p>
+<p>Various… put them all here:</p>
+<ul class="simple">
+<li><p>psychopy thread issue - revert to pyglet=1.4.10</p></li>
+</ul>
 </div>
 </div>
 
@@ -131,7 +135,7 @@ $ conda install --file requirements.txt
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">PyPlr</a></li>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to <em>PyPlr</em>’s documentation!</a></li>
       <li>Next: <a href="overview.html" title="next chapter">Overview</a></li>
   </ul></li>
 </ul>
@@ -162,7 +166,7 @@ $ conda install --file requirements.txt
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

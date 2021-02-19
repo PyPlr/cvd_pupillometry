@@ -6,17 +6,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>API documentation &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Developers" href="developers.html" />
-    <link rel="prev" title="Example Protocols" href="examples.html" />
+    <link rel="prev" title="PIPR with STLAB" href="pipr_stlab.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,102 +40,11 @@
 <h2>pyplr.pupil<a class="headerlink" href="#pyplr-pupil" title="Permalink to this headline">¶</a></h2>
 <p>A module for interfacing with a Pupil Core eye tracker.</p>
 <dl class="py class">
-<dt id="pyplr.pupil.LightStamper">
-<em class="property">class </em><code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">LightStamper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil</span></em>, <em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">wait_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subscription</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.LightStamper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect and time-stamp light onsets using the Pupil Core World Camera.</p>
-<p>Currently implemented as a sublclass of threading.Thread for easy
-access to data after the task is complete. Supports extraction of PLRs and
-calculation of time-critical measures such as latency and time-to-peak
-consctriction. Instantiate a few seconds before administering a light
-stimulus.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;LIGHT_ON&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">annotation</span> <span class="o">=</span> <span class="n">new_annotation</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">threshold</span> <span class="o">=</span> <span class="mi">15</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wait_time</span> <span class="o">=</span> <span class="mf">5.</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">LightStamper</span><span class="p">(</span><span class="n">pupil</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">wait_time</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Requires a suitable geometry and for the World Camera to be pointed at the
-light source. Also requires the following settings in Pupil Capture:</p>
-<ul class="simple">
-<li><p>Auto Exposure mode - Manual Exposure (eye and world)</p></li>
-<li><p>Frame publisher format - BGR</p></li>
-</ul>
-</div>
-<dl class="py method">
-<dt id="pyplr.pupil.LightStamper.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil</span></em>, <em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">wait_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subscription</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.LightStamper.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up subscription and prepare to stamp a light.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pupil</strong> (<a class="reference internal" href="#pyplr.pupil.PupilCore" title="pyplr.pupil.PupilCore"><em>pupil.PupilCore</em></a>) – <cite>PupilCore</cite> class instance.</p></li>
-<li><p><strong>annotation</strong> (<em>dict</em>) – <p>A dictionary with at least the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
- <span class="s1">&#39;topic&#39;</span><span class="p">:</span> <span class="s1">&#39;annotation&#39;</span><span class="p">,</span>
- <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;your label&gt;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="kc">None</span>
- <span class="p">}</span>
-</pre></div>
-</div>
-<p>timestamp will be overwritten with the new pupil timestamp for the
-detected light. See <cite>new_annotation(…)</cite> for more info.</p>
-</p></li>
-<li><p><strong>threshold</strong> (<em>int</em>) – Detection threshold for luminance increase. The right value depends on
-the nature of the light stimulus and the ambient lighting conditions.
-Requires some guesswork right now, but it would be good to have a
-function that works it out for us.</p></li>
-<li><p><strong>wait_time</strong> (<em>float</em><em>, </em><em>optional</em>) – Time to wait in seconds before giving up (will run indefinitely if
-no value is passed, in which case will require <cite>LightStamper.join()</cite>).
-Use when controlling a light source programmatically. For STLAB, use
-6.0 s, because on rare occasions it can take about 5 seconds
-to process a request. The default in None.</p></li>
-<li><p><strong>subscription</strong> (<em>string</em>) – The camera frames to subscribe to. In most cases this will be
-<cite>‘frame.world’</cite>, but the method will also work for <cite>‘frame.eye.0’</cite>
-and <cite>‘frame.eye.1’</cite> if the light source contains enough near-infrared.
-The default is <cite>‘frame.world’</cite>.</p></li>
-<li><p><strong>detected</strong> (<em>bool</em>) – Whether a light gets detected.</p></li>
-<li><p><strong>timestamp</strong> (<em>None</em><em>, </em><em>float</em>) – The pupil timestamp associated with the frame where the light was
-detected.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pyplr.pupil.LightStamper.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.LightStamper.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method has been overridden with the <cite>stamp_light()</cite> method.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is an isiosyncratic approach which we adopt because it simplifies
-access to data from the thread.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pyplr.pupil.LightStamper.stamp_light">
-<code class="sig-name descname">stamp_light</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.LightStamper.stamp_light" title="Permalink to this definition">¶</a></dt>
-<dd><p>The light detection algorithm.</p>
-<p>Keeps track of the two most recent frames from the World Camera. When
-the difference between the two is greater than <cite>self.threshold</cite>, an
-annotation is sent via pupil remote with the timestamp corresponding to
-the most recent frame.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt id="pyplr.pupil.PupilCore">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">PupilCore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">'127.0.0.1'</span></em>, <em class="sig-param"><span class="n">request_port</span><span class="o">=</span><span class="default_value">'50020'</span></em>, <em class="sig-param"><span class="n">pyplr_defaults</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for Pupil Core and the Remote Helper.</p>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># A two second recording</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R my_recording&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
@@ -207,17 +117,8 @@ will be ‘Unknown command.’</p>
 
 <dl class="py method">
 <dt id="pyplr.pupil.PupilCore.detect_light_onset">
-<code class="sig-name descname">detect_light_onset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span></em>, <em class="sig-param"><span class="n">timeout</span></em>, <em class="sig-param"><span class="n">subscription</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.detect_light_onset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">detect_light_onset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">timeout</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">topic</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.detect_light_onset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Algorithm to detect onset of light stimulus with the World Camera.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pyplr.pupil.PupilCore.lightstamper">
-<code class="sig-name descname">lightstamper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subscription</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.lightstamper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect the onset of a luminance increase with the World Camera.</p>
-<p>Calls the <code class="docutils literal notranslate"><span class="pre">detect_light_onset(...)</span></code> method in a thread with
-concurrent.futures.ThreadPoolExecutor(), to allow future access to the
-return value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -230,21 +131,130 @@ return value.</p>
 </pre></div>
 </div>
 <p>timestamp will be overwritten with the new pupil timestamp for the
-detected light. See <cite>new_annotation(…)</cite> for more info.</p>
+detected light. See <code class="docutils literal notranslate"><span class="pre">.new_annotation(...)</span></code> for more info.</p>
 </p></li>
-<li><p><strong>threshold</strong> (<em>int</em>) – Detection threshold for luminance increase. The right value depends on
-the nature of the light stimulus and the ambient lighting conditions.
-Requires some guesswork right now, but it would be good to have a
-function that works it out for us.</p></li>
-<li><p><strong>wait_time</strong> (<em>float</em><em>, </em><em>optional</em>) – Time to wait in seconds before giving up (will run indefinitely if
-no value is passed, in which case will require <cite>LightStamper.join()</cite>).
-Use when controlling a light source programmatically. For STLAB, use
-6.0 s, because on rare occasions it can take about 5 seconds
-to process a request. The default in None.</p></li>
-<li><p><strong>subscription</strong> (<em>string</em>) – The camera frames to subscribe to. In most cases this will be
+<li><p><strong>timeout</strong> (<em>float</em>) – Time to wait in seconds before giving up. For <cite>STLAB</cite>, use 6 s,
+because on rare occasions it can take about 5 seconds for the
+<cite>LIGHT_HUB</cite> to process a request.</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – Detection threshold for luminance increase. The right value depends
+on the nature of the light stimulus and the ambient lighting
+conditions. Requires some guesswork right now, but could easily
+write a function that works it out for us.</p></li>
+<li><p><strong>topic</strong> (<em>string</em>) – The camera frames to subscribe to. In most cases this will be
 <cite>‘frame.world’</cite>, but the method will also work for <cite>‘frame.eye.0’</cite>
-and <cite>‘frame.eye.1’</cite> if the light source contains enough near-infrared.
-The default is <cite>‘frame.world’</cite>.</p></li>
+and <cite>‘frame.eye.1’</cite> if the light source contains enough near-
+infrared. The default is <cite>‘frame.world’</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.freeze_3d_model">
+<code class="sig-name descname">freeze_3d_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eye_id</span></em>, <em class="sig-param"><span class="n">frozen</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.freeze_3d_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Freeze or unfreeze the 3D detector model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eye_id</strong> (<em>int</em>) – Whether to freeze the model for eye0 (left) or eye1 (right).</p></li>
+<li><p><strong>frozen</strong> (<em>bool</em>) – Whether to freeze or unfreeze the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If eye_id is not specified correctly.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The notification response.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.get_corrected_pupil_time">
+<code class="sig-name descname">get_corrected_pupil_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.get_corrected_pupil_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current Pupil Timestamp, corrected for transmission delay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The current pupil time.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.get_next_camera_frame">
+<code class="sig-name descname">get_next_camera_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscriber</span></em>, <em class="sig-param"><span class="n">topic</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.get_next_camera_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next camera frame.</p>
+<p>Used by <code class="docutils literal notranslate"><span class="pre">.detect_light_onset(...)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subscriber</strong> (<em>zmq.sugar.socket.Socket</em>) – Subscriber to camera frames.</p></li>
+<li><p><strong>topic</strong> (<em>string</em>) – Topic string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>recent_frame</strong> (<em>TYPE</em>) – The camera frame</p></li>
+<li><p><strong>recent_frame_ts</strong> (<em>TYPE</em>) – Timestamp of the camera frame.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.grab_data">
+<code class="sig-name descname">grab_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topic</span></em>, <em class="sig-param"><span class="n">seconds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.grab_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start grabbing data in real time from Pupil Core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topic</strong> (<em>string</em>) – <p>Subscription topic. Can be:</p>
+<blockquote>
+<div><ul>
+<li><p>’pupil.0.2d’  - 2d pupil datum (left)</p></li>
+<li><p>’pupil.1.2d’  - 2d pupil datum (right)</p></li>
+<li><p>’pupil.0.3d’  - 3d pupil datum (left)</p></li>
+<li><p>’pupil.1.3d’  - 3d pupil datum (right)</p></li>
+<li><p>’gaze.3d.1.’  - monocular gaze datum</p></li>
+<li><p>’gaze.3d.01.’ - binocular gaze datum</p></li>
+<li><p>’logging’     - logging data</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>seconds</strong> (<em>float</em>) – Ammount of time to spend grabbing data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>data</strong> – A list of dictionaries.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.light_stamper">
+<code class="sig-name descname">light_stamper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em>, <em class="sig-param"><span class="n">timeout</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">topic</span><span class="o">=</span><span class="default_value">'frame.world'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.light_stamper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concurrent timestamping of light stimuli with World Camera.</p>
+<p>Executes the <code class="docutils literal notranslate"><span class="pre">.detect_light_onset(...)</span></code> method in a thread using
+<code class="docutils literal notranslate"><span class="pre">concurrent.futures.ThreadPoolExecutor()</span></code>, which allows future access
+to the function’s return value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>annotation</strong> (<em>dict</em>) – </p></li>
+<li><p><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – </p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – </p></li>
+<li><p><strong>topic</strong> (<em>string</em>) – </p></li>
+<li><p><strong>detect_light_onset</strong><strong>(</strong><strong>..</strong><strong>) </strong><strong>for more information on parameters.</strong> (<em>See</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -256,10 +266,11 @@ The default is <cite>‘frame.world’</cite>.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst_future</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># light stimulus here</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -273,10 +284,44 @@ the light source. Also requires the following settings in Pupil Capture:</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>An object that can be used to access the result of thread</p>
+<dd class="field-odd"><p>An object giving access to the data from the thread.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>concurrent.futures._base_Future</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.new_annotation">
+<code class="sig-name descname">new_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">custom_fields</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.new_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new annotation (a.k.a. message / event marker / whatever
+you want to call it). Send it to Pupil Capture with the
+<code class="docutils literal notranslate"><span class="pre">.send_annotation(...)</span></code> method.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default timestamp for an annotation is the current Pupil time
+(corrected for transmission delay) at the time of creation, but this
+can be overridden at a later point if desired.</p>
+<p>Click <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">here</a> for more information on annotations.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<em>string</em>) – A label for the event.</p></li>
+<li><p><strong>custom_fields</strong> (<em>dict</em><em>, </em><em>optional</em>) – <dl class="simple">
+<dt>Any additional information to add (e.g. <a href="#id2"><span class="problematic" id="id3">``</span></a>{‘duration’:2, ‘color’:</dt><dd><p>’blue’}``).</p>
+</dd>
+</dl>
+<p>The default is <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>annotation</strong> – The annotation dictionary, ready to be sent.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -288,12 +333,11 @@ the light source. Also requires the following settings in Pupil Capture:</p>
 <p>Every notification has a topic and
 can contain potential payload data. The payload data has to be serializable,
 so not every Python object will work. To find out which plugins send and
-receive notifications, open the codebase and search for <cite>.notify_all(</cite> and
-<cite>def on_notify(</cite>.</p>
+receive notifications, open the codebase and search for <code class="docutils literal notranslate"><span class="pre">.notify_all(</span></code>
+and <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">on_notify(</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#notification-message">here</a>
-for more info on notifications.</p>
+<p>Click <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#notification-message">here</a> for more info on notifications.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -317,13 +361,72 @@ for more info on notifications.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="pyplr.pupil.PupilCore.pupil_grabber">
+<code class="sig-name descname">pupil_grabber</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topic</span></em>, <em class="sig-param"><span class="n">seconds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.pupil_grabber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concurrent access to data from Pupil Core.</p>
+<p>Executes the <code class="docutils literal notranslate"><span class="pre">.grab_data(...)</span></code> method in a thread using
+<code class="docutils literal notranslate"><span class="pre">concurrent.futures.ThreadPoolExecutor()</span></code>, which allows future access
+to the function’s return value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topic</strong> (<em>string</em>) – See <code class="docutils literal notranslate"><span class="pre">.grab_data(...)</span></code> for more info.</p></li>
+<li><p><strong>seconds</strong> (<em>float</em>) – Ammount of time to spend grabbing data.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">timeout</span> <span class="o">=</span> <span class="mf">10.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.0.3d&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An object giving access to the data from the thread.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>concurrent.futures._base_Future</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.recv_from_subscriber">
+<code class="sig-name descname">recv_from_subscriber</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscriber</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.recv_from_subscriber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a message with topic and payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>subscriber</strong> (<em>zmq.sugar.socket.Socket</em>) – A subscriber to any valid topic.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>topic</strong> (<em>str</em>) – A utf-8 encoded string, returned as a unicode object.</p></li>
+<li><p><strong>payload</strong> (<em>dict</em>) – A msgpack serialized dictionary, returned as a python dictionary.
+Any addional message frames will be added as a list in the payload
+dictionary with key: ‘__raw_data__’. To use frame data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;__raw_data__&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="pyplr.pupil.PupilCore.send_annotation">
 <code class="sig-name descname">send_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">annotation</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.send_annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send an annotation (a.k.a trigger, event marker) to Pupil Capture.</p>
 <p>Use to mark the timing of events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>annotation</strong> (<em>dict</em>) – Customiseable - see the <cite>new_annotation(…)</cite> function.</p>
+<dd class="field-odd"><p><strong>annotation</strong> (<em>dict</em>) – Customiseable - see the <code class="docutils literal notranslate"><span class="pre">.new_annotation(...)</span></code> method.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>
@@ -334,137 +437,23 @@ for more info on notifications.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt id="pyplr.pupil.PupilGrabber">
-<em class="property">class </em><code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">PupilGrabber</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil</span></em>, <em class="sig-param"><span class="n">topic</span></em>, <em class="sig-param"><span class="n">secs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilGrabber" title="Permalink to this definition">¶</a></dt>
-<dd><p>Start grabbing data from Pupil Core.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pupil</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pgr</span> <span class="o">=</span> <span class="n">PupilGrabber</span><span class="p">(</span><span class="n">pupil</span><span class="p">,</span> <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.0.3d&#39;</span><span class="p">,</span> <span class="n">secs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pgr</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pgr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 <dl class="py method">
-<dt id="pyplr.pupil.PupilGrabber.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pupil</span></em>, <em class="sig-param"><span class="n">topic</span></em>, <em class="sig-param"><span class="n">secs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilGrabber.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepare subscriptions for data grabbing. Follow up with
-<cite>PupilGrabber.start()</cite>.</p>
+<dt id="pyplr.pupil.PupilCore.subscribe_to_topic">
+<code class="sig-name descname">subscribe_to_topic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topic</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.subscribe_to_topic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to a topic.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pupil</strong> (<a class="reference internal" href="#pyplr.pupil.PupilCore" title="pyplr.pupil.PupilCore"><em>pupil.PupilCore</em></a>) – PupilCore class instance.</p></li>
-<li><p><strong>topic</strong> (<em>string</em>) – <p>Subscription topic. Can be:</p>
-<blockquote>
-<div><ul>
-<li><p>’pupil.0.2d’  - 2d pupil datum (left)</p></li>
-<li><p>’pupil.1.2d’  - 2d pupil datum (right)</p></li>
-<li><p>’pupil.0.3d’  - 3d pupil datum (left)</p></li>
-<li><p>’pupil.1.3d’  - 3d pupil datum (right)</p></li>
-<li><p>’gaze.3d.1.’  - monocular gaze datum</p></li>
-<li><p>’gaze.3d.01.’ - binocular gaze datum</p></li>
-<li><p>’logging’     - logging data</p></li>
-</ul>
-</div></blockquote>
-<p>Other topics are available from plugins (e.g. fixations, surfaces)
-and custom topics can be defined.</p>
-</p></li>
-<li><p><strong>secs</strong> (<em>float</em><em>, </em><em>optional</em>) – Ammount of time to spend grabbing data. Will run indefinitely if
-no value is passed, in which case requires PupilGrabber.join().</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pyplr.pupil.PupilGrabber.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">what</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilGrabber.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get grabbed data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>what</strong> (<em>string</em>) – The key of the data to be accessed. E.g., ‘diameter_3d’, ‘timestamp’,
-‘gaze_point_3d’.</p>
+<dd class="field-odd"><p><strong>topic</strong> (<em>string</em>) – The topic to which you want to subscribe, e.g., <cite>‘pupil.1.3d’</cite>.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The requested data.</p>
+<dd class="field-even"><p><strong>subscriber</strong> – Subscriber socket.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array()</p>
+<dd class="field-odd"><p>zmq.sugar.socket.Socket</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="pyplr.pupil.PupilGrabber.grab">
-<code class="sig-name descname">grab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilGrabber.grab" title="Permalink to this definition">¶</a></dt>
-<dd><p>The pupil grabbing algorithm.</p>
-<p>Grabs all messages which match <cite>self.topic</cite> and dumps them in <cite>self.data</cite></p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pyplr.pupil.PupilGrabber.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilGrabber.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method has been overridden with the <cite>grab()</cite> method.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is an isiosyncratic approach which we adopt because it simplifies
-access to data from the thread.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.pupil.new_annotation">
-<code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">new_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">custom_fields</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.new_annotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new annotation (a.k.a. message / event marker / whatever
-you want to call it). Send it to Pupil Capture with the <cite>send_annotation(…)</cite>
-function.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">here</a>
-for more information on annotations.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>string</em>) – A label for the event.</p></li>
-<li><p><strong>custom_fields</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any additional information to add (e.g. {‘duration’:2, ‘color’:’blue’}).
-The default is {}.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>annotation</strong> – The annotation dictionary, ready to be sent.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.pupil.recv_from_subscriber">
-<code class="sig-prename descclassname">pyplr.pupil.</code><code class="sig-name descname">recv_from_subscriber</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subscriber</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.recv_from_subscriber" title="Permalink to this definition">¶</a></dt>
-<dd><p>Receive a message with topic and payload.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>subscriber</strong> (<em>zmq.sugar.socket.Socket</em>) – a subscriber to any valid topic.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>topic</strong> (<em>str</em>) – A utf-8 encoded string, returned as a unicode object.</p></li>
-<li><p><strong>payload</strong> (<em>dict</em>) – A msgpack serialized dictionary, returned as a python dictionary.
-Any addional message frames will be added as a list in the payload
-dictionary with key: ‘__raw_data__’. To use frame data, say:
-np.frombuffer(msg[‘__raw_data__’][0], dtype=np.uint8).reshape(
-msg[‘height’], msg[‘width’], 3)</p></li>
-</ul>
-</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -962,7 +951,7 @@ from 0 to 4095 counts.</p>
 must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The
 uploaded file must be a json file (.dsf files are json files), with
 weight less than 2 MB. The file must be uploaded using the multipart /
-form-data standard convention. See <cite>play_video_file(…)</cite> for how to
+form-data standard convention. See <code class="docutils literal notranslate"><span class="pre">play_video_file(...)</span></code> for how to
 play the uploaded file in a luminaire.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1259,7 +1248,7 @@ The default is {}.</p></li>
 
 <dl class="py function">
 <dt id="pyplr.stlab.explore_spectra">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">explore_spectra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.explore_spectra" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">explore_spectra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em>, <em class="sig-param"><span class="n">binwidth</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.explore_spectra" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function takes a DataFrame of spectra and plots them, along with other
 useful info.</p>
 </dd></dl>
@@ -1339,7 +1328,7 @@ predicted output for each led at all possible intensities.</p></li>
 
 <dl class="py function">
 <dt id="pyplr.stlab.spec_to_xyz">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spec_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spec_to_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spec_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em>, <em class="sig-param"><span class="n">cmf</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spec_to_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a spectrum to an xyz point.</p>
 <p>The spectrum must be on the same grid of points as the colour-matching
 function, cmf: 380-780 nm in 5 nm steps.</p>
@@ -1349,27 +1338,16 @@ function, cmf: 380-780 nm in 5 nm steps.</p>
 <dt id="pyplr.stlab.spectra_to_peak_wavelengths">
 <code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spectra_to_peak_wavelengths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spectra_to_peak_wavelengths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the peak wavelengths for a given set of spectra.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectra</strong> (<em>TYPE</em>) – DESCRIPTION.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>pwl</strong> – DESCRIPTION.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>TYPE</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="pyplr.stlab.spectra_to_xyz">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spectra_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spectra_to_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spectra_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em>, <em class="sig-param"><span class="n">binwidth</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spectra_to_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the CIE 1931 xy chromaticity coordinates for a collection of
 spectra. The DataFrame must have columns (or multi index) with names</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectra</strong> (<em>DataFrame</em>) – As output by stlab.sample_leds</p>
+<dd class="field-odd"><p><strong>spectra</strong> (<em>DataFrame</em>) – As output by stlab.sample</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>xyz</strong> – The xyz values for each spectrum.</p>
@@ -1456,17 +1434,22 @@ default is <cite>1</cite>.</p></li>
 
 <dl class="py function">
 <dt id="pyplr.CIE.get_CIE_CMF">
-<code class="sig-prename descclassname">pyplr.CIE.</code><code class="sig-name descname">get_CIE_CMF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.CIE.get_CIE_CMF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the CIE color matching functions as a numpy array or pandas DataFrame.</p>
+<code class="sig-prename descclassname">pyplr.CIE.</code><code class="sig-name descname">get_CIE_CMF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asdf</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">binwidth</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.CIE.get_CIE_CMF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience to access CIE 1931 XYZ 2-deg color matching functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>asdf</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return as a pandas DataFrame. The default is False.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asdf</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the results as a pandas DataFrame. The default is
+False.</p></li>
+<li><p><strong>binwidth</strong> (<em>int</em><em>, </em><em>optional</em>) – Width of the wavelength bins in nanometers (must be <cite>1</cite> or <cite>5</cite>). The
+default is <cite>1</cite>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>cmf</strong> – The CIE CMFs.</p>
+<dd class="field-even"><p><strong>cmf</strong> – The CIE 1931 XYZ 2-deg CMFs.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array</p>
+<dd class="field-odd"><p>np.array or pd.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2162,7 +2145,7 @@ See documentation on scipys savgol_filter method FMI.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="examples.html" title="previous chapter">Example Protocols</a></li>
+      <li>Previous: <a href="pipr_stlab.html" title="previous chapter">PIPR with STLAB</a></li>
       <li>Next: <a href="developers.html" title="next chapter">Developers</a></li>
   </ul></li>
 </ul>
@@ -2193,7 +2176,7 @@ See documentation on scipys savgol_filter method FMI.</p>
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

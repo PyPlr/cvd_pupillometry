@@ -38,11 +38,4 @@ from pyplr import stlab
         'exposure_mode':'manual'}
 }
 
-
-def pyplr_protocol(kind='pulse', duration=1.):
-    if kind == 'pulse':
-        stlab.make_video_pulse()
-    p = {}
-    p['kind']=kind
-    
     
