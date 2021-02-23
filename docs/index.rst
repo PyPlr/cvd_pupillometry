@@ -5,11 +5,15 @@
 
 Welcome to *PyPlr*'s documentation!
 ===================================
-
+.. image:: ../img/orange_eye.png
+  :width: 400
+  :alt: Alternative text
+  
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+  
+   includeme
    installation
    overview
    example_protocols

@@ -49,3 +49,24 @@ samples[pupil_cols].plot(title='Butterworth filtered',
 
 even = preproc.even_samples(samples, fields=pupil_cols, sample_rate=120)
 even[pupil_cols].plot(ax=axs[4], legend=False, lw=.5)
+
+
+from pyplr.extract import extract
+
+DURATION = 7600
+ONSET_IDX = 600
+
+# extract the events and their baselines
+ranges = extract(samples, 
+                 events, 
+                 offset=-ONSET_IDX, 
+                 duration=DURATION, 
+                 borrow_attributes=['color'])
+baselines = ranges.mean(level=0)
+
+# new columns for percent signal change
+ranges['diameter_pc'] = (
+    ranges.diameter / baselines.diameter - 1).values * 100
+ranges['diameter_3dpc'] = (
+    ranges.diameter_3d / baselines.diameter_3d - 1).values * 100
+ranges

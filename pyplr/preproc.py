@@ -56,23 +56,24 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
 def mask_pupil_first_derivative(samples, 
                                 threshold=3.0,
                                 mask_cols=['diameter']):
-    '''
+    '''Apply a masking threshold on the first derivative of pupil data.
+    
     Use a statistical criterion on the first derivative of pupil data to mask 
     poor quality data. Helpful for dealing with blinks. 
 
     Parameters
     ----------
-    samples : DataFrame
+    samples : pd.DataFrame
         Samples containing the data to be masked.
     threshold : float, optional
         Number of standard deviations from the mean of the first derivative 
         to use as the threshold for masking. The default is 3.0.
     mask_cols : list, optional
-        Columns to mask. The default is ['diameter'].
+        Columns to mask. The default is ``['diameter']``.
 
     Returns
     -------
-    samps : DataFrame
+    samps : pd.DataFrame
         masked data
 
     '''
@@ -110,30 +111,6 @@ def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
     samps = samples.copy(deep=True)
     samps[mask_cols] = samps[mask_cols].mask(samps.confidence < threshold)
     return samps
-
-def interpolate_pupil(samples, interp_cols=['diameter']):
-    '''
-    Use linear interpolation to reconstruct nan values in interp_cols.
-
-    Parameters
-    ----------
-    samples : DataFrame
-        Samples containing the data to be interpolated.
-    interp_cols : list, optional
-        Columns to interpolate. The default is ['diameter'].
-
-    Returns
-    -------
-    samps : DataFrame
-        masked data
-
-    '''
-    samps = samples.copy(deep=True)
-    samps['interpolated'] = 0
-    samps.loc[samps[interp_cols].isna().any(axis=1), 'interpolated'] = 1
-    samps[interp_cols] = samps[interp_cols].interpolate(
-        method='linear', axis=0, inplace=False)
-    return samps
     
 def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
     '''
@@ -163,11 +140,35 @@ def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
     samps['interpolated'] = 0
     samps.loc[indices, 'interpolated'] = 1
     return samps
-    
-# def pupil_first_derivative_filter(samples, threshold=.8, pupil_col=['diameter']):
-#     samps = samples.copy(deep=True)
-#     samps
-#     return samps
+
+def interpolate_pupil(samples, interp_cols=['diameter'], 
+                      method='linear', order=None):
+    '''
+    Use linear interpolation to reconstruct nan values in interp_cols.
+
+    Parameters
+    ----------
+    samples : DataFrame
+        Samples containing the data to be interpolated.
+    interp_cols : list, optional
+        Columns to interpolate. The default is ['diameter'].
+    method : string
+        Linear or polynomial. If polynomial, requires 'order' to be specified.
+
+    Returns
+    -------
+    samps : DataFrame
+        masked data
+
+    '''
+    if method=='polynomial' and not order:
+        raise ValueError('Must specify order for polynomial')
+    samps = samples.copy(deep=True)
+    samps['interpolated'] = 0
+    samps.loc[samps[interp_cols].isna().any(axis=1), 'interpolated'] = 1
+    samps[interp_cols] = samps[interp_cols].interpolate(
+        method=method, order=order, axis=0, inplace=False)
+    return samps
 
 def ev_row_idxs(samples, blinks):
     ''' 

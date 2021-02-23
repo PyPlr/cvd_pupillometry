@@ -5,7 +5,6 @@ pyplr.extract
 =============
 
 '''
-
 from copy import deepcopy
 
 import numpy as np
@@ -49,7 +48,7 @@ def extract(samples,
     # negative duration should raise an exception
     if duration <= 0:
         raise ValueError('Duration must be >0')
-        
+    breakpoint()    
     # get the list of start time indices
     event_starts = events.index.to_series()
 
@@ -73,14 +72,11 @@ def extract(samples,
         # deepcopy for old bugs
         new_df = deepcopy(
             samples.loc[samples.index[start_idx] : samples.index[end_idx]])
-        #new_df = new_df.iloc[0:range_duration]
-        assert len(new_df) == range_duration, 'Extracted range is the wrong than expected'
         for ba in borrow_attributes:
             new_df[ba] = events.iloc[idx].get(ba, float('nan'))
         df = pd.concat([df, new_df])
         idx += 1
     df.index = midx
-    
     print('Extracted ranges for {} events'.format(len(events)))
     return df
 

@@ -293,7 +293,7 @@ to timestamp the onset of light stimuli with good temporal accuracy, which opens
 </ul>
 <div class="section" id="PyPlr’s-pupil.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> module<a class="headerlink" href="#PyPlr’s-pupil.py-module" title="Permalink to this headline">¶</a></h2>
-<p><em>PyPlr</em> has a module called <em>pupil.py</em> which facilitates working with the Pupil Core Network API by wrapping all of the tricky ZeroMQ and MessagePack stuff into a device class called <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code>. This class has a <code class="docutils literal notranslate"><span class="pre">.command(...)</span></code> method which gives convenient access to all of the commands available via <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">Pupil Remote</a>. With Pupil Capture already running, it is easy to make a short recording:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> facilitates working with the Pupil Core Network API by wrapping all of the tricky ZeroMQ and MessagePack stuff into a device class called <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code>. This class has a <code class="docutils literal notranslate"><span class="pre">.command(...)</span></code> method which gives convenient access to all of the commands available via <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">Pupil Remote</a>. With Pupil Capture already running, it is easy to make a short recording:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -313,8 +313,11 @@ to timestamp the onset of light stimuli with good temporal accuracy, which opens
 <span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
 
 <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
 <span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -342,17 +345,24 @@ that the Pupil software uses to coordinate all activities. The following example
 <span></span><span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">new_annotation</span>
 
 <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;start_plugin&#39;</span><span class="p">,</span>
           <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Annotation_Capture&#39;</span><span class="p">,</span>
           <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{}</span>
           <span class="p">})</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
 <span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
-<span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;my_event&#39;</span><span class="p">,</span>
-                              <span class="n">custom_fields</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;whatever&#39;</span><span class="p">:</span><span class="s1">&#39;info&#39;</span><span class="p">,</span>
-                                             <span class="s1">&#39;you&#39;</span><span class="p">:</span><span class="s1">&#39;want&#39;</span><span class="p">})</span>
+
+<span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;my_event&#39;</span><span class="p">,</span>
+    <span class="n">custom_fields</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;whatever&#39;</span><span class="p">:</span><span class="s1">&#39;info&#39;</span><span class="p">,</span><span class="s1">&#39;you&#39;</span><span class="p">:</span><span class="s1">&#39;want&#39;</span><span class="p">})</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">send_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+
 <span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -489,22 +499,33 @@ PupilGrabber done grabbing 10 seconds of pupil.1.3d
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;start_plugin&#39;</span><span class="p">,</span>
           <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Annotation_Capture&#39;</span><span class="p">,</span>
           <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{}</span>
          <span class="p">})</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span><span class="s1">&#39;frame_publishing.set_format&#39;</span><span class="p">,</span>
           <span class="s1">&#39;format&#39;</span><span class="p">:</span><span class="s1">&#39;bgr&#39;</span><span class="p">})</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
 <span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
 <span class="n">annotation</span> <span class="o">=</span> <span class="n">new_annotation</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+
 <span class="n">timeout</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span><span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
-                            <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-                            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-                            <span class="n">subscription</span><span class="o">=</span><span class="s1">&#39;frame.world&#39;</span><span class="p">)</span>
+
+<span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span>
+    <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+    <span class="n">subscription</span><span class="o">=</span><span class="s1">&#39;frame.world&#39;</span><span class="p">)</span>
+
 <span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
 <span class="nb">print</span><span class="p">(</span><span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
 </pre></div>
 </div>
@@ -570,7 +591,7 @@ Light stamped on frame.world at 678425.8230890001
 <li class="toctree-l2"><a class="reference internal" href="stlab_light_source.html">Spectra Tune Lab light source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="integrating_sphere.html">Integrating sphere</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ocean_optics_calibration.html">Calibration with Ocean Optics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis of pupil data</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example_protocols.html">Example Protocols</a></li>
