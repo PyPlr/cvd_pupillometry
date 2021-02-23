@@ -35,7 +35,7 @@ samples = preproc.mask_pupil_confidence(
 samples[pupil_cols].plot(title='Masked confidence (<0.8)', ax=axs[2], legend=False)
 
 # interpolate blinks
-samples = preproc.interpolate_pupil(samples, interp_cols=pupil_cols)
+samples = preproc.interpolate_pupil(samples, interp_cols=pupil_cols, method='linear', order=2)
 samples[pupil_cols].plot(title='Linear interpolation', ax=axs[3], legend=False)
 
 # smooth  

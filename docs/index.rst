@@ -5,6 +5,7 @@
 
 Welcome to *PyPlr*'s documentation!
 ===================================
+
 .. image:: ../img/orange_eye.png
   :width: 400
   :alt: Alternative text
@@ -14,14 +15,16 @@ Welcome to *PyPlr*'s documentation!
    :caption: Contents:
   
    includeme
+   purpose
    installation
    overview
    example_protocols
    example_analyses
    api
    developers
+   funding
    acknowledgements
-   todo
+   citation
 
 Indices and tables
 ==================
