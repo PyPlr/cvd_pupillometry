@@ -7,3 +7,9 @@ Example analyses
    
    pipr_analysis_pipeline
    
+.. rubric:: Tables and indices
+------------------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

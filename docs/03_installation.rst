@@ -5,7 +5,7 @@ Installation
 
 .. code-block:: bash
 
-    $ git clone https://github.com/PyPlr
+    $ git clone https://github.com/PyPlr/cvd_pupillometry.git
     $ cd PyPlr
     $ pip install -r requirements.txt
     $ python setup.py install
@@ -22,7 +22,7 @@ The latest development version can also be installed from GitHub with *pip*
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/spitschan/PyPlr.git
+    $ pip install git+https://github.com/PyPlr/cvd_pupillometry.git
 
 
 Requirements
@@ -64,5 +64,9 @@ Various... put them all here:
 
 * psychopy thread issue - revert to pyglet=1.4.10
 
+.. rubric:: Tables and indices
+------------------------------
 
-
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

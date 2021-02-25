@@ -12,17 +12,23 @@ API documentation
 .. automodule:: pyplr.CIE
    :members:
 
-.. automodule:: pyplr.plr
-   :members:
-
 .. automodule:: pyplr.oceanops
    :members:
 
-.. automodule:: pyplr.pipeline
+.. automodule:: pyplr.utils
    :members:
 
-Indices and tables
-------------------
+.. automodule:: pyplr.preproc
+   :members:
+
+.. automodule:: pyplr.plr
+   :members:
+
+.. automodule:: pyplr.graphing
+   :members:
+
+.. rubric:: Tables and indices
+------------------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

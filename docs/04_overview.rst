@@ -10,3 +10,10 @@ Overview
    integrating_sphere
    ocean_optics_calibration
    analysis
+
+.. rubric:: Tables and indices
+------------------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

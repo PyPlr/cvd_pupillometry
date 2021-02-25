@@ -512,7 +512,7 @@ class PupilCore:
             
         '''
         topic = subscriber.recv_string()
-        payload = msgpack.unpackb(subscriber.recv())
+        payload = msgpack.unpackb(subscriber.recv(), encoding='utf-8')
         extra_frames = []
         while subscriber.get(zmq.RCVMORE):
             extra_frames.append(subscriber.recv())

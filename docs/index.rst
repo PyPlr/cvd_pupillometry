@@ -14,21 +14,20 @@ Welcome to *PyPlr*'s documentation!
    :maxdepth: 2
    :caption: Contents:
   
-   includeme
-   purpose
-   installation
-   overview
-   example_protocols
-   example_analyses
-   api
-   developers
-   funding
-   acknowledgements
-   citation
+   01_includeme
+   02_purpose
+   03_installation
+   04_overview
+   05_example_protocols
+   06_example_analyses
+   07_api
+   08_developers
+   09_acknowledgements
+   10_funding
 
-Indices and tables
-==================
+Tables and indices
+------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   * :ref:`genindex`
+   * :ref:`modindex`
+   * :ref:`search`

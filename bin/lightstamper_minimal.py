@@ -11,8 +11,8 @@ p = pupil.PupilCore()
 p.command('R')
 sleep(2)
 label = ('LIGHT_ON')
-annotation = pupil.new_annotation(label)
-lst = p.lightstamper(annotation=annotation,
+annotation = p.new_annotation(label)
+lst = p.light_stamper(annotation=annotation,
                      threshold=15,
                      timeout=10,
                      topic='frame.world')
@@ -23,8 +23,7 @@ print('bla')
 p.command('r')
 lst.result()
 
-lst = pupil.LightStamper(p, pupil.new_annotation('bla'), threshold=15, 
-                 wait_time=None, subscription='frame.world')
+
 
 label = 'LIGHT_ON'
 annotation = pupil.new_annotation(label)
@@ -38,3 +37,6 @@ sleep(timeout)
 # light stimulus here
 p.command('r')
 lst.result()
+
+s = p.subscribe_to_topic('frame.world')
+t,m = p.get_next_camera_frame(s, 'frame.world')

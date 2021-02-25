@@ -7,4 +7,11 @@ Thanks to:
 
 - Grahame Faulkner for expert advice on safety.
 
-- Pupil Labs for support on Dischord.
+- The Pupil Labs team for support on Discord.
+
+.. rubric:: Tables and indices
+------------------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
