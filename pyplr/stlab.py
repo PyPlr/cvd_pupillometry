@@ -24,7 +24,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from pyplr.oceanops import oo_measurement
 from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026, get_CIE_CMF
 
 ##########################
@@ -625,9 +624,9 @@ class SpectraTuneLab:
             Whether to normalise the spectrum to the peak radiometric value.
         setting : dict, optional
             The current setting of the luminaire (if known), to be included in
-            the `info_dict`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
-            ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
-            The default is `{}`.
+            the `info_dict`. For example ``{'led' : 5, 'intensity' : 3000}``,
+            or ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
+            The default is ``{}``.
 
         Returns
         -------
@@ -685,7 +684,7 @@ class SpectraTuneLab:
         wait_before_sample : float, optional
             Time in seconds to wait after setting a spectrum before acquiring 
             a measurement from the spectrometer(s). The default is .2.
-        ocean_optics : seabreeze.spectrometers.Spectrometer, optional
+        ocean_optics : oceanops.OceanOptics, optional
             Whether to acquire concurrent measurements from an Ocean Optics 
             spectrometer. Requires the seabreeze package to be installed.
             The default is None.
@@ -711,7 +710,8 @@ class SpectraTuneLab:
             
         '''
         if spectra and (leds or intensities):
-            raise ValueError('leds and intensities must be None when specifying spectra')
+            raise ValueError(
+                'leds and intensities must be None when specifying spectra')
   
         # off spectrum    
         leds_off = [0]*10
@@ -765,17 +765,17 @@ class SpectraTuneLab:
             sleep(wait_before_sample)
             
             # full readout from STLAB
-            stlab_counts, stlab_info_dict = self.full_readout(setting=setting)
-            stlab_spectra.append(stlab_counts)
+            stlab_spec, stlab_info_dict = self.full_readout(setting=setting)
+            stlab_spectra.append(stlab_spec)
             stlab_info.append(stlab_info_dict)
             
             if ocean_optics:
                 if ocean_optics_inegration_times:
                     t = ocean_optics_inegration_times.loc[(led, setting)]
-                    oo_counts, oo_info_dict = oo_measurement(
+                    oo_counts, oo_info_dict = ocean_optics.measurement(
                     ocean_optics, integration_time=t, setting=setting)
                 else:
-                    oo_counts, oo_info_dict = oo_measurement(
+                    oo_counts, oo_info_dict = ocean_optics.measurement(
                     ocean_optics, setting=setting)
                 oo_spectra.append(oo_counts)
                 oo_info.append(oo_info_dict)
@@ -797,7 +797,7 @@ class SpectraTuneLab:
         self.turn_off()
         
         if save_output:
-            fid = datetime.now().strftime('%D-%H-%M').replace('/','-')
+            fid = datetime.now().strftime('%D').replace('/','-')
             stlab_spectra.to_csv(
                 op.join(os.getcwd(), 'stlab_spectra_' + fid + '.csv'),
                 index=False)

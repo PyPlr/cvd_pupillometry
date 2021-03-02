@@ -7,10 +7,9 @@ This is a temporary script file.
 from random import randrange, shuffle
 
 import pandas as pd
-from seabreeze.spectrometers import Spectrometer
 
-from pyplr import stlab
-from pyplr.oceanops import oo_measurement
+from pyplr.stlab import SpectraTuneLab
+from pyplr.oceanops import OceanOptics
     
 # connect to stlab and dfs to store data
 d = stlab.SpectraTuneLab(username='admin', identity=1, password='83e47941d9e930f6')

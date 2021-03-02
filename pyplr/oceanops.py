@@ -13,170 +13,166 @@ from time import sleep
 import numpy as np
 import pandas as pd
 import spectres
+from seabreeze.spectrometers import Spectrometer
 
-# TODO: possibly sublclass Seabreeze functionality
-
-def oo_measurement(spectrometer, integration_time=None, setting={}):
-    '''
-    For a given light source, use an adaptive procedure to find the integration 
-    time which returns a spectrum whose maximum reported value in raw units is
-    between 80-90% of the maximum intensity value for the device. Can take up
-    to a maximum of ~3.5 mins for lower light levels, though this could be 
-    reduced somewhat by optimising the algorithm.
-
-    Parameters
-    ----------
-    spectrometer : seabreeze.spectrometers.Spectrometer
-        The Ocean Optics spectrometer instance.
-    integration_time : int
-        The integration time to use for the measurement. Leave as None to
-        adaptively set the integration time based on spectral measurements.
-    setting : dict, optional
-         The current setting of the light source (if known), to be included in
-         the info_dict. For example {'led' : 5, 'intensity' : 3000}, or 
-         {'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}. 
-         The default is {}.
-
-    Returns
-    -------
-    oo_spectra : pd.DataFrame
-        The resulting measurements from the Ocean Optics spectrometer.
-    oo_info_dict : dict
-        The companion info to the oo_spectra, with matching indices.
-
+class OceanOptics(Spectrometer):
+    '''Device class for Ocean Optics spectrometer with user-defined methods.
+    
     '''
     
-    if integration_time:
-        # set the spectrometer integration time
-        intgt = integration_time
-        spectrometer.integration_time_micros(integration_time)
-        sleep(.05)
+    def _init_(self):
+        super(Spectrometer, self).__init__()
+    
+    # User defined methods
+    def measurement(self, integration_time=None, setting={}):
+        '''Obtain a measurement with an Ocean Optics spectrometer.
         
-        # obtain temperature measurements
-        temps = spectrometer.f.temperature.temperature_get_all()
-        sleep(.05)
-        
-        # obtain intensity measurements
-        oo_counts = spectrometer.intensities()
-        
-        # get the maximum reported value
-        max_reported = max(oo_counts)
-        print('\tIntegration time: {} ms --> maximum value: {}'.format(
-            integration_time / 1000, max_reported))
-            
-    else:    
-        # initial parameters
-        intgtlims = spectrometer.integration_time_micros_limits
-        maximum_intensity = spectrometer.max_intensity
-        lower_intgt = None
-        upper_intgt = None
-        lower_bound = maximum_intensity * .8
-        upper_bound = maximum_intensity * .9
-        
-        # start with 1000 micros
-        intgt = 1000.0 
-        max_reported = 0
-        
-        # keep sampling with different integration times until the maximum reported
-        # value is within 80-90% of the maximum intensity value for the device
-        while max_reported < lower_bound or max_reported > upper_bound:
-            
-            # save a couple of mins on dark measurements
-            # if setting['intensity'] == 0:
-            #     intgt = intgtlims[1]
-                
-            # if the current integration time is greater than the upper 
-            # limit, set it too the upper limit
-            if intgt >= intgtlims[1]:
-                intgt = intgtlims[1]
-                
+        If `integration_time` is not specified, will use an adaptive procedure
+        that avoids saturation by aiming for a maximum reported value of 
+        80-90% of the maximum intensity value for the device. Can take up to a
+        maximum of ~3.5 mins for lower light levels, though this could be 
+        reduced somewhat by optimising the algorithm.
+    
+        Parameters
+        ----------
+        integration_time : int
+            The integration time to use for the measurement. Leave as None to
+            adaptively set the integration time based on spectral measurements.
+        setting : dict, optional
+             The current setting of the light source (if known), to be included
+             in the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
+             ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
+             The default is ``{}``.
+    
+        Returns
+        -------
+        counts : np.array
+            Raw intensity counts from the Ocean Optics spectrometer.
+        info : dict
+            Companion info for measurement.
+    
+        '''
+        if integration_time:
             # set the spectrometer integration time
-            spectrometer.integration_time_micros(intgt)
-            sleep(.05)
+            self.integration_time_micros(integration_time)
+            sleep(.01)
             
             # obtain temperature measurements
-            temps = spectrometer.f.temperature.temperature_get_all()
-            sleep(.05)
+            temps = self.f.temperature.temperature_get_all()
+            sleep(.01)
             
             # obtain intensity measurements
-            oo_counts = spectrometer.intensities()
+            counts = self.intensities()
             
             # get the maximum reported value
-            max_reported = max(oo_counts)
+            max_reported = max(counts)
             print('\tIntegration time: {} ms --> maximum value: {}'.format(
-                intgt / 1000, max_reported))
-            
-            # if the integration time has reached the upper limit for the spectrometer,
-            # exit the while loop, having obtained the final measurement
-            if intgt == intgtlims[1]:
-                break
-            
-            # if the max_reported value is less than the lower_bound and the
-            # upper_ingt is not yet known, update the lower_intgt and double intgt
-            # ready for the next iteration
-            elif max_reported < lower_bound and upper_intgt is None:
-                lower_intgt = intgt
-                intgt *= 2.0
-            
-            # if the max_reported value is greater than the upper_bound, update
-            # the upper_intgt and subtract half of the difference between 
-            # upper_intgt and lower_intgt from intgt ready for the next iteration
-            elif max_reported > upper_bound:
-                upper_intgt = intgt
-                intgt -= (upper_intgt - lower_intgt) / 2 
+                integration_time / 1000, max_reported))
                 
-            # if the max_reported value is less than the lower_bound and the value
-            # of upper_intgt is known, update the lower_intgt and add half
-            # of the difference between upper_intgt and lower_intgt to intgt ready 
-            # for the next iteration
-            elif max_reported < lower_bound and upper_intgt is not None:
-                lower_intgt = intgt
-                intgt += (upper_intgt - lower_intgt) / 2
-    
-    oo_info_dict = {
-        'board_temp': temps[0],
-        'micro_temp': temps[2],
-        'integration_time': intgt,
-        'model': spectrometer.model
-        }
-    oo_info_dict = {**oo_info_dict, **setting}
-    
-    # return the final counts and dict of sample-related info
-    return oo_counts, oo_info_dict
-    
-def dark_measurement(spectrometer, integration_times=[1000]):
-    '''
-    Sample the dark spectrum with a range of integration times. Do this for a 
-    range of temperatures to characterise the relationship between temperature
-    and integration time.
-
-    '''
-    wls = spectrometer.wavelengths()
-    data = pd.DataFrame()
-    for intgt in integration_times:
-        spectrometer.integration_time_micros(intgt)
-        sleep(.05)
-        temps = spectrometer.f.temperature.temperature_get_all()
-        sleep(.05)
-        board_temp = np.round(temps[0], decimals=2)
-        micro_temp = np.round(temps[2], decimals=2)
-        print('Board temp: {}, integration time: {}'.format(board_temp, intgt))
-        intensities = pd.DataFrame(spectrometer.intensities())
-        intensities.rename(columns={0:'dark_counts'}, inplace=True)
-        data = pd.concat([data, intensities])
+        else:    
+            # initial parameters
+            intgtlims = self.integration_time_micros_limits
+            maximum_intensity = self.max_intensity
+            lower_intgt = None
+            upper_intgt = None
+            lower_bound = maximum_intensity * .8
+            upper_bound = maximum_intensity * .9
+            
+            # start with 1000 micros
+            intgt = 1000.0 
+            max_reported = 0
+            
+            # keep sampling with different integration times until the maximum
+            # reported value is within 80-90% of the maximum intensity value
+            # for the device
+            while max_reported < lower_bound or max_reported > upper_bound:
+                           
+                # if current integration time is greater than the upper limit, 
+                # set it too the upper limit
+                if intgt >= intgtlims[1]:
+                    intgt = intgtlims[1]
+                    
+                # set the spectrometer integration time
+                self.integration_time_micros(intgt)
+                sleep(.01)
+                
+                # obtain temperature measurements
+                temps = self.f.temperature.temperature_get_all()
+                sleep(.01)
+                
+                # obtain intensity measurements
+                counts = self.intensities()
+                
+                # get the maximum reported value
+                max_reported = max(counts)
+                print('\tIntegration time: {} ms --> maximum value: {}'.format(
+                    intgt / 1000, max_reported))
+                
+                # if the integration time has reached the upper limit for the 
+                # spectrometer, exit the while loop, having obtained the final 
+                # measurement
+                if intgt == intgtlims[1]:
+                    break
+                
+                # if the max_reported value is less than the lower_bound and 
+                # the upper_ingt is not yet known, update the lower_intgt and 
+                # double intgt ready for the next iteration
+                elif max_reported < lower_bound and upper_intgt is None:
+                    lower_intgt = intgt
+                    intgt *= 2.0
+                
+                # if the max_reported value is greater than the upper_bound, 
+                # update the upper_intgt and subtract half of the difference
+                # between upper_intgt and lower_intgt from intgt ready for the
+                # next iteration
+                elif max_reported > upper_bound:
+                    upper_intgt = intgt
+                    intgt -= (upper_intgt - lower_intgt) / 2 
+                    
+                # if the max_reported value is less than the lower_bound and 
+                # the value of upper_intgt is known, update the lower_intgt and
+                # add half of the difference between upper_intgt and 
+                # lower_intgt to intgt ready for the next iteration
+                elif max_reported < lower_bound and upper_intgt is not None:
+                    lower_intgt = intgt
+                    intgt += (upper_intgt - lower_intgt) / 2
         
-    midx = pd.MultiIndex.from_product(
-        [[board_temp], [micro_temp], integration_times, wls],
-        names=['board_temp', 'micro_temp', 'integration_time', 'wavelengths'])
-    data.index = midx
+        info = {
+            'board_temp': temps[0],
+            'micro_temp': temps[2],
+            'integration_time': intgt,
+            'model': self.model
+            }
+        info = {**info, **setting}
+        
+        return counts, info    
+
+    def dark_measurement(self, integration_times=[1000]):
+        '''Sample the dark spectrum with a range of integration times. 
+        
+        Do this for a range of temperatures to map the relationship between 
+        temperature and integration time.
     
-    return data
+        '''
+        data = []
+        info = []
+        for intgt in integration_times:
+            self.integration_time_micros(intgt)
+            sleep(.05)
+            c, i = self.measurement(integration_time=intgt)
+            print('Board temp: {}, integration time: {}'.format(
+                i['board_temp'], intgt))
+            data.append(c)
+            info.append(i)
+        data = pd.DataFrame(data, columns=self.wavelengths())   
+        info = pd.DataFrame(info)
+        return data, info
 
 def predict_dark_counts(spectra_info, darkcal):
-    '''
-    Predict the dark counts from the temperature and integration times of a
-    set of measurements. These must be subtracted from measured pixel counts 
-    during the unit-calibration process. 
+    '''Predict dark counts from temperature and integration times.
+    
+    These must be subtracted from measured pixel counts during the 
+    unit-calibration process. 
 
     Parameters
     ----------
