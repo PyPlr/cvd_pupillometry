@@ -54,7 +54,7 @@ class OceanOptics(Spectrometer):
         '''
         if integration_time:
             # set the spectrometer integration time
-            self.integration_time_micros(integration_time)
+            self.integration_time_micros(int(integration_time))
             sleep(.01)
             
             # obtain temperature measurements

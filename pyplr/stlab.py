@@ -773,10 +773,10 @@ class SpectraTuneLab:
                 if ocean_optics_inegration_times:
                     t = ocean_optics_inegration_times.loc[(led, setting)]
                     oo_counts, oo_info_dict = ocean_optics.measurement(
-                    ocean_optics, integration_time=t, setting=setting)
+                        integration_time=t, setting=setting)
                 else:
                     oo_counts, oo_info_dict = ocean_optics.measurement(
-                    ocean_optics, setting=setting)
+                        setting=setting)
                 oo_spectra.append(oo_counts)
                 oo_info.append(oo_info_dict)
         
@@ -786,12 +786,13 @@ class SpectraTuneLab:
         stlab_info = pd.DataFrame(stlab_info)
         stlab_spectra['led'] = stlab_info['led']
         stlab_spectra['intensity'] = stlab_info['intensity']
-        stlab_spectra.set_index(['led','intensity'], inplace=True)
 
         if ocean_optics:
             oo_spectra = pd.DataFrame(oo_spectra)
             oo_spectra.columns = ocean_optics.wavelengths()
             oo_info = pd.DataFrame(oo_info)
+            oo_spectra['led'] = oo_info['led']
+            oo_spectra['intensity'] = oo_info['intensity']
 
         # turn off
         self.turn_off()
