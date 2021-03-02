@@ -1,23 +1,7 @@
 Purpose
 =======
 
-The pupils are a window of insight into cognition and central nervous activity, and the pupillary light reflex (PLR) in particular has received growing attention for its utility as a neurodiagnostic tool for a broad range of specific disorders and conditions. 
-
-More recently, the potential utility of the PLR and other pupil measurements has been found to have neurodiagnostic value as a biomarker for specific disorders or conditions. For example, children with autism spectrum disorder may have an atypical PLR [2] and atypical response to light and dark stimuli [3], with atypical pupil responses present even before diagnosis [4]. One particularly important and intrigu- ing aspect in using pupillary responses as a metric in pedi- atric populations is that this is a measure that is objective
-
-The pupillary light reflex, or PLR for short, is assessed widely in research and critical care as a means of gaining insight into the integrity and activity of the central nervous system. 
-
-Whilst commercially available tools for measuring the pupil flash response, such as eye trackers and automated pupillometers, can be expensive and inflexible. This project aims to develop a low-cost, research grade system of hardware and software for stimulation and measurement of the pupil flash response. 
-
-The pupils are windows to autonomic nervous activity. Physicians have paid attention to it for well over 100 years when monitoring critically ill patients, and pupil assessments remain part of patient monitoring in critical care. And detailed study of the light reflex can assist in the monitoring and diagnosis of a broad range of ocular, neurological and psychiatri diseases. Whilst there are excellent commercial tools available for stimulating and measuring the pupil, they are often expensive and inflexible. PyPlr was developed to offer an affordable and versatile solution to researching the pupillary light reflex. 
-
-quantitative pupillometry systems
-
-troiani (2020) paper 
-
-More recently, the potential utility of the PLR and other pupil measurements has been found to have neurodiagnostic value as a biomarker for specific disorders or conditions. For example, children with autism spectrum disorder may have an atypical PLR [2] and atypical response to light and dark stimuli [3], with atypical pupil responses present even before diagnosis [4]. One particularly important and intrigu- ing aspect in using pupillary responses as a metric in pedi- atric populations is that this is a measure that is objective
-
-`PyPlr` was developed to offer an affordable, versatile, research grade solution to researching the light reflex. 
+The pupillary light reflex, or PLR for short, is the constriction and dilation of the pupil in response to changes in light. It has long been studied by researchers and physicians as a means of gaining insight into the integrity and activity of the central nervous system, but in more recent years it has gained recognition as a tool with diagnostic utility for a wide range of ophthalmic, neurological and psychiatric diseases. For example, Alzheimer's patients may have reduced velocity and acceleration of pupil constriction to a brief flash of light `(Fotiou et al., 2009) <https://www.sciencedirect.com/science/article/abs/pii/S016787600900110X?via%3Dihub>`_, children with autism spectrum disorder may show an atypical PLR `(Fan et al., 2009) <https://link.springer.com/article/10.1007%2Fs10803-009-0767-7>`_, and patients with multiple sclerosis may have abnormal responses to blue light `(Meltzer et al., 2017) <https://jamanetwork.com/journals/jamaneurology/fullarticle/2598836?resultClick=1>`_. Automated pupillometers offer a convenient 'all-in-one' solution to measuring the PLR as they are compact, portable and easy to use, but these devices are typically expensive and inflexible, with limited control over stimulus parameters and in some cases no access to the raw data. In comparison, `PyPlr` works with the Pupil Core eye tracking platform, which makes it a more (currently) affordable, versatile, extensible and transparant solution for researching the PLR. We developed `PyPlr` for use in a larger project that will explore the relationship between the PLR and cerebrovascular health, but we hope others will find it useful, too.
 
 .. rubric:: Tables and indices
 ------------------------------

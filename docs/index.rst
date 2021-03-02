@@ -7,9 +7,9 @@ Welcome to *PyPlr*'s documentation!
 ===================================
 
 .. image:: ../img/orange_eye.png
-  :width: 400
-  :alt: Alternative text
-  
+   :width: 400
+   :class: no-scaled-link
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -24,6 +24,7 @@ Welcome to *PyPlr*'s documentation!
    08_developers
    09_acknowledgements
    10_funding
+   11_gloassary
 
 Tables and indices
 ------------------

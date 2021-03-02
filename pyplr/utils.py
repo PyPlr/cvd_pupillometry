@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-Created on Thu Feb 11 09:04:17 2021
+pyplr.utils
+===========
+
+Scripting tools for working with pupil data.
 
 @author: jtm
+
 '''
 
 import os
@@ -265,8 +269,8 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         
     pct_interp = ranges.groupby(by='event').agg(
         {'interpolated':lambda x: float(x.sum())/len(x)*100})
-    print('Percentage of data interpolated for each trial (mean = {:.2f}): \n'.format(
-        pct_interp.mean()[0]), pct_interp)
+    print('Percentage of data interpolated for each trial (mean = {:.2f}): \
+          \n'.format(pct_interp.mean()[0]), pct_interp)
     reject_idxs = (pct_interp.loc[pct_interp['interpolated'] > interp_thresh]
                              .index.to_list())
     ranges['reject'] = 0

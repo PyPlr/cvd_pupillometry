@@ -6,6 +6,8 @@ pyplr.pupil
 
 A module for interfacing with a Pupil Core eye tracker.
 
+@author: jtm
+
 '''
 
 from time import time
@@ -96,19 +98,15 @@ class PupilCore:
 
     def command(self, cmd):
         '''
-        Send a command via Pupil Remote. 
-        
-        Note
-        ----
-        Click `here <https://docs.pupil-labs.com/developer/core/network-api/
-        #pupil-remote>`_ for more information on Pupil Remote.
+        Send a command via `Pupil Remote 
+        <https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote>`_.
    
         Parameters
         ----------
         cmd : string
             Must be one of the following:
                 
-                * 'R'`       - start recording with auto generated session name
+                * 'R'        - start recording with auto generated session name
                 * 'R my_rec' - start recording named `my_rec` 
                 * 'r'        - stop recording
                 * 'C'        - start currently selected calibration
@@ -130,19 +128,13 @@ class PupilCore:
         return self.remote.recv_string()
    
     def notify(self, notification):
-        '''
-        Send a notification to Pupil Remote. 
+        '''Send a `notification <https://docs.pupil-labs.com/developer/core/network-api/#notification-message>`_
+        to Pupil Remote. 
         
-        Every notification has a topic and 
-        can contain potential payload data. The payload data has to be 
-        serializable, so not every Python object will work. To find out which 
-        plugins send and receive notifications, open the codebase and search 
-        for ``.notify_all(`` and ``def on_notify(``. 
-        
-        Note
-        ----
-        Click `here <https://docs.pupil-labs.com/developer/core/network-api/
-        #notification-message>`_ for more info on notifications.
+        Every notification has a topic and can contain potential payload data. 
+        The payload data has to be serializable, so not every Python object 
+        will work. To find out which plugins send and receive notifications, 
+        open the codebase and search for ``.notify_all(`` and ``def on_notify(``. 
         
         Parameters
         ----------
@@ -215,9 +207,9 @@ class PupilCore:
         return self.notify(notification)
     
     def new_annotation(self, label, custom_fields={}):
-        '''Create a new annotation (a.k.a. message / event marker / whatever 
-        you want to call it). Send it to Pupil Capture with the 
-        ``send_annotation(...)`` method. 
+        '''Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+        (a.k.a. message / event marker / whatever you want to call it). Send it
+        to Pupil Capture with the ``.send_annotation(...)`` method. 
     
         Note
         ----
@@ -225,9 +217,6 @@ class PupilCore:
         (corrected for transmission delay) at the time of creation, but this 
         can be overridden at a later point if desired.
         
-        Click `here <https://docs.pupil-labs.com/core/software/pupil-capture/
-        #annotations>`_ for more information on annotations.
-            
         Parameters
         ----------
         label : string
@@ -253,14 +242,14 @@ class PupilCore:
         return annotation
     
     def send_annotation(self, annotation):
-        '''Send an annotation (a.k.a trigger, event marker) to Pupil Capture. 
+        '''Send an annotation to Pupil Capture. 
         
         Use to mark the timing of events.
         
         Parameters
         ----------
         annotation : dict
-            Customiseable - see the ``new_annotation(...)`` method.
+            Customiseable - see the ``.new_annotation(...)`` method.
         
         Returns
         -------
@@ -274,14 +263,14 @@ class PupilCore:
     def pupil_grabber(self, topic, seconds):
         '''Concurrent access to data from Pupil Core.
         
-        Executes the ``grab_data(...)`` method in a thread using
+        Executes the ``.grab_data(...)`` method in a thread using
         ``concurrent.futures.ThreadPoolExecutor()``, returning a Future object
         with access to the return value.
         
         Parameters
         ----------
         topic : string
-            See ``grab_data(...)`` for more info.
+            See ``.grab_data(...)`` for more info.
         seconds : float
             Ammount of time to spend grabbing data. 
 
@@ -342,7 +331,7 @@ class PupilCore:
                      topic='frame.world'):
         '''Concurrent timestamping of light stimuli with World Camera.
                 
-        Executes the ``detect_light_onset(...)`` method in a thread using
+        Executes the ``.detect_light_onset(...)`` method in a thread using
         ``concurrent.futures.ThreadPoolExecutor()``, returning a Future object
         with access to the return value.
         
@@ -353,7 +342,7 @@ class PupilCore:
         threshold : int
         topic : string
         
-        See ``detect_light_onset(...)`` for more information on parameters.
+        See ``.detect_light_onset(...)`` for more information on parameters.
             
         Example
         -------
@@ -387,6 +376,7 @@ class PupilCore:
         return futures.ThreadPoolExecutor().submit(
             self.detect_light_onset, *args)
     
+    # TODO: Add option to stamp offset
     def detect_light_onset(self, annotation, timeout, threshold=15,
                            topic='frame.world'):
         '''Algorithm to detect onset of light stimulus with the World Camera.
@@ -403,7 +393,7 @@ class PupilCore:
                  }
                 
             timestamp will be overwritten with the new pupil timestamp for the 
-            detected light. See ``new_annotation(...)`` for more info.
+            detected light. See ``.new_annotation(...)`` for more info.
         timeout : float
             Time to wait in seconds before giving up. For `STLAB`, use 6 s, 
             because on rare occasions it can take about 5 seconds for the 
@@ -459,7 +449,7 @@ class PupilCore:
     def get_next_camera_frame(self, subscriber, topic):
         '''Get the next camera frame. 
         
-        Used by ``detect_light_onset(...)``.
+        Used by ``.detect_light_onset(...)``.
 
         Parameters
         ----------
@@ -504,11 +494,7 @@ class PupilCore:
         payload : dict
             A msgpack serialized dictionary, returned as a python dictionary.
             Any addional message frames will be added as a list in the payload 
-            dictionary with key: ``'__raw_data__'``. To use frame data::
-                
-                data = np.frombuffer(
-                    msg['__raw_data__'][0], dtype=np.uint8).reshape(
-                        msg['height'], msg['width'], 3)
+            dictionary with key: ``'__raw_data__'``. 
             
         '''
         topic = subscriber.recv_string()

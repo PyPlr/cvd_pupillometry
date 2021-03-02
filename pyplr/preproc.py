@@ -4,6 +4,10 @@
 pyplr.preprocc
 ==============
 
+Scripting tools for preprocessing pupil data.
+
+@author: jtm
+
 '''
 
 import numpy as np

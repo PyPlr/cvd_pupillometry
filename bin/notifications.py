@@ -8,8 +8,6 @@ Created on Tue Nov  3 17:49:05 2020
 A handy list of notification dicts
 """
 
-from pyplr import stlab
-
 {
     "subject": "pupil_detector.set_property.3d",
     "name": "model_is_frozen",

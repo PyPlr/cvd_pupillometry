@@ -5,9 +5,8 @@ pyplr.CIE
 =========
 
 Convenience functions for accessing CIE standards.
-http://www.cvrl.org/
-:note: https://scipython.com/blog/converting-a-spectrum-to-a-colour/
-:note: http://cvrl.ioo.ucl.ac.uk/cmfs.htm
+
+@author: jtm
 
 '''
 
@@ -15,7 +14,7 @@ import numpy as np
 import pandas as pd
  
 def get_CIE_CMF(asdf=False, binwidth=1):
-    '''Convenience to access CIE 1931 XYZ 2-deg color matching functions.
+    '''Get the CIE 1931 XYZ 2-deg color matching functions.
 
     Parameters
     ----------
@@ -447,7 +446,7 @@ def get_CIE_CMF(asdf=False, binwidth=1):
     return cmf
         
 def get_CIES026(asdf=False, binwidth=1):
-    '''Convenience function to access CIE026 spectral sensitivities.
+    '''Get the CIE026 spectral sensitivities.
 
     Parameters
     ----------
@@ -882,7 +881,7 @@ def get_CIES026(asdf=False, binwidth=1):
     return sss
 
 def get_CIE_1924_photopic_vl(asdf=False, binwidth=1):
-    '''Convenience function to access CIE1924 photopic luminosity function.
+    '''Get the CIE1924 photopic luminosity function.
     
     Parameters
     ----------

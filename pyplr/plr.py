@@ -4,7 +4,9 @@
 pyplr.plr
 =========
 
-A module to assist with parametrising and plotting pupillary light reflexes.
+A module to assist with parametrising and plotting pupillary light responses.
+
+@author: jtm
 
 '''
 
@@ -12,6 +14,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+class PLR():
+    def __init__(self, pupil, time, onset, stim_dur, sample_rate):
+        self.pupil = pupil
+        self.time = time
+        self.onset_idx = onset
+        self.stimu_dur = stim_dur
+        self.sample_rate = sample_rate
+        
+    def baseline(self):
+        '''
+        Return the average pupil size between the start of s and onset_idx
+        
+        '''
+        return np.mean(self.pupil[0:self.onset_idx])
+    
+        
 def velocity_profile(s, sample_rate):
     '''
     Return the velocity profile of a PLR.
