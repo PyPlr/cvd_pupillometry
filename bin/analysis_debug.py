@@ -11,7 +11,7 @@ from pyplr import utils
 from pyplr import preproc
 from pyplr import graphing
 
-pupil_cols = ['diameter_3d']
+pupil_cols = ['diameter_3d', 'diameter']
 SAMPLE_RATE=120
 rec_dir = '/Users/jtm/OneDrive - Nexus365/protocols/pipr_protocol/JTM_b'
 utils.print_file_structure(rec_dir)
@@ -50,23 +50,25 @@ samples[pupil_cols].plot(title='Butterworth filtered',
 even = preproc.even_samples(samples, fields=pupil_cols, sample_rate=120)
 even[pupil_cols].plot(ax=axs[4], legend=False, lw=.5)
 
-
-from pyplr.extract import extract
-
 DURATION = 7600
 ONSET_IDX = 600
 
 # extract the events and their baselines
-ranges = extract(samples, 
+ranges = utils.extract(samples, 
                  events, 
                  offset=-ONSET_IDX, 
                  duration=DURATION, 
                  borrow_attributes=['color'])
-baselines = ranges.mean(level=0)
+baselines = ranges.loc[(slice(None), slice(0,600)), :].mean(level=0)
 
 # new columns for percent signal change
-ranges['diameter_pc'] = (
-    ranges.diameter / baselines.diameter - 1).values * 100
-ranges['diameter_3dpc'] = (
-    ranges.diameter_3d / baselines.diameter_3d - 1).values * 100
-ranges
+ranges = preproc.percent_signal_change(ranges, baselines, pupil_cols)
+
+
+p = ranges.mean(level=1)
+
+from pyplr import plr
+
+params = plr.plr_parameters(p.diameter_3d, sample_rate=120, onset_idx=600, pc=.01)
+
+# averaging takes care of things

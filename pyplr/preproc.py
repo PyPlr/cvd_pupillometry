@@ -19,7 +19,7 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
     
     Parameters
     ----------
-    samples : pd.DataFrame
+    samples : pandas.DataFrame
         The samples.
     sample_rate : int
         Sampling rate of the data.
@@ -28,7 +28,7 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
 
     Returns
     -------
-    samps : pd.DataFrame
+    samps : pandas.DataFrame
         DataFrame with evenly spaced index and interpolated data.
 
     '''
@@ -44,18 +44,16 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
     samps.index = xnew
     return samps
 
-# def even_samples(rangs, sample_rate, fields=[]):
-#     for idx, df in rangs.groupby(level=['event']):
-#         for f in fields:
-#             x = df.orig_idx.to_numpy()
-#             x = x - x[0]
-#             xnew = np.arange(0, len(df)) * (1/sample_rate)
-#             y = df.loc[idx, f]
-#             func = spi.interp1d(x, y)
-#             rangs.loc[idx, f] = func(xnew)
-#             rangs.loc[idx, 'even_onset'] = xnew
-#     rangs = rangs.reset_index().set_index(['event','even_onset'])
-#     return rangs
+def even_range_samples(rangs, sample_rate, fields=[]):
+    for idx, df in rangs.groupby(level=['event']):
+        for f in fields:
+            x = df.orig_idx.to_numpy()
+            x = x - x[0]
+            xnew = np.linspace(x.min(), x.max(), len(x))
+            y = df.loc[idx, f]
+            rangs.loc[idx, f] = np.interp(xnew, x, y)
+            rangs.loc[idx, 'even_idx'] = xnew
+    return rangs
 
 def mask_pupil_first_derivative(samples, 
                                 threshold=3.0,
@@ -67,7 +65,7 @@ def mask_pupil_first_derivative(samples,
 
     Parameters
     ----------
-    samples : pd.DataFrame
+    samples : pandas.DataFrame
         Samples containing the data to be masked.
     threshold : float, optional
         Number of standard deviations from the mean of the first derivative 
@@ -77,7 +75,7 @@ def mask_pupil_first_derivative(samples,
 
     Returns
     -------
-    samps : pd.DataFrame
+    samps : pandas.DataFrame
         masked data
 
     '''
@@ -99,7 +97,7 @@ def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
 
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         Samples containing the data to be masked.
     threshold : float, optional
         Confidence threshold for masking. The default is 0.8.
@@ -108,7 +106,7 @@ def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
 
     Returns
     -------
-    samps : DataFrame
+    samps : pandas.DataFrame
         masked data
 
     '''
@@ -124,7 +122,7 @@ def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
 
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         The samples from which to pull indices.
     threshold : float, optional
         Threshold to use for filtering by confidence. The default is .8.
@@ -133,8 +131,8 @@ def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
 
     Returns
     -------
-    samps : DataFrame
-        masked data
+    samps : pandas.DataFrame
+        Masked data.
         
     '''
     
@@ -152,7 +150,7 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
 
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         Samples containing the data to be interpolated.
     interp_cols : list, optional
         Columns to interpolate. The default is ['diameter'].
@@ -161,8 +159,8 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
 
     Returns
     -------
-    samps : DataFrame
-        masked data
+    samps : pandas.DataFrame
+        Masked data
 
     '''
     if method=='polynomial' and not order:
@@ -174,21 +172,45 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
         method=method, order=order, axis=0, inplace=False)
     return samps
 
+def percent_signal_change(ranges, baselines, pupil_cols=[]):
+    '''Add new columns expressing pupil_cols as percent change from baseline.
+    
+    Parameters
+    ----------
+    ranges : pandas.DataFrame
+        DataFrame with MultiIndex. Usually the output from ``utils.extract(...)``
+    baselines : TYPE
+        DESCRIPTION.
+    pupil_cols : TYPE, optional
+        DESCRIPTION. The default is [].
+
+    Returns
+    -------
+    ranges : pandas.DataFrame
+        Original DataFrame with new columns for percent-signal change.
+
+    '''
+    for col in pupil_cols:
+        new_col = col + '_pc'
+        ranges[new_col] = (ranges[col] / baselines[col] - 1).values * 100
+    return ranges
+    
+    
 def ev_row_idxs(samples, blinks):
     ''' 
     Returns the indices in 'samples' contained in events from 'events'.
     
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         The samples from which to pull indices.
-    events : DataFrame
+    events : pandas.DataFrame
         The events whose indices should be pulled from 'samples'.
         
     Returns
     -------
-    samps : DataFrame
-        masked data
+    samps : pandas.DataFrame
+        Masked data
         
     '''
     idxs = []
@@ -212,16 +234,16 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
     
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         Must contain at least 'pupil_timestamp' and 'diameter' columns
-    blinks : DataFrame
+    blinks : pandas.DataFrame
         Must contain 'start_timestamp' and 'end_timestamp' columns
     mask_cols : list, optional
         Columns to mask. The default is ['diameter'].
     Returns
     -------
-    samps : DataFrame
-        masked data
+    samps : pandas.DataFrame
+        Masked data
         
     '''
     samps = samples.copy(deep=True)
@@ -232,22 +254,21 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
     return samps
 
 def interpolate_blinks(samples, blinks, fields=['diameter']):
-    '''
-    Reconstructs Pupil Labs eye blinks with linear interpolation.
+    '''Reconstructs Pupil Labs eye blinks with linear interpolation.
     
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         Must contain at least 'pupil_timestamp' and 'diameter' columns
-    blinks : DataFrame
+    blinks : pandas.DataFrame
         Must contain 'start_timestamp' and 'end_timestamp' columns
     interp_cols : list, optional
         Columns to interpolate. The default is ['diameter'].
         
     Returns
     -------
-    samps : DataFrame
-        blink-interpolated data
+    samps : pandas.DataFrame
+        Blink-interpolated data
         
     '''
     #TODO: fix this pipeline
@@ -260,12 +281,11 @@ def interpolate_blinks(samples, blinks, fields=['diameter']):
     return samps
 
 def mask_zeros(samples, mask_cols=['diameter']):
-    ''' 
-    Sets any 0 values in columns in mask_cols to NaN.
+    '''Sets any 0 values in columns in mask_cols to NaN.
     
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         The samples to search for 0 values.
     mask_fields (list of strings)
         The columns to search for 0 values.
@@ -277,14 +297,15 @@ def mask_zeros(samples, mask_cols=['diameter']):
     return samps
 
 def interpolate_zeros(samples, fields=['diameter']):
-    ''' 
-    Replace 0s in "samples" with linearly interpolated data.
+    '''Replace 0s in "samples" with linearly interpolated data.
+    
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         The samples in which you'd like to replace 0s
     interp_cols : list
         The column names from samples in which you'd like to replace 0s.
+        
     '''
     samps = mask_zeros(samples, mask_cols=fields)
     samps = samps.interpolate(method='linear', axis=0, inplace=False)

@@ -39,8 +39,8 @@ class OceanOptics(Spectrometer):
             The integration time to use for the measurement. Leave as None to
             adaptively set the integration time based on spectral measurements.
         setting : dict, optional
-             The current setting of the light source (if known), to be included
-             in the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
+             Current setting of the light source (if known), to be included in 
+             the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
              ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
              The default is ``{}``.
     

@@ -27,7 +27,7 @@ def get_CIE_CMF(asdf=False, binwidth=1):
 
     Returns
     -------
-    cmf : np.array or pd.DataFrame
+    cmf : numpy.ndarray or pandas.DataFrame
         The CIE 1931 XYZ 2-deg CMFs.
 
     '''
@@ -459,7 +459,7 @@ def get_CIES026(asdf=False, binwidth=1):
 
     Returns
     -------
-    sss : np.array or pd.DataFrame
+    sss : numpy.ndarray or pandas.DataFrame
         CIES026 spectral sensitivities for s, m, l, rods, and melanopsin.
 
     '''
@@ -893,7 +893,7 @@ def get_CIE_1924_photopic_vl(asdf=False, binwidth=1):
         default is `1`.
     Returns
     -------
-    vl : np.array or pd.DataFrame
+    vl : numpy.ndarray or pandas.DataFrame
         The CIE1924 photopic luminosity function.
 
     '''

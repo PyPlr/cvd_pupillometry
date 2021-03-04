@@ -460,7 +460,7 @@ class PupilCore:
 
         Returns
         -------
-        recent_frame : np.array
+        recent_frame : numpy.ndarray
             The camera frame.
         recent_frame_ts : float
             Timestamp of the camera frame.

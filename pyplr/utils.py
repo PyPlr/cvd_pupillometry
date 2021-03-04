@@ -62,8 +62,7 @@ def new_subject(rec_dir, export='000', out_dir_nm='pyplr_analysis'):
         }
 
 def print_file_structure(rec_dir):
-    '''
-    Print the file structure of a recording directory.
+    '''Print the file structure of a recording directory.
 
     Returns
     -------
@@ -94,12 +93,12 @@ def load_pupil(data_dir, eye_id='best', method='3d c++', cols=None):
         The default is '3d c++'.
     cols : list, optional
         Columns to load from the file (check file for options). Must include 
-        ['pupil_timestap', 'method', ] and The default is None 
+        ['pupil_timestap', 'method', 'confidence'] and The default is None 
         (loads all columns).
         
     Returns
     -------
-    samps : DataFrame
+    samps : pandas.DataFrame
         Pandas DataFrame containing requested samples.
         
     '''
@@ -136,7 +135,7 @@ def load_annotations(data_dir):
         
     Returns
     -------
-    events : pd.DataFrame
+    events : pandas.DataFrame
         Pandas DataFrame containing annotations / events.
         
     '''
@@ -159,7 +158,7 @@ def load_blinks(data_dir):
         
     Returns
     -------
-    blinks : pd.DataFrame
+    blinks : pandas.DataFrame
         Pandas DataFrame containing blink events.
         
     '''
@@ -184,9 +183,9 @@ def extract(samples,
     
     Parameters
     ----------
-    samples : DataFrame
+    samples : pandas.DataFrame
         The samples from which to extract events. Index must be timestamp.
-    events : DataFrame
+    events : pandas.DataFrame
         The events to extract. Index must be timestamp.
     offset : int, optional
         Number of samples to offset from baseline. The default is 0.
@@ -204,14 +203,14 @@ def extract(samples,
         
     Returns
     -------
-    df : DataFrame
+    df : pandas.DataFrame
         Extracted events complete with hierarchical multi-index.
         
     '''
     # negative duration should raise an exception
     if duration <= 0:
         raise ValueError('Duration must be >0')
-    breakpoint()    
+
     # get the list of start time indices
     event_starts = events.index.to_series()
 
@@ -243,12 +242,11 @@ def extract(samples,
     return df
 
 def reject_bad_trials(ranges, interp_thresh=20, drop=False):
-    '''
-    Drop or markup trials which exceed a threshold of interpolated data.
+    '''Drop or markup trials which exceed a threshold of interpolated data.
     
     Parameters
     ----------
-    ranges : DataFrame
+    ranges : pandas.DataFrame
         Extracted event ranges with hierarchical pd.MultiIndex.
     interp_thresh : int, optional
         Percentage of interpolated data permitted before trials are marked for
@@ -258,7 +256,7 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         
     Returns
     -------
-    ranges : DataFrame
+    ranges : pandas.DataFrame
         Same as ranges but with a column identifying trials marked for
         rejection (drop = False) or with those trials dropped from the 
         DataFrame (drop = True).
