@@ -9,10 +9,15 @@ API documentation
    :members:
    :special-members:
 
-.. automodule:: pyplr.CIE
-   :members:
-
 .. automodule:: pyplr.oceanops
+   :members:
+   :special-members:
+
+.. automodule:: pyplr.calibrate
+   :members:
+   :special-members:
+
+.. automodule:: pyplr.CIE
    :members:
 
 .. automodule:: pyplr.utils

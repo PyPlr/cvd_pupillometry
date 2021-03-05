@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar  4 12:19:35 2021
+'''
+pyplr.calibrate
+===============
+
+Module to assist with calibrating the sphere.
 
 @author: jtm
-"""
+
+'''
 
 import os
 import os.path as op

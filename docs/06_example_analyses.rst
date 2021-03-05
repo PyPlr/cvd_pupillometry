@@ -6,6 +6,7 @@ Example analyses
    :caption: List of Notebooks:
    
    pipr_analysis_pipeline
+   pupil_core_timing_analysis
    
 .. rubric:: Tables and indices
 ------------------------------

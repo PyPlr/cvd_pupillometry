@@ -6,10 +6,6 @@
 Welcome to *PyPlr*'s documentation!
 ===================================
 
-.. image:: ../img/orange_eye.png
-   :width: 400
-   :class: no-scaled-link
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
