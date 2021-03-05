@@ -9,7 +9,6 @@ Created on Thu Mar  4 12:19:35 2021
 import os
 import os.path as op
 from time import sleep
-from datetime import datetime
 from random import shuffle
 
 import numpy as np
@@ -22,16 +21,71 @@ from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 
 
 class SpectraTuneLabSampler(SpectraTuneLab):
-    '''Subclass of stlab.SpectraTuneLab with added sampling methods.
+    '''Subclass of `stlab.SpectraTuneLab` with added sampling methods.
     
+    Optional support for external measurements with `pyplr.oceanops.OceanOptics`.
     '''
     
-    def __init__(self):
-        super(SpectraTuneLab).__init__()
+    def __init__(self, username, identity, password, 
+                 lighthub_ip='192.168.7.2', ocean_optics=None):
+        '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
+        more info.
         
-    # User-defined functions 
+        Parameters
+        ----------
+        ocean_optics : `pyplr.oceanops.OceanOptics`, optional
+            Acquire concurrent measurements with an Ocean Optics 
+            spectrometer. 
+            
+        Returns
+        -------
+        None.
+
+        '''
+        super().__init__(username, identity, password, lighthub_ip)
+        self.ocean_optics = ocean_optics
+        self._ready_cache()
+
+    def _ready_cache(self):
+        self.stlab_spectra = []
+        self.stlab_info = []
+        if self.ocean_optics:
+            self.oo_spectra = []
+            self.oo_info = []
+    
+    def make_dfs(self, save_csv=False):
+        '''Turn cached data and info into pandas DataFrames and optionally 
+        save to csv format.
+        
+        '''
+        self.stlab_spectra = pd.DataFrame(self.stlab_spectra)
+        self.stlab_spectra.columns = pd.Int64Index(self.wlbins)
+        self.stlab_info = pd.DataFrame(self.stlab_info)
+        if 'led' in self.stlab_info.columns:
+            self.stlab_spectra['led'] = self.stlab_info['led']
+            self.stlab_spectra['intensity'] = self.stlab_info['intensity']
+
+        if self.ocean_optics:
+            self.oo_spectra = pd.DataFrame(self.oo_spectra)
+            self.oo_spectra.columns = self.ocean_optics.wavelengths()
+            self.oo_info = pd.DataFrame(self.oo_info)
+            if 'led' in self.oo_info.columns:
+                self.oo_spectra['led'] = self.oo_info['led']
+                self.oo_spectra['intensity'] = self.oo_info['intensity']
+                
+        if save_csv:
+            self.stlab_spectra.to_csv(
+                op.join(os.getcwd(), 'stlab_spectra.csv'))
+            self.stlab_info.to_csv(
+                op.join(os.getcwd(), 'stlab_info.csv'))            
+            if self.ocean_optics:
+                self.oo_spectra.to_csv(
+                    op.join(os.getcwd(), 'oo_spectra.csv'))            
+                self.oo_info.to_csv(
+                    op.join(os.getcwd(), 'oo_info.csv'))            
+        
     def full_readout(self, norm=False, setting={}):
-        '''Get a full readout from the STLAB.
+        '''Get a full readout from STLAB.
 
         Parameters
         ----------
@@ -69,20 +123,18 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         info_dict = {**info_dict, **setting}
         return spec, info_dict
     
-    # TODO: optimise this
     def sample(self, 
                leds=[0], 
                intensities=[500], 
                spectra=None,
                wait_before_sample=.3,
                ocean_optics=None,
-               randomise=False,
-               save_output=False,
-               settings_override=None):
-        '''Sample a set of LEDs individually at a range of specified intensities 
-        using the STLABs on-board spectrometer. Or, alternatively, sample a set
-        of pre-defined spectra. Option to also obtain concurrent measurements 
-        with an external Ocean Optics spectrometer.
+               randomise=False):
+        '''Sample a set of LEDs individually at a range of specified 
+        intensities using STLABs on-board spectrometer. Alternatively, sample 
+        a set of pre-defined spectra. Option to also obtain concurrent
+        measurements with an external Ocean Optics spectrometer. Data are 
+        stored in class lists.
     
         Parameters
         ----------
@@ -98,44 +150,25 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         wait_before_sample : float, optional
             Time in seconds to wait after setting a spectrum before acquiring 
             a measurement from the spectrometer(s). The default is .2.
-        ocean_optics : pyplr.oceanops.OceanOptics, optional
-            Whether to acquire concurrent measurements from an Ocean Optics 
-            spectrometer. Requires the seabreeze package to be installed.
-            The default is None.
         randomise : bool, optional
             Whether to randomise the order in which the LED-intensity settings 
             or spectra are sampled. The default is False.
-        save_output : bool, optional
-            Whether to save the samples and info as .csv files in the current
-            working directory.
+
     
         Returns
         -------
-        stlab_spectra : pandas.DataFrame
-            The resulting measurements from the STLAB spectrometer.
-        stlab_info : pandas.DataFrame
-            The companion info to stlab_spectra, with matching indices.
-        oo_spectra : pandas.DataFrame, optional
-            The resulting measurements from the Ocean Optics spectrometer.
-        oo_info : pandas.DataFrame, optional
-            The companion info to the oo_spectra, with matching indices.
-            
+        None.
+        
         '''
         if spectra and (leds or intensities):
             raise ValueError(
                 'leds and intensities must be None when specifying spectra')
-  
+        
+        # clear the cache
+        self._ready_cache()
+
         # off spectrum    
         leds_off = [0]*10
-        
-        # list to store stlab spectrometer data
-        stlab_spectra=[]
-        stlab_info=[]
-        
-        # list to store ocean optics spectrometer data, if required
-        if ocean_optics:
-            oo_spectra = []
-            oo_info  = []
 
         # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
@@ -153,10 +186,6 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         # shuffle
         if randomise:
             shuffle(settings)
-        
-        if settings_override:
-            print('Overriding settings with externally generated settings')
-            settings = settings_override
         
         # begin sampling            
         for i, s in enumerate(settings):
@@ -178,59 +207,25 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             
             # full readout from STLAB
             stlab_spec, stlab_info_dict = self.full_readout(setting=setting)
-            stlab_spectra.append(stlab_spec)
-            stlab_info.append(stlab_info_dict)
+            self.stlab_spectra.append(stlab_spec)
+            self.stlab_info.append(stlab_info_dict)
             
-            if ocean_optics:
-                oo_counts, oo_info = ocean_optics.measurement(
+            if self.ocean_optics:
+                oo_counts, oo_info_dict = self.ocean_optics.measurement(
                     setting=setting)
-                oo_spectra.append(oo_counts)
-                oo_info.append(oo_info)
+                self.oo_spectra.append(oo_counts)
+                self.oo_info.append(oo_info_dict)
         
-        # make dfs
-        stlab_spectra = pd.DataFrame(stlab_spectra)
-        stlab_spectra.columns = pd.Int64Index(self.wlbins)
-        stlab_info = pd.DataFrame(stlab_info)
-        stlab_spectra['led'] = stlab_info['led']
-        stlab_spectra['intensity'] = stlab_info['intensity']
-
-        if ocean_optics:
-            oo_spectra = pd.DataFrame(oo_spectra)
-            oo_spectra.columns = ocean_optics.wavelengths()
-            oo_info = pd.DataFrame(oo_info)
-            oo_spectra['led'] = oo_info['led']
-            oo_spectra['intensity'] = oo_info['intensity']
-
         # turn off
         self.turn_off()
-        
-        if save_output:
-            fid = datetime.now().strftime('%D').replace('/','-')
-            stlab_spectra.to_csv(
-                op.join(os.getcwd(), 'stlab_spectra_' + fid + '.csv'),
-                index=False)
-            stlab_info.to_csv(
-                op.join(os.getcwd(), 'stlab_info_' + fid + '.csv'),
-                index=False)
-            if ocean_optics:
-                oo_spectra.to_csv(
-                    op.join(os.getcwd(), 'oo_spectra_' + fid + '.csv'),
-                index=False)
-                oo_info.to_csv(
-                    op.join(os.getcwd(), 'oo_info_' + fid + '.csv'),
-                index=False)
-            
-        if ocean_optics:
-            return stlab_spectra, stlab_info, oo_spectra, oo_info
-        else:
-            return stlab_spectra, stlab_info
-         
+
 # TODO: document this properly
 class CalibrationContext:
     '''Create a calibration context based on spectrometer measurements. 
     
-    Automatically creates a forward model of the device using linear interpolation. 
-    Currently this requires the measurements to be for each LED in steps of 65.
+    Automatically creates a forward model of the device with linear
+    interpolation. Currently this requires the measurements to be for each LED
+    in steps of 65.
     
     Example
     -------

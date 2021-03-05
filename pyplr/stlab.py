@@ -11,21 +11,16 @@ required to develop against the RESTful API.
 
 '''
 
-import os
-import os.path as op
 from time import sleep
 from datetime import datetime
-from random import shuffle
 import json
 
 import requests
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
-from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026, get_CIE_CMF
-
+from pyplr.CIE import get_CIES026, get_CIE_CMF
 
 class SpectraTuneLab:
     '''Wrapper for LEDMOTIVE Spectra Tune Lab RESTFUL_API. 
@@ -79,8 +74,7 @@ class SpectraTuneLab:
 
     # Initializer / Instance Attributes
     def __init__(self, username, identity, password, lighthub_ip='192.168.7.2'):
-        '''
-        Initialize connection with LightHub. 
+        '''Initialize connection with LightHub. 
         
         Parameters
         ----------
@@ -112,10 +106,11 @@ class SpectraTuneLab:
         self.username = username
         self.identity = identity
         self.password = password
-        self.info = None
+        self.lighthub_ip = lighthub_ip
+        self.info = {}
 
         try:
-            cmd_url = 'http://' + lighthub_ip + ':8181/api/login'
+            cmd_url = 'http://' + self.lighthub_ip + ':8181/api/login'
             a = requests.post(cmd_url, 
                               json={'username': username,
                                     'password': password}, 
@@ -123,7 +118,7 @@ class SpectraTuneLab:
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
-                'url': lighthub_ip,
+                'url': self.lighthub_ip,
                 'id': identity,
                 'cookiejar': cookiejar
                 }
@@ -197,8 +192,8 @@ class SpectraTuneLab:
         '''Executes a spectrum based on the intensity values provided for each 
         of the channels. Each channel can be set between 0 and 4095. This is an 
         alternative way to the command `set_spectrum_a` that allows setting a 
-        spectrum issuing a `GET` command (which allows access to the luminaire by
-        typing a url in any browser). 
+        spectrum issuing a `GET` command (which allows access to the luminaire 
+        by typing a url in any browser). 
         
         Parameters
         ----------
@@ -823,39 +818,6 @@ def video_file_to_dict(video_file):
 def plot_spectrum(spectrum, color):
     bins = np.linspace(380,780,81)
     plt.plot(bins, spectrum, color=color)
-
-def interp_spectra(spectra):
-    '''
-    This function needs generalising.
-
-    Parameters
-    ----------
-    spectra : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    intp_tbl : TYPE
-        DESCRIPTION.
-
-    '''
-    tbl = spectra.unstack(level=2)
-    tbl.columns = [val[1] for val in tbl.columns]
-    
-    intp_tbl = pd.DataFrame()
-    for led, df in tbl.groupby(['led']):
-        intensities = df.index.get_level_values('intensity')
-        new_intensities = np.linspace(intensities.min(), intensities.max(), 4096)
-        new_intensities = new_intensities.astype('int')
-        df.reset_index(inplace=True, drop=True)
-        df.columns = range(0, df.shape[1])
-        df.index = df.index * 63
-        n = df.reindex(new_intensities).interpolate(method='linear')
-        n['intensity'] = n.index
-        n['led'] = led
-        intp_tbl = intp_tbl.append(n)
-    intp_tbl.set_index(['led','intensity'], inplace=True)
-    return intp_tbl
 
 def get_led_colors(rgb=False):
     if rgb:
