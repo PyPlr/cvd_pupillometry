@@ -27,7 +27,8 @@ from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 class SpectraTuneLabSampler(SpectraTuneLab):
     '''Subclass of `stlab.SpectraTuneLab` with added sampling methods.
     
-    Optional support for external measurements with `pyplr.oceanops.OceanOptics`.
+    Optional support for external measurements with 
+    `pyplr.oceanops.OceanOptics`.
     '''
     
     def __init__(self, username, identity, password, 
@@ -39,7 +40,9 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         ----------
         ocean_optics : `pyplr.oceanops.OceanOptics`, optional
             Acquire concurrent measurements with an Ocean Optics 
-            spectrometer. 
+            spectrometer. Alternatively, any spectrometer device class with 
+            a ``.measurement(...)`` method that works in the same could be 
+            integrated with minimal effort.
             
         Returns
         -------
