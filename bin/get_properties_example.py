@@ -6,7 +6,7 @@ Created on Fri Feb 19 10:40:13 2021
 """
 
 from time import sleep
-from pyplr.pupil import PupilCore, recv_from_subscriber
+from pyplr.pupil import PupilCore
 
 p = PupilCore()
 
@@ -20,5 +20,5 @@ p.notify({
     'eye_id': 0
     })
 
-properties = recv_from_subscriber(s)
+properties = p.recv_from_subscriber(s)
 print(properties)
