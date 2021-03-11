@@ -9,10 +9,10 @@ Developers
 
 The project is maintained on GitHub by Joel and Manuel.
 
-Support
--------
+Issues, bugs and feature requests
+---------------------------------
 
-For issues, bugs and feature requests, please use `GitHub's issue tracker <https://github.com/PyPlr/cvd_pupillometry/issues>`_.
+Please use `GitHub's issue tracker <https://github.com/PyPlr/cvd_pupillometry/issues>`_.
 
 Contribute
 ----------

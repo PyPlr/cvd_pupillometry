@@ -73,7 +73,8 @@ class SpectraTuneLab:
     max_intensity = 4095
 
     # Initializer / Instance Attributes
-    def __init__(self, username, identity, password, lighthub_ip='192.168.7.2'):
+    def __init__(self, password, username='admin', identity=1, 
+                 lighthub_ip='192.168.7.2'):
         '''Initialize connection with LightHub. 
         
         Parameters
@@ -85,14 +86,15 @@ class SpectraTuneLab:
         password : string
             The password specific to the LightHub.
         lightub_ip : string, optional
-            The IP address of the LightHub device. The default is `'192.168.7.2'`.
+            The IP address of the LightHub device. The default is 
+            `'192.168.7.2'`.
             
         Note
         ----
         The Mac connection driver usually creates the network in a way that
         places the LightHub device at IP 192.168.6.2 instead of IP 192.168.7.2,
-        so this may need to be changed depending on the platform. If that is not 
-        enough, you might need to also install the two (                
+        so this may need to be changed depending on the platform. If that is 
+        not enough, you might need to also install the two (                
         `Network <https://beagleboard.org/static/Drivers/MacOSX/RNDIS/HoRNDIS.pkg>`_
         and
         `Serial <https://beagleboard.org/static/Drivers/MacOSX/FTDI/EnergiaFTDIDrivers2.2.18.pkg>`_
@@ -212,8 +214,8 @@ class SpectraTuneLab:
         requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)
     
     def color_xy(self, intensity_values, x, y):
-        '''Similar to the `spectruma` command, but allows setting a target x, y
-        coordinates in the CIE1931 color space. 
+        '''Similar to the `spectruma` command, but allows setting a target 
+        `x, y` coordinates in the CIE1931 color space. 
     
         Parameters
         ----------
@@ -239,10 +241,10 @@ class SpectraTuneLab:
     def set_color(self, x, y, flux=None):
         '''Executes a light color represented in the CIE1931 color space. The
         `x` and `y` coordinates are the mathematical index that represents the
-        target color to be achieved. If the `x,y` provided values are not available 
-        by the system, it will find its nearest available x,y coordinates. If 
-        flux is provided as an argument, it will be adjusted automatically, 
-        otherwise the current flux will be used. 
+        target color to be achieved. If the `x,y` provided values are not 
+        available by the system, it will find its nearest available x,y 
+        coordinates. If flux is provided as an argument, it will be adjusted 
+        automatically, otherwise the current flux will be used. 
     
         Parameters
         ----------
@@ -309,9 +311,10 @@ class SpectraTuneLab:
   
     def get_pcb_temperature(self):
         '''Returns the PCB temperature in Celsius degrees (ºC). Returns a list 
-        of 4 elements in this order: LEDs, Drivers, Spectrometer and Microcontroller 
-        temperature sensors close to these elements. If one sensor or its readout 
-        is not available a null value is returned for that element. 
+        of 4 elements in this order: LEDs, Drivers, Spectrometer and 
+        Microcontroller temperature sensors close to these elements. If one 
+        sensor or its readout is not available a null value is returned for
+        that element. 
         
         Parameters
         ----------
@@ -330,10 +333,10 @@ class SpectraTuneLab:
         return temperatures
     
     def get_spectrum_a(self):
-        '''Returns the current amplitude for each of the luminaire channels. The 
-        array returned has a length equal to the channel count of the luminaire. 
-        Each value in the array is a representation of electrical counts, ranging 
-        from 0 to 4095 counts.
+        '''Returns the current amplitude for each of the luminaire channels. 
+        The array returned has a length equal to the channel count of the 
+        luminaire. Each value in the array is a representation of electrical 
+        counts, ranging from 0 to 4095 counts.
 
         Returns
         -------
@@ -348,17 +351,17 @@ class SpectraTuneLab:
      
     def get_spectrometer_spectrum(self, norm=False):
         '''Returns the spectrum readout from the internal spectrometer. If the
-        luminaire does only contain a colorimeter sensor, a theoretical spectrum 
-        based on the current channel's power is obtained instead. The data is
-        returned in 81 elements that represents a 5 nm wavelength bins from 380 
-        nm to 780 nm. Each element is a value ranging from 0 to 65535 abstracting 
-        the light intensity at each point and allowing the reconstruction of the 
-        spectral shape. An additional element represents the radiometric value 
-        in milliWatts (mW) at the peak of a max value of a spectrum at which the
-        abstracted values are normalized, i.e. the flux corresponding to a 65535
-        value in the array. This flux depends on multiple factors, as current
-        channels power, dimming level, power protection and maximum power of the 
-        lighted LEDs.     
+        luminaire does only contain a colorimeter sensor, a theoretical 
+        spectrum based on the current channel's power is obtained instead. The 
+        data is returned in 81 elements that represents a 5 nm wavelength bins 
+        from 380 nm to 780 nm. Each element is a value ranging from 0 to 65535
+        abstracting the light intensity at each point and allowing the
+        reconstruction of the spectral shape. An additional element represents 
+        the radiometric value in milliWatts (mW) at the peak of a max value of
+        a spectrum at which the abstracted values are normalized, i.e. the 
+        flux corresponding to a 65535 value in the array. This flux depends on 
+        multiple factors, as current channels power, dimming level, power 
+        protection and maximum power of the lighted LEDs.     
     
         Parameters
         ----------
@@ -398,12 +401,12 @@ class SpectraTuneLab:
         return dict(r.json())['data'] 
         
     def load_video_file(self, fname, return_vf_dict=True):
-        '''Uploads a video light sequence file to the LIGHT HUB. The video file 
-        must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The 
-        uploaded file must be a json file (.dsf files are json files), with 
-        weight less than 2 MB. The file must be uploaded using the multipart / 
-        form-data standard convention. See ``play_video_file(...)`` for how to 
-        play the uploaded file in a luminaire.  
+        '''Uploads a video light sequence file to the LIGHT HUB. The video
+        file must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. 
+        The uploaded file must be a json file (.dsf files are json files), 
+        with weight less than 2 MB. The file must be uploaded using the 
+        multipart / form-data standard convention. See ``play_video_file(...)``
+        for how to play the uploaded file in a luminaire.  
     
         Parameters
         ----------
@@ -456,8 +459,8 @@ class SpectraTuneLab:
         print('playing video file...')
         
     def get_device_info(self):
-        '''Returns the device characteristics and basic configuration. These are 
-        the serial code, the model code, the number of channels for this 
+        '''Returns the device characteristics and basic configuration. These 
+        are the serial code, the model code, the number of channels for this 
         luminaire and the device feedback type (whether it is colorimeter or 
         spectrometer). How are the serial and model codes is yet to be defined,
         but expect a maximum 50 character length code for serial and 30 for
@@ -476,8 +479,8 @@ class SpectraTuneLab:
     
     def set_colour_priority(self, colour_priority):
         '''Command the luminaire to always first approximate to the desired 
-        color of the spectrum to set before setting the spectrum channel values. 
-        This function is set to true or false (enabled or disabled).
+        color of the spectrum to set before setting the spectrum channel 
+        values. This function is set to true or false (enabled or disabled).
 
         Parameters
         ----------
@@ -535,7 +538,8 @@ class SpectraTuneLab:
         Parameters
         ----------
         integration_time : int
-            A positive integer ranging from 50 to 140000 in tenths of millisecond.
+            A positive integer ranging from 50 to 140000 in tenths of
+            millisecond.
 
         Returns
         -------
@@ -550,7 +554,8 @@ class SpectraTuneLab:
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
         
     def get_input_power(self):
-        '''Returns the current consumed electrical power of the luminaire in mW.
+        '''Returns the current consumed electrical power of the luminaire in
+        mW.
 
         Returns
         -------
@@ -565,10 +570,10 @@ class SpectraTuneLab:
     
     def set_dimming_level(self, dimming_level):
         '''Sets an intensity dimmer. This percentage modulates the current 
-        intensity by multiplying the power count of each luminaire channel, i.e.
-        if you send a spectrum where each channel count is at half level and 
-        the dimming is set at 50%, the final light intensity will be one quarter 
-        of the luminaire full capacity.
+        intensity by multiplying the power count of each luminaire channel,
+        i.e. if you send a spectrum where each channel count is at half level
+        and the dimming is set at 50%, the final light intensity will be one 
+        quarter of the luminaire full capacity.
 
         Parameters
         ----------
@@ -760,8 +765,8 @@ def background_pulse_protocol(background_spec,
     metadata : dict
         Additional info to include in the metadata field of the video file 
         (e.g. {'color' : 'blue'}). This info can be extracted when loading the 
-        file during an experiment and included in triggers sent to Pupil Capture.
-        The default is {}.
+        file during an experiment and included in triggers sent to Pupil 
+        Capture. The default is {}.
         
     Returns
     -------
@@ -782,8 +787,10 @@ def background_pulse_protocol(background_spec,
     df = (df.append(_video_file_row(0, background_spec))
             .append(_video_file_row(pre_pulse_duration, background_spec))
             .append(_video_file_row(pre_pulse_duration, pulse_spec))
-            .append(_video_file_row(pre_pulse_duration+pulse_duration, pulse_spec))
-            .append(_video_file_row(pre_pulse_duration+pulse_duration, background_spec))
+            .append(_video_file_row(
+                pre_pulse_duration+pulse_duration, pulse_spec))
+            .append(_video_file_row(
+                pre_pulse_duration+pulse_duration, background_spec))
             .append(_video_file_row(end, background_spec))
             .append(_video_file_end(end))
             .reset_index(drop=True))

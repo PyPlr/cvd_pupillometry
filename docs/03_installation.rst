@@ -16,9 +16,9 @@ Installation
 
     $ pip install pyplr
 
-(`link to the PyPI project page <https://pypi.org/project/pyplr/>`_).
+(`link to the PyPI project page <https://pypi.org/project/pyplr-jtmbeta/>`_).
 
-The latest development version can also be installed from GitHub with *pip*
+The latest development version can also be installed from GitHub with *pip*:
 
 .. code-block:: bash
 
@@ -28,7 +28,7 @@ The latest development version can also be installed from GitHub with *pip*
 Requirements
 ------------
 
-*PyPlr* requires Python3 and a range of standard numerical computing packages (all of which listed in the file *requirements.txt*)
+*PyPlr* requires Python3 and set of standard numerical computing packages, all of which are listed in *requirements.txt*:
 
 .. include:: ../requirements.txt
    :literal:
@@ -43,7 +43,7 @@ All requirements can be installed by running :code:`pip install -r requirements.
 Virtual environments
 --------------------
 
-We recommend installing *PyPlr* in a virtual environment. This can be done using either `Python's virtual environments <https://docs.python.org/3/tutorial/venv.html>`_ or `conda <https://docs.conda.io/en/latest/>`_. 
+We recommend installing *PyPlr* in a virtual environment. This can be done using either `Python's virtual environments <https://docs.python.org/3/tutorial/venv.html>`_ or `conda <https://docs.conda.io/en/latest/>`_:
 
 .. code-block:: bash
 
@@ -51,7 +51,7 @@ We recommend installing *PyPlr* in a virtual environment. This can be done using
     $ conda activate pyplr
     $ conda install --file requirements.txt
 
-The *spectres* package may need to be installed using *pip*
+The *spectres* package may need to be installed separately using *pip*:
 
 .. code-block:: bash
 

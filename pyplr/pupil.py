@@ -217,8 +217,9 @@ class PupilCore:
 
         '''
         self.broadcast_pupil_detector_properties(detector_name, eye_id)
-        s = self.subscribe_to_topic(topic='notify.pupil_detector.properties')
-        topic, payload = self.recv_from_subscriber(s)
+        subscriber = self.subscribe_to_topic(
+            topic='notify.pupil_detector.properties')
+        topic, payload = self.recv_from_subscriber(subscriber)
         return payload
     
     def freeze_3d_model(self, eye_id, frozen):
@@ -541,7 +542,7 @@ class PupilCore:
             
         '''
         topic = subscriber.recv_string()
-        payload = msgpack.unpackb(subscriber.recv(), encoding='utf-8')
+        payload = msgpack.unpackb(subscriber.recv())
         extra_frames = []
         while subscriber.get(zmq.RCVMORE):
             extra_frames.append(subscriber.recv())
