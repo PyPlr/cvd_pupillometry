@@ -5,7 +5,7 @@ Installation
 
 .. code-block:: bash
 
-    $ git clone https://github.com/PyPlr/cvd_pupillometry.git
+    $ git clone https://github.com/PyPlr/cvd_pupillometry.git PyPlr
     $ cd PyPlr
     $ pip install -r requirements.txt
     $ python setup.py install
@@ -60,7 +60,7 @@ The *spectres* package may need to be installed separately using *pip*:
 Notes/Potential Issues
 ----------------------
 
-Various... put them all here:
+We are aware of the following:
 
 * psychopy thread issue - revert to pyglet=1.4.10
 
