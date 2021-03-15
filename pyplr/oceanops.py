@@ -245,11 +245,11 @@ def calibrated_radiance(spectra,
     uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(
         spectra_info['integration_time'], axis='rows')
     
-    # # Resample
-    uw_per_cm2_per_nm = spectres.spectres(
-        np.arange(380, 781), spectra.columns.to_numpy(
+    # Resample
+    wls = np.arange(380, 781)
+    uw_per_cm2_per_nm = spectres.spectres(wls, spectra.columns.to_numpy(
             dtype='float'), uw_per_cm2_per_nm.to_numpy())
     uw_per_cm2_per_nm = np.where(uw_per_cm2_per_nm < 0, 0, uw_per_cm2_per_nm)
     w_per_m2_per_nm = pd.DataFrame(uw_per_cm2_per_nm * 0.01)
-    
+    w_per_m2_per_nm.columns = pd.Int64Index(wls)
     return w_per_m2_per_nm

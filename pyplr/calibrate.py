@@ -27,22 +27,22 @@ from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 class SpectraTuneLabSampler(SpectraTuneLab):
     '''Subclass of `stlab.SpectraTuneLab` with added sampling methods.
     
-    Optional support for external measurements with 
-    `pyplr.oceanops.OceanOptics`.
+    Optional support for concurrent measurements with external spectrometer. 
+    
     '''
     
     def __init__(self, username, identity, password, 
-                 lighthub_ip='192.168.7.2', ocean_optics=None):
+                 lighthub_ip='192.168.7.2', external=None):
         '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
         more info.
         
         Parameters
         ----------
-        ocean_optics : `pyplr.oceanops.OceanOptics`, optional
-            Acquire concurrent measurements with an Ocean Optics 
-            spectrometer. Alternatively, any spectrometer device class with 
-            a ``.measurement(...)`` method that works in the same could be 
-            integrated with minimal effort.
+        external : Class, optional
+            Acquire concurrent measurements with an external spectrometer. 
+            Must be a device class with ``.measurement(...)`` and 
+            ``.wavelengths(...)`` methods. See `pyplr.oceanops.OceanOptics` 
+            for an example.
             
         Returns
         -------
@@ -50,15 +50,15 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
         '''
         super().__init__(username, identity, password, lighthub_ip)
-        self.ocean_optics = ocean_optics
+        self.external = external
         self._ready_cache()
 
     def _ready_cache(self):
         self.stlab_spectra = []
         self.stlab_info = []
-        if self.ocean_optics:
-            self.oo_spectra = []
-            self.oo_info = []
+        if self.external:
+            self.ex_spectra = []
+            self.ex_info = []
     
     def make_dfs(self, save_csv=False):
         '''Turn cached data and info into pandas DataFrames and optionally 
@@ -72,13 +72,13 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.stlab_spectra['led'] = self.stlab_info['led']
             self.stlab_spectra['intensity'] = self.stlab_info['intensity']
 
-        if self.ocean_optics:
-            self.oo_spectra = pd.DataFrame(self.oo_spectra)
-            self.oo_spectra.columns = self.ocean_optics.wavelengths()
-            self.oo_info = pd.DataFrame(self.oo_info)
-            if 'led' in self.oo_info.columns:
-                self.oo_spectra['led'] = self.oo_info['led']
-                self.oo_spectra['intensity'] = self.oo_info['intensity']
+        if self.external:
+            self.ex_spectra = pd.DataFrame(self.ex_spectra)
+            self.ex_spectra.columns = self.external.wavelengths()
+            self.ex_info = pd.DataFrame(self.ex_info)
+            if 'led' in self.ex_info.columns:
+                self.ex_spectra['led'] = self.ex_info['led']
+                self.ex_spectra['intensity'] = self.ex_info['intensity']
                 
         if save_csv:
             self.stlab_spectra.to_csv(
@@ -86,10 +86,10 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.stlab_info.to_csv(
                 op.join(os.getcwd(), 'stlab_info.csv'))            
             if self.ocean_optics:
-                self.oo_spectra.to_csv(
-                    op.join(os.getcwd(), 'oo_spectra.csv'))            
-                self.oo_info.to_csv(
-                    op.join(os.getcwd(), 'oo_info.csv'))            
+                self.ex_spectra.to_csv(
+                    op.join(os.getcwd(), 'external_spectra.csv'))            
+                self.ex_info.to_csv(
+                    op.join(os.getcwd(), 'external_info.csv'))            
         
     def full_readout(self, norm=False, setting={}):
         '''Get a full readout from STLAB.
@@ -217,11 +217,11 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.stlab_spectra.append(stlab_spec)
             self.stlab_info.append(stlab_info_dict)
             
-            if self.ocean_optics:
-                oo_counts, oo_info_dict = self.ocean_optics.measurement(
+            if self.external:
+                ex_spec, ex_info_dict = self.external.measurement(
                     setting=setting)
-                self.oo_spectra.append(oo_counts)
-                self.oo_info.append(oo_info_dict)
+                self.ex_spectra.append(ex_spec)
+                self.ex_info.append(ex_info_dict)
         
         # turn off
         self.turn_off()

@@ -9,6 +9,9 @@ Developers
 
 The project is maintained on GitHub by Joel and Manuel.
 
+.. 
+   see https://daler.github.io/sphinxdoc-test/includeme.html for gh-pages workflow
+
 Issues, bugs and feature requests
 ---------------------------------
 

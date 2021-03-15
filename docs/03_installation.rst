@@ -28,7 +28,7 @@ The latest development version can also be installed from GitHub with *pip*:
 Requirements
 ------------
 
-*PyPlr* requires Python3 and set of standard numerical computing packages, all of which are listed in *requirements.txt*:
+*PyPlr* requires Python3 and a set of standard numerical computing packages, all of which are listed in *requirements.txt*:
 
 .. include:: ../requirements.txt
    :literal:

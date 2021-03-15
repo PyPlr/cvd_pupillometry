@@ -5,7 +5,7 @@ Example protocols
    :maxdepth: 2
    :caption: Contents:
 
-   plr_lightswitch
+   plr_simple
    plr_psychopy
    plr_stlab
    pipr_stlab
