@@ -12,12 +12,18 @@ from time import sleep
 
 import numpy as np
 
-from pyplr import stlab
-from pyplr.pupil import PupilCore, unpack_data_pandas
-from pyplr.pipeline import butterworth_series
+from pyplr.stlab import SpectraTuneLab
+from pyplr.pupil import PupilCore
+from pyplr.utils import unpack_data_pandas
+from pyplr.preproc import butterworth_series
 from pyplr.plr import plr_parameters, plot_plr
 
-def main(subjid='000', baseline=2., duration=5, record=False, control=False):
+def main(subjid='000', 
+         baseline=2., 
+         duration=8.,
+         sample_rate=120,
+         record=False, 
+         control=False):
     
     outdir = op.join(os.getcwd(), subjid)
     # check for output directory
@@ -28,9 +34,7 @@ def main(subjid='000', baseline=2., duration=5, record=False, control=False):
     p = PupilCore()
     
     # setup stlab
-    d = stlab.SpectraTuneLab(username='admin', identity=1,
-                             lighthub_ip='192.168.7.2', 
-                             password='83e47941d9e930f6')
+    d = SpectraTuneLab(password='83e47941d9e930f6')
     d.load_video_file('./stimuli/PLR-3000-180-mw.dsf')
 
     # # set up pupil trigger
@@ -51,7 +55,10 @@ def main(subjid='000', baseline=2., duration=5, record=False, control=False):
     # baseline
     sleep(baseline)
     d.play_video_file()
-    sleep(duration)
+
+    while lst_future.running() or pgr_future.running():
+        print('Waiting for futures...')
+        sleep(1)
     
     if record:
         p.command('r')
@@ -71,15 +78,25 @@ def main(subjid='000', baseline=2., duration=5, record=False, control=False):
     # find the closest timestamp in the pupil data
     idx = (np.abs(ts - data.index)).argmin()
     
-    data = data.iloc[idx-240:idx+600]
+    start = int(idx-(baseline*sample_rate))
+    end = int(idx+(duration*sample_rate))
+    data = data.iloc[start:end]
     data.reset_index(inplace=True)
-    plr_parameters(data.diameter_3d, 120, idx, 0.01).to_csv(
+    plr = data.diameter_3d.to_numpy()
+    plr_parameters(plr=plr, 
+                   sample_rate=120, 
+                   onset_idx=idx).to_csv(
         op.join(outdir, 'plr_params.csv'));
-    plot_plr(data.diameter_3d, 120, idx, 1, vel_acc=True).savefig(
+    plot_plr(plr=plr, 
+             onset_idx=idx, 
+             stim_dur=1,
+             sample_rate=120).savefig(
         op.join(outdir, 'plr_plot.png'), bbox_inches='tight');
-
+    data.to_csv(op.join(outdir, 'raw_data.csv'))
+                 
 if __name__ == '__main__':    
     try:
+        #subjid = input('Enter Subject ID: ')
         main()
     except KeyboardInterrupt:
         print('Killed by user')

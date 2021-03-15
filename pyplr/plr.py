@@ -268,7 +268,7 @@ def plot_plr(plr,
         ax2 = ax.twinx()
         vel = velocity_profile(plr, sample_rate)
         acc = acceleration_profile(plr, sample_rate)
-        ax2.plot(time, vel, color='g', lw=3)
+        ax2.plot(time, vel, color='g', lw=2.5)
         ax2.plot(time, acc, color='r', lw=1)
         ax2.set_ylabel('Velocity / Acceleration')
     
