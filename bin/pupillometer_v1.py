@@ -3,8 +3,6 @@
 Script for measuring the pupil flash response. 
 ==============================================
 
-Currently limited but plenty of room for development.
-
 '''
 
 import sys
