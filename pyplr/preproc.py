@@ -11,6 +11,8 @@ Scripting tools for preprocessing pupil data.
 '''
 
 import numpy as np
+import scipy.signal as signal
+
 
 def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
     '''Resample  data in `fields` to a new index with evenly spaced timepoints.
@@ -326,13 +328,23 @@ def butterworth_series(samples,
     
     The cutoff freq should be 4/(sample_rate/2)
     '''
-    import scipy.signal as signal
     samps = samples if inplace else samples.copy(deep=True)
     B, A = signal.butter(filt_order, cutoff_freq, output='BA')
     samps[fields] = samps[fields].apply(
         lambda x: signal.filtfilt(B, A, x), axis=0)
     return samps
 
+def rolling_mean_series(samples,
+                        window_size,
+                        fields=['diameter'],
+                        inplace=False):
+    samps = samples if inplace else samples.copy(deep=True)
+    for f in fields:
+        samps[f] = samps[f].rolling(window_size).mean()
+    return samps
+
+    
+    
 def savgol_series(samples, 
                   fields=['diameter'], 
                   window_length=51, 
@@ -342,7 +354,6 @@ def savgol_series(samples,
     Applies a savitsky-golay filter to the given fields
     See documentation on scipys savgol_filter method FMI.
     '''
-    import scipy.signal as signal
     samps = samples if inplace else samples.copy(deep=True)
     samps[fields] = samps[fields].apply(
         lambda x: signal.savgol_filter(x, window_length, filt_order), axis=0)
