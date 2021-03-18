@@ -3,60 +3,36 @@
 Script for measuring the pupil flash response. 
 ==============================================
 
-Currently limited but plenty of room for development.
-
 '''
 
 import sys
-import os
 import os.path as op
 from time import sleep
 
 import numpy as np
 
+from pyplr.protocol import (input_subject_id_gui, 
+                            subject_dir, 
+                            record_dir)
+                            
 from pyplr.stlab import SpectraTuneLab
 from pyplr.pupil import PupilCore
 from pyplr.utils import unpack_data_pandas
 from pyplr.preproc import butterworth_series
 from pyplr.plr import PLR
 
-def input_subject_id():
-    subject_id = input('Please enter subject ID: ')
-    return subject_id
-    
-def subject_dir(subject_id):
-    subj_dir = op.join(os.getcwd(), subject_id)
-    if not op.isdir(subj_dir):
-        os.mkdir(subj_dir)
-    return subj_dir
-
-def new_record_id(subject_dir):
-    recording_id = 0
-    for base, dirs, files in os.walk(subject_dir):
-        if str(recording_id).zfill(3) == op.basename(base):
-            recording_id += 1
-    return str(recording_id).zfill(3)
-
-def record_dir(subj_dir):
-    record_id = new_record_id(subj_dir)
-    rec_dir = op.join(subj_dir, record_id)
-    if not op.isdir(subj_dir):
-        os.mkdir(subj_dir)
-    if not op.isdir(rec_dir):
-        os.mkdir(rec_dir)
-    return rec_dir
-
 def main(subject_id=None, 
          baseline=2., 
          duration=8.,
          sample_rate=120,
+         stimulus='./stimuli/PLR-3000-180-mw.dsf',
          record=True, 
          control=False,
          config=None):
     
     # set up subject and recording
     if subject_id is None:
-        subject_id = input_subject_id()
+        subject_id = input_subject_id_gui()
     subj_dir = subject_dir(subject_id)
     rec_dir = record_dir(subj_dir)
         
@@ -65,7 +41,7 @@ def main(subject_id=None,
     
     # setup stlab
     d = SpectraTuneLab(password='83e47941d9e930f6')
-    d.load_video_file('./stimuli/PLR-3000-180-mw.dsf')
+    d.load_video_file(stimulus)
 
     # # set up pupil trigger
     annotation = p.new_annotation('LIGHT_ON')
@@ -120,7 +96,8 @@ def main(subject_id=None,
     plr.parameters().to_csv(op.join(rec_dir, 'plr_parameters.csv'))
     plr.plot().savefig(op.join(rec_dir, 'plr_plot.png'), bbox_inches='tight')
     data.to_csv(op.join(rec_dir, 'raw_data.csv'))
-                 
+    
+             
 if __name__ == '__main__':    
     try:
         main()

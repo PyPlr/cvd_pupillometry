@@ -11,6 +11,8 @@ import os.path as op
 from time import sleep
 
 import numpy as np
+import tkinter as tk
+from tkinter import simpledialog
 
 from pyplr.stlab import SpectraTuneLab
 from pyplr.pupil import PupilCore
@@ -21,7 +23,13 @@ from pyplr.plr import PLR
 def input_subject_id():
     subject_id = input('Please enter subject ID: ')
     return subject_id
-    
+
+def input_subject_id_gui():
+    ROOT = tk.Tk()
+    ROOT.withdraw()
+    return simpledialog.askstring(title='PyPlr Protocol',
+                                  prompt='Enter Subject ID: ')
+
 def subject_dir(subject_id):
     subj_dir = op.join(os.getcwd(), subject_id)
     if not op.isdir(subj_dir):
@@ -54,7 +62,7 @@ def main(subject_id=None,
     
     # set up subject and recording
     if subject_id is None:
-        subject_id = input_subject_id()
+        subject_id = input_subject_id_gui()
     subj_dir = subject_dir(subject_id)
     rec_dir = record_dir(subj_dir)
         

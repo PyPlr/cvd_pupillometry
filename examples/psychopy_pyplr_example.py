@@ -1,54 +1,116 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# would be nice to include a basic PsychoPy script that works with a standard monitor.
+# PsychoPy pupillometer with standard monitor
 # requires pyglet=1.4.10 to avoid threading error
 
-from __future__ import print_function
+import sys
+sys.path.insert(0, '../')
+import os.path as op
 from time import sleep
-from psychopy import core, event, visual
+
+import numpy as np
+from psychopy import core, visual
+
 from pyplr.pupil import PupilCore
+from pyplr.utils import unpack_data_pandas
+from pyplr.preproc import butterworth_series
+from pyplr.plr import PLR
+from pyplr.protocol import input_subject_id_gui, subject_dir, open_folder
 
-def change_color(win, color, log=False):
-    win.color = color
-    if log:
-        print('Changed color to %s' % win.color)
+def main(subject_id=None, 
+         baseline=2., 
+         duration=8.,
+         sample_rate=120,
+         record=True,
+         control=False):
+    
+    # set up subject and recording
+    if subject_id is None:
+        subject_id = input_subject_id_gui()
+    subj_dir = subject_dir(subject_id)
+        
+    # set up pupil
+    p = PupilCore()
+    
+    # setup windows and stims
+    win = visual.Window(size=[1920, 1080], screen=1, color="black")
+    white = visual.Rect(win, units='pix', size=(1920, 1080))
+    white.color='white'
+    black = visual.Rect(win, units='pix', size=(1920, 1080))
+    black.color='black'
 
-win = visual.Window(color=[0.,0.,0.])
-# text = visual.TextStim(win,
-#                       text='Press C to flash light')
+    # set up pupil trigger
+    annotation = p.new_annotation('LIGHT_ON')
+    
+    if control:
+        input("Press Enter to administer stimulus...")
+        
+    if record:
+        p.command('R {}'.format(subj_dir))
+        sleep(1.)
+        
+    # start LightStamper and PupilGrabber
+    lst_future = p.light_stamper(annotation, threshold=15, timeout=6.)
+    pgr_future = p.pupil_grabber(topic='pupil.1.3d', 
+                                 seconds=duration+baseline+2)
+    
+    # baseline
+    sleep(baseline)
 
-# Global event key to change window background color.
-# event.globalKeys.add(key='c',
-#                     func=change_color,
-#                     func_args=[win],
-#                     func_kwargs=dict(log=True),
-#                     name='change window color')
+    white.draw()
+    win.flip()
+    core.wait(1.0)
+    black.draw()
+    win.flip()
 
-# Global event key (with modifier) to quit the experiment ("shutdown key").
-# event.globalKeys.add(key='q', modifiers=['ctrl'], func=core.quit)
+    while lst_future.running() or pgr_future.running():
+        print('Waiting for futures...')
+        core.wait(10.)
 
-# Connect to Pupil Core
-p = PupilCore()
+    if record:
+        p.command('r')
+    
+    if not lst_future.result()[0]:
+        print('light was not detected. Ending program.')
+        sys.exit(0)
+        
+    # retrieve and process pupil data
+    data = unpack_data_pandas(pgr_future.result())
+    data = butterworth_series(
+        data, filt_order=3, cutoff_freq=4/(120/2), fields=['diameter_3d'])
+    
+    # lightstamper timestamp
+    ts = lst_future.result()[1]
+    
+    # find the closest timestamp in the pupil data
+    idx = (np.abs(ts - data.index)).argmin()
+    
+    start = int(idx-(baseline*sample_rate))
+    end = int(idx+(duration*sample_rate))
+    data = data.iloc[start:end]
+    data.reset_index(inplace=True)
 
-# Start recording
-p.command('R')
-sleep(5)
-
-annotation = p.new_annotation(label='LIGHT_ON')
-lst = p.light_stamper(annotation=annotation, 
-                      threshold=15,
-                      timeout=10, 
-                      topic='frame.world')
-sleep(2)
-change_color(win, color=[1.,1.,1.])
-win.flip()
-sleep(1)
-change_color(win, color=[0.,0.,0.])
-win.flip()
-sleep(2)
-
-# End recording
-p.command('r')
-
-#lst.result()
+    plr = PLR(plr=data.diameter_3d.to_numpy(),
+              sample_rate=120, 
+              onset_idx=idx,
+              stim_duration=1)
+    plr.parameters().to_csv(op.join(subj_dir, 'plr_parameters.csv'))
+    plr.plot().savefig(op.join(subj_dir, 'plr_plot.png'), bbox_inches='tight')
+    data.to_csv(op.join(subj_dir, 'raw_data.csv'))
+    
+    # Close the window
+    win.close()
+     
+    # Close PsychoPy
+    core.quit()
+    
+    open_folder(subj_dir)
+             
+if __name__ == '__main__':    
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Killed by user')
+        sys.exit(0)
+        
