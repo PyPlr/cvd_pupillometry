@@ -448,4 +448,7 @@ class CalibrationContext:
                        .min())
         
         return error, match_intensity
+    
+def scooby():
+    return 'Scooby dooby doooooo!'
          

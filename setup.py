@@ -7,13 +7,14 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pyplr', # Replace with your own username
-    version='0.0.1',
+    version='0.0.4',
     author='Joel T. Martin',
     author_email='joel.t.martin36@gmail.com',
     description='Software for researching the pupillary light reflex',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/jtmbeta/PyPlr',
+    url='https://github.com/PyPlr/cvd_pupillometry',
+    project_urls={'Documentation': 'https://pyplr.github.io/cvd_pupillometry/'},
     install_requires=['scipy','matplotlib','msgpack','pyzmq','requests','numpy','seaborn','seabreeze','spectres','numexpr','tables','pandas'],
     packages=setuptools.find_packages(),
       classifiers=[
@@ -21,5 +22,6 @@ setuptools.setup(
           'Topic :: Scientific/Engineering :: Information Analysis',
           'License :: OSI Approved :: MIT License',
           'Intended Audience :: Science/Research',
+          'Programming Language :: Python :: 3.7.7'
       ],
       )
