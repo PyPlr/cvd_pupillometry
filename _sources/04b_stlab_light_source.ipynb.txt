@@ -835,9 +835,7 @@
     " \n",
     "**4. TRANSITIONS**\n",
     " - **\"spectrum\"** looks at the index from the list of lists to pick up the proper spectrum. This is set based on the index of the DataFrame passed to `stlab.make_video_file(...)`.\n",
-    " - **\"power\"** assigns the power of the spectrum - can leave this at 100.\n",
-    " - **\"time\"** is the start of the current spectrum in milliseconds time since the start of video file playback. Here the 1st spectrum starts at t=0sec, the 2nd spectrum stats at t=3sec.\n",
-    " - **\"flags\"** is set to 0 by default, and need not be changed."
+    " - **\"time\"** is the start of the current spectrum in milliseconds time since the start of video file playback. Here the 1st spectrum starts at t=0sec, the 2nd spectrum stats at t=3sec."
    ]
   },
   {
@@ -870,7 +868,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Bear in mind that `stlab.pulse_protocol(...)` is just one of a few convenience functions that call an underlying `stlab.make_video_file(...)` function. The will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the 'time' column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences."
+    "Bear in mind that `stlab.pulse_protocol(...)` is just one of a few convenience functions that call an underlying `stlab.make_video_file(...)` function. The latter will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the 'time' column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences."
    ]
   }
  ],

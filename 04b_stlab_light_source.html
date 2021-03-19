@@ -969,8 +969,7 @@ dtype: float64
 (although only two were unique). - <strong>“transitionsCount”</strong> is the total number of transitions in the video. In this example there are 4 different transitions. - <strong>“fluxReference”</strong> is reserved for something else, and is fine like this.</p>
 <p><strong>2. METADATA</strong> - This is optional and not needed for the video file to work, but it is a good place to store information about the video file. When the file is loaded during runtime this info can then be unpacked and included in any triggers sent to Pupil Capture. Some information is included by default, but any dict passed as **<strong>metadata</strong> to the functions for creating video files will be unpacked into the video file (e.g. {‘color’:‘blue’}).</p>
 <p><strong>3. SPECTRA</strong> - These are the values (between 0 and 4095) for each of the 10 channels. Spectra should be stored as a list of lists.</p>
-<p><strong>4. TRANSITIONS</strong> - <strong>“spectrum”</strong> looks at the index from the list of lists to pick up the proper spectrum. This is set based on the index of the DataFrame passed to <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code>. - <strong>“power”</strong> assigns the power of the spectrum - can leave this at 100. - <strong>“time”</strong> is the start of the current spectrum in milliseconds time since the start of video file playback. Here the 1st spectrum starts at t=0sec, the 2nd spectrum stats at t=3sec. - <strong>“flags”</strong> is set to 0 by default, and
-need not be changed.</p>
+<p><strong>4. TRANSITIONS</strong> - <strong>“spectrum”</strong> looks at the index from the list of lists to pick up the proper spectrum. This is set based on the index of the DataFrame passed to <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code>. - <strong>“time”</strong> is the start of the current spectrum in milliseconds time since the start of video file playback. Here the 1st spectrum starts at t=0sec, the 2nd spectrum stats at t=3sec.</p>
 <p>Once you’ve made a video file, playing it is easy:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
@@ -991,7 +990,7 @@ video file loaded...
 playing video file...
 </pre></div></div>
 </div>
-<p>Bear in mind that <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code> is just one of a few convenience functions that call an underlying <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code> function. The will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the ‘time’ column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences.</p>
+<p>Bear in mind that <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code> is just one of a few convenience functions that call an underlying <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code> function. The latter will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the ‘time’ column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences.</p>
 </div>
 </div>
 
