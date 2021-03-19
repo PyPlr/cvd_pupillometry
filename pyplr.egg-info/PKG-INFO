@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: pyplr
+Version: 0.0.1
+Summary: Software for researching the pupillary light reflex
+Home-page: https://github.com/jtmbeta/PyPlr
+Author: Joel T. Martin
+Author-email: joel.t.martin36@gmail.com
+License: UNKNOWN
+Description: PyPlr
+        =====
+        
+        *PyPlr* is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking ecosystem. 
+        
+        The code is here: https://github.com/PyPlr/cvd_pupillometry
+        
+        The documentation is here: https://pyplr.github.io/cvd_pupillometry/index.html
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Intended Audience :: Science/Research
+Description-Content-Type: text/markdown

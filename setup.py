@@ -6,7 +6,7 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='pyplr-jtmbeta', # Replace with your own username
+    name='pyplr', # Replace with your own username
     version='0.0.1',
     author='Joel T. Martin',
     author_email='joel.t.martin36@gmail.com',
@@ -19,7 +19,7 @@ setuptools.setup(
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
           'Topic :: Scientific/Engineering :: Information Analysis',
-          'License :: OSI Approved :: BSD License',
+          'License :: OSI Approved :: MIT License',
           'Intended Audience :: Science/Research',
       ],
       )
