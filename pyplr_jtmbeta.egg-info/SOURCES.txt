@@ -3,13 +3,13 @@ pyproject.toml
 setup.py
 pyplr/CIE.py
 pyplr/__init__.py
-pyplr/extract.py
+pyplr/calibrate.py
 pyplr/graphing.py
 pyplr/leduino.py
 pyplr/oceanops.py
-pyplr/pipeline.py
 pyplr/plr.py
 pyplr/preproc.py
+pyplr/protocol.py
 pyplr/pupil.py
 pyplr/pupil_old.py
 pyplr/stlab.py

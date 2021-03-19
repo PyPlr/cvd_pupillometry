@@ -9,37 +9,11 @@ License: UNKNOWN
 Description: PyPlr
         =====
         
-        PyPlr is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking ecosystem.
+        *PyPlr* is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking ecosystem. 
         
-        Features
-        --------
+        The code is here: https://github.com/PyPlr/cvd_pupillometry
         
-        - Full native support for a high-end light engine
-        - Ability to easily integrate a light source 
-        
-        Installation
-        ------------
-        
-        To install PyPlr, run:
-        
-            pip install pyplr
-        
-        Contribute
-        ----------
-        
-        - Issue tracker:
-        - Source Code:
-        
-        Support
-        -------
-        
-        If you experience any issues, please contact...
-        
-        License
-        -------
-        
-        
-        
+        The documentation is here: https://pyplr.github.io/cvd_pupillometry/index.html
         
 Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha

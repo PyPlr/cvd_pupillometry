@@ -11,31 +11,20 @@ required to develop against the RESTful API.
 
 '''
 
-import os
-import os.path as op
 from time import sleep
 from datetime import datetime
-from random import shuffle
 import json
 
 import requests
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
-from pyplr.oceanops import oo_measurement
-from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026, get_CIE_CMF
-
-##########################
-# Device class for STLAB #
-##########################
+from pyplr.CIE import get_CIES026, get_CIE_CMF
 
 class SpectraTuneLab:
     '''Wrapper for LEDMOTIVE Spectra Tune Lab RESTFUL_API. 
-    
-    Includes other useful methods for working with the device.
-    
+        
     Attributes
     ----------
     colors : string
@@ -84,9 +73,9 @@ class SpectraTuneLab:
     max_intensity = 4095
 
     # Initializer / Instance Attributes
-    def __init__(self, username, identity, password, lighthub_ip='192.168.7.2'):
-        '''
-        Initialize connection with LightHub. 
+    def __init__(self, password, username='admin', identity=1, 
+                 lighthub_ip='192.168.7.2'):
+        '''Initialize connection with LightHub. 
         
         Parameters
         ----------
@@ -97,14 +86,15 @@ class SpectraTuneLab:
         password : string
             The password specific to the LightHub.
         lightub_ip : string, optional
-            The IP address of the LightHub device. The default is `'192.168.7.2'`.
+            The IP address of the LightHub device. The default is 
+            `'192.168.7.2'`.
             
         Note
         ----
         The Mac connection driver usually creates the network in a way that
         places the LightHub device at IP 192.168.6.2 instead of IP 192.168.7.2,
-        so this may need to be changed depending on the platform. If that is not 
-        enough, you might need to also install the two (                
+        so this may need to be changed depending on the platform. If that is 
+        not enough, you might need to also install the two (                
         `Network <https://beagleboard.org/static/Drivers/MacOSX/RNDIS/HoRNDIS.pkg>`_
         and
         `Serial <https://beagleboard.org/static/Drivers/MacOSX/FTDI/EnergiaFTDIDrivers2.2.18.pkg>`_
@@ -116,12 +106,13 @@ class SpectraTuneLab:
 
         '''
         self.username = username
-        self.identity = identity
+        self.id = str(identity)
         self.password = password
-        self.info = None
+        self.lighthub_ip = lighthub_ip
+        self.info = {}
 
         try:
-            cmd_url = 'http://' + lighthub_ip + ':8181/api/login'
+            cmd_url = 'http://' + self.lighthub_ip + ':8181/api/login'
             a = requests.post(cmd_url, 
                               json={'username': username,
                                     'password': password}, 
@@ -129,10 +120,10 @@ class SpectraTuneLab:
             cookiejar = a.cookies
             sleep(.1)
             self.info = {
-                'url': lighthub_ip,
+                'url': self.lighthub_ip,
                 'id': identity,
-                'cookiejar': cookiejar
-                }
+                'cookiejar': cookiejar}
+            
             more_info = self.get_device_info()
             self.info = {**self.info, **more_info}
             # for some reason, after first turning on the STLAB, video files 
@@ -140,6 +131,7 @@ class SpectraTuneLab:
             # quick call to spectruma at startup gets around this issue, but 
             # it might be a good idea to ask Ledmotive about this. Also, the
             # first time you do play a video file, it often flickers.
+            # USE MULTICAST ADDRESS!
             self.spectruma([0,0,0,0,0,0,0,0,1,1]) 
             sleep(.2)
             self.turn_off()
@@ -167,7 +159,7 @@ class SpectraTuneLab:
         '''
         data = {'arg': intensity_values}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_SPECTRUM_A'
+            self.id + '/command/SET_SPECTRUM_A'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
     
@@ -194,7 +186,7 @@ class SpectraTuneLab:
         '''
         data = {'arg': spectrum}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_SPECTRUM_S'
+            self.id + '/command/SET_SPECTRUM_S'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
         
@@ -202,8 +194,8 @@ class SpectraTuneLab:
         '''Executes a spectrum based on the intensity values provided for each 
         of the channels. Each channel can be set between 0 and 4095. This is an 
         alternative way to the command `set_spectrum_a` that allows setting a 
-        spectrum issuing a `GET` command (which allows access to the luminaire by
-        typing a url in any browser). 
+        spectrum issuing a `GET` command (which allows access to the luminaire 
+        by typing a url in any browser). 
         
         Parameters
         ----------
@@ -218,12 +210,12 @@ class SpectraTuneLab:
         '''
         spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/spectruma/' + spec
+            self.id + '/spectruma/' + spec
         requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)
     
     def color_xy(self, intensity_values, x, y):
-        '''Similar to the `spectruma` command, but allows setting a target x, y
-        coordinates in the CIE1931 color space. 
+        '''Similar to the `spectruma` command, but allows setting a target 
+        `x, y` coordinates in the CIE1931 color space. 
     
         Parameters
         ----------
@@ -242,17 +234,17 @@ class SpectraTuneLab:
         '''
         spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/spectruma/' + spec + '/color/' + \
+            self.id + '/spectruma/' + spec + '/color/' + \
                 str(x) + '/' + str(y)
         requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)
 
     def set_color(self, x, y, flux=None):
         '''Executes a light color represented in the CIE1931 color space. The
         `x` and `y` coordinates are the mathematical index that represents the
-        target color to be achieved. If the `x,y` provided values are not available 
-        by the system, it will find its nearest available x,y coordinates. If 
-        flux is provided as an argument, it will be adjusted automatically, 
-        otherwise the current flux will be used. 
+        target color to be achieved. If the `x,y` provided values are not 
+        available by the system, it will find its nearest available x,y 
+        coordinates. If flux is provided as an argument, it will be adjusted 
+        automatically, otherwise the current flux will be used. 
     
         Parameters
         ----------
@@ -274,7 +266,7 @@ class SpectraTuneLab:
         else:
             data = {'arg': [x, y]}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_COLOR'
+            self.id + '/command/SET_COLOR'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
     
@@ -292,7 +284,7 @@ class SpectraTuneLab:
         
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/TURN_OFF'
+            self.id + '/command/TURN_OFF'
         requests.post(cmd_url, cookies=self.info['cookiejar'], verify=False) 
     
     def set_blink(self, blink=1):
@@ -313,15 +305,16 @@ class SpectraTuneLab:
         '''
         data = {'arg': blink}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_BLINK'
+            self.id + '/command/SET_BLINK'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False) 
   
     def get_pcb_temperature(self):
         '''Returns the PCB temperature in Celsius degrees (ºC). Returns a list 
-        of 4 elements in this order: LEDs, Drivers, Spectrometer and Microcontroller 
-        temperature sensors close to these elements. If one sensor or its readout 
-        is not available a null value is returned for that element. 
+        of 4 elements in this order: LEDs, Drivers, Spectrometer and 
+        Microcontroller temperature sensors close to these elements. If one 
+        sensor or its readout is not available a null value is returned for
+        that element. 
         
         Parameters
         ----------
@@ -334,16 +327,16 @@ class SpectraTuneLab:
             
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_PCB_TEMPERATURE'
+            self.id + '/command/GET_PCB_TEMPERATURE'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)
         temperatures = dict(r.json())['data']
         return temperatures
     
     def get_spectrum_a(self):
-        '''Returns the current amplitude for each of the luminaire channels. The 
-        array returned has a length equal to the channel count of the luminaire. 
-        Each value in the array is a representation of electrical counts, ranging 
-        from 0 to 4095 counts.
+        '''Returns the current amplitude for each of the luminaire channels. 
+        The array returned has a length equal to the channel count of the 
+        luminaire. Each value in the array is a representation of electrical 
+        counts, ranging from 0 to 4095 counts.
 
         Returns
         -------
@@ -352,23 +345,23 @@ class SpectraTuneLab:
 
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_SPECTRUM_A'
+            self.id + '/command/GET_SPECTRUM_A'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False) 
         return np.array(dict(r.json())['data'][1:])
      
     def get_spectrometer_spectrum(self, norm=False):
         '''Returns the spectrum readout from the internal spectrometer. If the
-        luminaire does only contain a colorimeter sensor, a theoretical spectrum 
-        based on the current channel's power is obtained instead. The data is
-        returned in 81 elements that represents a 5 nm wavelength bins from 380 
-        nm to 780 nm. Each element is a value ranging from 0 to 65535 abstracting 
-        the light intensity at each point and allowing the reconstruction of the 
-        spectral shape. An additional element represents the radiometric value 
-        in milliWatts (mW) at the peak of a max value of a spectrum at which the
-        abstracted values are normalized, i.e. the flux corresponding to a 65535
-        value in the array. This flux depends on multiple factors, as current
-        channels power, dimming level, power protection and maximum power of the 
-        lighted LEDs.     
+        luminaire does only contain a colorimeter sensor, a theoretical 
+        spectrum based on the current channel's power is obtained instead. The 
+        data is returned in 81 elements that represents a 5 nm wavelength bins 
+        from 380 nm to 780 nm. Each element is a value ranging from 0 to 65535
+        abstracting the light intensity at each point and allowing the
+        reconstruction of the spectral shape. An additional element represents 
+        the radiometric value in milliWatts (mW) at the peak of a max value of
+        a spectrum at which the abstracted values are normalized, i.e. the 
+        flux corresponding to a 65535 value in the array. This flux depends on 
+        multiple factors, as current channels power, dimming level, power 
+        protection and maximum power of the lighted LEDs.     
     
         Parameters
         ----------
@@ -382,7 +375,7 @@ class SpectraTuneLab:
             
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_SPECTROMETER_SPECTRUM'
+            self.id + '/command/GET_SPECTROMETER_SPECTRUM'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False) 
         rmv = dict(r.json())['data'][0]
         spectrum = np.array(dict(r.json())['data'][1:])
@@ -403,17 +396,17 @@ class SpectraTuneLab:
             
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_LED_CALIBRATION'
+            self.id + '/command/GET_LED_CALIBRATION'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
         
     def load_video_file(self, fname, return_vf_dict=True):
-        '''Uploads a video light sequence file to the LIGHT HUB. The video file 
-        must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. The 
-        uploaded file must be a json file (.dsf files are json files), with 
-        weight less than 2 MB. The file must be uploaded using the multipart / 
-        form-data standard convention. See ``play_video_file(...)`` for how to 
-        play the uploaded file in a luminaire.  
+        '''Uploads a video light sequence file to the LIGHT HUB. The video
+        file must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format. 
+        The uploaded file must be a json file (.dsf files are json files), 
+        with weight less than 2 MB. The file must be uploaded using the 
+        multipart / form-data standard convention. See ``play_video_file(...)``
+        for how to play the uploaded file in a luminaire.  
     
         Parameters
         ----------
@@ -436,7 +429,7 @@ class SpectraTuneLab:
         if return_vf_dict:
             return video_file_to_dict(fname)
         
-    def play_video_file(self, stop=False):
+    def play_video_file(self, broadcast=True, stop=False):
         '''Starts the execution of a light video sequence in the specified 
         luminaire or multicast address. If no video is in the LIGHT HUB, an 
         error response is raised, and the command ignored. If the video is 
@@ -446,6 +439,9 @@ class SpectraTuneLab:
     
         Parameters
         ----------
+        broadcast : bool
+            Whether to issue the commmand via the broadcast address 1023. This
+            avoids a bug at startup. The default is True.
         stop : bool, optional
             Whether the command should stop the video. The default is False.
     
@@ -455,19 +451,20 @@ class SpectraTuneLab:
             None.
 
         '''
+        address = '1023' if broadcast else self.id
         if stop:
             data = {'arg': None}
         else:
             data = {'arg': './data/video1.json'}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/PLAY_VIDEO_FILE'
-        requests.post(
-            cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
+            address + '/command/PLAY_VIDEO_FILE'
         print('playing video file...')
+        return requests.post(
+            cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
         
     def get_device_info(self):
-        '''Returns the device characteristics and basic configuration. These are 
-        the serial code, the model code, the number of channels for this 
+        '''Returns the device characteristics and basic configuration. These 
+        are the serial code, the model code, the number of channels for this 
         luminaire and the device feedback type (whether it is colorimeter or 
         spectrometer). How are the serial and model codes is yet to be defined,
         but expect a maximum 50 character length code for serial and 30 for
@@ -480,14 +477,14 @@ class SpectraTuneLab:
         
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_DEVICE_INFO'
+            self.id + '/command/GET_DEVICE_INFO'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
     
     def set_colour_priority(self, colour_priority):
         '''Command the luminaire to always first approximate to the desired 
-        color of the spectrum to set before setting the spectrum channel values. 
-        This function is set to true or false (enabled or disabled).
+        color of the spectrum to set before setting the spectrum channel 
+        values. This function is set to true or false (enabled or disabled).
 
         Parameters
         ----------
@@ -502,7 +499,7 @@ class SpectraTuneLab:
         '''
         data = {'arg': colour_priority}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_COLOR_PRIORITY'
+            self.id + '/command/SET_COLOR_PRIORITY'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
 
@@ -516,7 +513,7 @@ class SpectraTuneLab:
             
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_COLOR_PRIORITY'
+            self.id + '/command/GET_COLOR_PRIORITY'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
     
@@ -532,7 +529,7 @@ class SpectraTuneLab:
 
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
+            self.id + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
     
@@ -545,7 +542,8 @@ class SpectraTuneLab:
         Parameters
         ----------
         integration_time : int
-            A positive integer ranging from 50 to 140000 in tenths of millisecond.
+            A positive integer ranging from 50 to 140000 in tenths of
+            millisecond.
 
         Returns
         -------
@@ -555,12 +553,13 @@ class SpectraTuneLab:
         '''
         data = {'arg': integration_time}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
+            self.id + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
         
     def get_input_power(self):
-        '''Returns the current consumed electrical power of the luminaire in mW.
+        '''Returns the current consumed electrical power of the luminaire in
+        mW.
 
         Returns
         -------
@@ -569,16 +568,16 @@ class SpectraTuneLab:
 
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_INPUT_POWER'
+            self.id + '/command/GET_INPUT_POWER'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
     
     def set_dimming_level(self, dimming_level):
         '''Sets an intensity dimmer. This percentage modulates the current 
-        intensity by multiplying the power count of each luminaire channel, i.e.
-        if you send a spectrum where each channel count is at half level and 
-        the dimming is set at 50%, the final light intensity will be one quarter 
-        of the luminaire full capacity.
+        intensity by multiplying the power count of each luminaire channel,
+        i.e. if you send a spectrum where each channel count is at half level
+        and the dimming is set at 50%, the final light intensity will be one 
+        quarter of the luminaire full capacity.
 
         Parameters
         ----------
@@ -593,7 +592,7 @@ class SpectraTuneLab:
         '''
         data = {'arg': dimming_level}
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/SET_DIMMING_LEVEL'
+            self.id + '/command/SET_DIMMING_LEVEL'
         requests.post(
             cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
     
@@ -608,428 +607,55 @@ class SpectraTuneLab:
 
         '''
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(self.info['id']) + '/command/GET_DIMMING_LEVEL'
+            self.id + '/command/GET_DIMMING_LEVEL'
         r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
         return dict(r.json())['data'] 
     
-    # see RESTFUL_API for further mehods and define here if needed
-    # def new_method_from_restful_api(self)...
-
-    # User-defined functions 
-    def full_readout(self, norm=False, setting={}):
-        '''Get a full readout from the STLAB.
+    def set_multicast_address(self, address=[1001, None, None, None]):
+        '''Sets an array of multicast addresses accepted by the luminaire. A 
+        multicast address can be shared by different luminaires. Thus, when
+        using a multicast address as the luminaire id of one request, the 
+        appropriate command is issued to all the luminaires sharing the same
+        multicast address. Currently only the response of the first luminaire 
+        to answer is returned to the caller client. Currently 4 multicast 
+        addresses can be set in a single luminaire (which effectively limits
+        the number of groups a luminaire can be part of to 4, without counting 
+        the broadcast group). Each address should be in the range 1 - 1022 and
+        should not be already in use by any luminaire id. The multicast address
+        1023 is shared by all luminaires without the need to include it in this
+        list, and can be used as a broadcast address to request commands in all
+        the installation.
 
         Parameters
         ----------
-        norm : bool
-            Whether to normalise the spectrum to the peak radiometric value.
-        setting : dict, optional
-            The current setting of the luminaire (if known), to be included in
-            the `info_dict`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
-            ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
-            The default is `{}`.
+        address : TYPE, optional
+            DESCRIPTION. The default is [15,None,None,None].
 
         Returns
         -------
-        spec : np.array
-            The spectrum.
-        info_dict : dict
-            Dictionary of information for spectrometer reading.
+        None.
 
         '''
-        tmps = self.get_pcb_temperature()
-        ip   = self.get_input_power()
-        it   = self.get_spectrometer_integration_time()
-        dl   = self.get_dimming_level()
-        rmv, spec = self.get_spectrometer_spectrum(norm=norm)
-        info_dict = {
-            'rmv': rmv,
-            'LEDs_temp': tmps[0],
-            'drivers_temp': tmps[1],
-            'board_temp': tmps[2],
-            'micro_temp': tmps[3],
-            'integration_time': it,
-            'input_power': ip,
-            'dimming_level': dl
-            }
-        info_dict = {**info_dict, **setting}
-        return spec, info_dict
+        data = {'arg': address}
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            self.id + '/command/SET_MULTICAST_ADDRESS'
+        requests.post(
+            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)   
     
-    # TODO: optimise this
-    def sample(self, 
-               leds=[0], 
-               intensities=[500], 
-               spectra=None,
-               wait_before_sample=.3,
-               ocean_optics=None,
-               ocean_optics_inegration_times=None,
-               randomise=False,
-               save_output=False,
-               settings_override=None):
-        '''Sample a set of LEDs individually at a range of specified intensities 
-        using the STLABs on-board spectrometer. Or, alternatively, sample a set
-        of pre-defined spectra. Option to also obtain concurrent measurements 
-        with an external Ocean Optics spectrometer.
-    
-        Parameters
-        ----------
-        leds : list, optional
-            List of unique integers from 0-9 representing the LEDs to sample.
-            The default is [0].
-        intensities : list, optional
-            List of integer values between 0-4095 representing the intensity 
-            values at which to sample the LEDs. The default is [500].
-        spectra : list, optinal
-            List of predfined spectra to sample. Must be None if specifying
-            leds or intensities. The default is None.
-        wait_before_sample : float, optional
-            Time in seconds to wait after setting a spectrum before acquiring 
-            a measurement from the spectrometer(s). The default is .2.
-        ocean_optics : seabreeze.spectrometers.Spectrometer, optional
-            Whether to acquire concurrent measurements from an Ocean Optics 
-            spectrometer. Requires the seabreeze package to be installed.
-            The default is None.
-        ocean_optics_inegration_times : pd.DataFrame
-            STUFF
-        randomise : bool, optional
-            Whether to randomise the order in which the LED-intensity settings 
-            or spectra are sampled. The default is False.
-        save_output : bool, optional
-            Whether to save the samples and info as .csv files in the current
-            working directory.
-    
-        Returns
-        -------
-        stlab_spectra : pd.DataFrame
-            The resulting measurements from the STLAB spectrometer.
-        stlab_info : pd.DataFrame
-            The companion info to stlab_spectra, with matching indices.
-        oo_spectra : pd.DataFrame, optional
-            The resulting measurements from the Ocean Optics spectrometer.
-        oo_info : pd.DataFrame, optional
-            The companion info to the oo_spectra, with matching indices.
-            
-        '''
-        if spectra and (leds or intensities):
-            raise ValueError('leds and intensities must be None when specifying spectra')
-  
-        # off spectrum    
-        leds_off = [0]*10
+    def get_multicast_address(self):
+        '''Returns the array of multicast addresses set in the luminaire. See 
+        `.set_multicast_address(...)` for more info.
         
-        # list to store stlab spectrometer data
-        stlab_spectra = []
-        stlab_info  = []
-        
-        # list to store ocean optics spectrometer data, if required
-        if ocean_optics:
-            oo_spectra = []
-            oo_info  = []
-
-        # turn stlab off if it's on
-        self.set_spectrum_a(leds_off)
-        
-        # generate the settings
-        if spectra:
-            settings = spectra
-            print('Sampling {} spectra: {}'.format(
-                len(spectra), spectra))
-        else:
-            settings = [(l, i) for l in leds for i in intensities]
-            print('Sampling {} leds at the following intensities: {}'.format(
-                len(leds), intensities))
-            
-        # shuffle
-        if randomise:
-            shuffle(settings)
-        
-        if settings_override:
-            print('Overriding settings with externally generated settings')
-            settings = settings_override
-        
-        # begin sampling            
-        for i, s in enumerate(settings):
-            if not spectra:
-                led, intensity = s[0], s[1]
-                setting = {'led': led, 'intensity': intensity}
-                s = [0] * 10
-                s[led] = intensity
-                print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
-                    i + 1, len(settings), led, intensity))
-            else:
-                setting = {'intensities': s}
-                print('Measurement: {} / {}, spectrum: {}'.format(
-                    i + 1, len(settings), s))
-                       
-            # set the spectrum
-            self.set_spectrum_a(s)
-            sleep(wait_before_sample)
-            
-            # full readout from STLAB
-            stlab_counts, stlab_info_dict = self.full_readout(setting=setting)
-            stlab_spectra.append(stlab_counts)
-            stlab_info.append(stlab_info_dict)
-            
-            if ocean_optics:
-                if ocean_optics_inegration_times:
-                    t = ocean_optics_inegration_times.loc[(led, setting)]
-                    oo_counts, oo_info_dict = oo_measurement(
-                    ocean_optics, integration_time=t, setting=setting)
-                else:
-                    oo_counts, oo_info_dict = oo_measurement(
-                    ocean_optics, setting=setting)
-                oo_spectra.append(oo_counts)
-                oo_info.append(oo_info_dict)
-        
-        # make dfs
-        stlab_spectra = pd.DataFrame(stlab_spectra)
-        stlab_spectra.columns = pd.Int64Index(self.wlbins)
-        stlab_info = pd.DataFrame(stlab_info)
-        stlab_spectra['led'] = stlab_info['led']
-        stlab_spectra['intensity'] = stlab_info['intensity']
-        stlab_spectra.set_index(['led','intensity'], inplace=True)
-
-        if ocean_optics:
-            oo_spectra = pd.DataFrame(oo_spectra)
-            oo_spectra.columns = ocean_optics.wavelengths()
-            oo_info = pd.DataFrame(oo_info)
-
-        # turn off
-        self.turn_off()
-        
-        if save_output:
-            fid = datetime.now().strftime('%D-%H-%M').replace('/','-')
-            stlab_spectra.to_csv(
-                op.join(os.getcwd(), 'stlab_spectra_' + fid + '.csv'),
-                index=False)
-            stlab_info.to_csv(
-                op.join(os.getcwd(), 'stlab_info_' + fid + '.csv'),
-                index=False)
-            if ocean_optics:
-                oo_spectra.to_csv(
-                    op.join(os.getcwd(), 'oo_spectra_' + fid + '.csv'),
-                index=False)
-                oo_info.to_csv(
-                    op.join(os.getcwd(), 'oo_info_' + fid + '.csv'),
-                index=False)
-            
-        if ocean_optics:
-            return stlab_spectra, stlab_info, oo_spectra, oo_info
-        else:
-            return stlab_spectra, stlab_info
-
-# TODO: document this properly
-class CalibrationContext():
-    '''Create a calibration context based on spectrometer measurements. 
-    
-    Automatically creates a forward model of the device using linear interpolation. 
-    Currently this requires the measurements to be for each LED in steps of 65.
-    
-    Example
-    -------
-    >>> cc = CalibrationContext()
-    >>> fig = cc.plot_calibrated_spectra()
-    
-    '''
-    def __init__(self, data):
-        '''
-
-        Parameters
-        ----------
-        data : str
-            Path to a csv file of calibrated spectrometer data. Must contain
-            columns 'led' and 'intensity'.
-
         Returns
         -------
         None.
             None.
 
         '''
-        self.data = pd.read_csv(data, index_col=['led','intensity'])
-        self.wls = self.data.columns.astype('int')
-        self.data.columns = self.wls
-        self.lkp = self.create_lookup_table()
-        self.aopic = self.create_alphaopic_irradiances_table()
-        self.lux = self.create_lux_table()
-        self.irradiance = self.lkp.sum(axis=1) 
-    
-    def plot_calibrated_spectra(self):
-        '''Plot the calibrated spectra.
-
-        Returns
-        -------
-        fig : Matplotlib.Figure
-            The plot.
-
-        '''
-        # TODO: move to graphing?
-        colors = get_led_colors(rgb=True)
-        data = (self.data.reset_index()
-                    .melt(id_vars=['led','intensity'], 
-                          value_name='flux',
-                          var_name='wavelength'))
-        
-        fig, ax = plt.subplots(figsize=(14,5))
-        
-        _ = sns.lineplot(x='wavelength', y='flux', data=data, hue='led',
-                     palette=colors, units='intensity', ax=ax, 
-                     lw=.1, estimator=None)
-        ax.set_ylabel('SPD (W/m2/nm)')
-        ax.set_xlabel('Wavelength (nm)')
-        return fig    
-    
-    def create_lookup_table(self):
-        '''Using `self.data`, create a lookup table for all settings with linear 
-        interpolation.
-
-        Returns
-        -------
-        lkp_tbl : pd.DataFrame
-            Interpolated data.
-
-        '''
-        #TODO: generalise and improve flexibility
-        lkp_tbl = pd.DataFrame()
-        for led, df in self.data.groupby(['led']):
-            intensities = df.index.get_level_values('intensity')
-            new_intensities = np.linspace(
-                intensities.min(), intensities.max(), 4096).astype('int')
-            df.reset_index(inplace=True, drop=True)
-            df.columns = self.data.columns
-            df.index = df.index * 63
-            n = df.reindex(new_intensities).interpolate(method='linear')
-            n['intensity'] = n.index
-            n['led'] = led
-            lkp_tbl = lkp_tbl.append(n)
-        lkp_tbl.set_index(['led','intensity'], inplace=True)
-        return lkp_tbl
-    
-    def create_alphaopic_irradiances_table(self):
-        '''Using the CIE026 spectral sensetivities, calculate alphaopic 
-        irradiances (S, M, L, Rhod and Melanopic) for every spectrum in 
-        `self.lkp`.
-        
-        Returns
-        -------
-        pd.DataFrame
-            Alphaopic irradiances.
-
-        '''
-        _ , sss = get_CIES026(asdf=True)
-        sss = sss.fillna(0)
-        return self.lkp.dot(sss)
-    
-    def create_lux_table(self):
-        '''Using the CIE1924 photopic luminosity function, calculate lux for 
-        every spectrum in `self.lkp`.
-
-        Returns
-        -------
-        pd.DataFrame
-            Lux values.
-
-        '''
-        vl = get_CIE_1924_photopic_vl(asdf=True)
-        return self.lkp.dot(vl.values)*683
-        
-    def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
-        '''Using `self.lkp`, predict the spectral power distribution for a 
-        given list of led intensities.
-        
-        Parameters
-        ----------
-        intensities : list
-            List of intensity values for each led. The default is 
-            ``[0,0,0,0,0,0,0,0,0,0]``.
-        
-        Returns
-        -------
-        spectrum : np.array
-            Predicted spectrum for given intensities.
-            
-        '''
-        spectrum = np.zeros(len(self.lkp.columns))
-        for led, val in enumerate(intensities):
-            spectrum += self.lkp.loc[(led, val)].to_numpy()
-        if asdf:
-            return pd.DataFrame(spectrum, index=self.wls).T
-        else:
-            return spectrum
-        
-    def match(self, match_led, match_led_intensity, 
-              target_led, match_type='irrad'):
-        '''Determine the appropriate intensity setting for `target_led` so that 
-        its output will match `match_led` at `match_led_intensity` with respect 
-        to `match_type`.
-
-        Parameters
-        ----------
-        match_led : int
-            The led to be matched.
-        match_led_intensity : int
-            The intensity of the led to be matched.
-        target_led : int
-            The led whose intensity is to be determined.
-        match_type : str, optional
-            The type of match to be performed. One of:
-                
-                * 'irrad' - overall (unweighted) irradiance
-                * 'lux'   - lux
-                * 'mel'   - melanopic irradiance
-                * 'rhod'  - rhodopic irradiance
-                * 's'     - s-cone-opic irradiance
-                * 'm'     - m-cone-opic irradiance
-                * 'l'     - l-cone-opic irradiance
-                
-            The default is 'irrad'.
-
-        Returns
-        -------
-        error : float
-            The absolute matching error.
-        match_intensity : int
-            The required intensity for `match_led`.
-
-        '''
-        if match_type=='irrad':
-            values = self.irradiance
-            target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='lux':
-            values = self.lux
-            target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='mel':
-            values = self.aopic.Mel
-            target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='rhod':
-            values = self.aopic.Rods
-            target = values.loc[(match_led, match_led_intensity)]      
-            
-        elif match_type=='s':
-            values = self.aopic.S
-            target = values.loc[(match_led, match_led_intensity)]
-
-        elif match_type=='m':
-            values = self.aopic.M
-            target = values.loc[(match_led, match_led_intensity)]
-            
-        elif match_type=='l':
-            values = self.aopic.L
-            target = values.loc[(match_led, match_led_intensity)]
-            
-        match_intensity = (values.loc[target_led]
-                                 .sub(target)
-                                 .abs()
-                                 .idxmin())
-        error = (values.loc[target_led]
-                       .sub(target)
-                       .abs()
-                       .min())
-        
-        return error, match_intensity
-    
+        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
+            self.id + '/command/GET_MULTICAST_ADDRESS'
+        r = requests.get(cmd_url, cookies=self.info['cookiejar'], verify=False)   
+        return dict(r.json())['data'] 
     
 #################################
 # FUNCTIONS TO MAKE VIDEO FILES #
@@ -1188,8 +814,8 @@ def background_pulse_protocol(background_spec,
     metadata : dict
         Additional info to include in the metadata field of the video file 
         (e.g. {'color' : 'blue'}). This info can be extracted when loading the 
-        file during an experiment and included in triggers sent to Pupil Capture.
-        The default is {}.
+        file during an experiment and included in triggers sent to Pupil 
+        Capture. The default is {}.
         
     Returns
     -------
@@ -1210,30 +836,16 @@ def background_pulse_protocol(background_spec,
     df = (df.append(_video_file_row(0, background_spec))
             .append(_video_file_row(pre_pulse_duration, background_spec))
             .append(_video_file_row(pre_pulse_duration, pulse_spec))
-            .append(_video_file_row(pre_pulse_duration+pulse_duration, pulse_spec))
-            .append(_video_file_row(pre_pulse_duration+pulse_duration, background_spec))
+            .append(_video_file_row(
+                pre_pulse_duration+pulse_duration, pulse_spec))
+            .append(_video_file_row(
+                pre_pulse_duration+pulse_duration, background_spec))
             .append(_video_file_row(end, background_spec))
             .append(_video_file_end(end))
             .reset_index(drop=True))
     make_video_file(df, fname, **metadata)
     if return_df:
         return df
-            
-
-# def make_video_baden_chirp(led, 
-#                            mintensity=0, 
-#                            maxtensity=4095, 
-#                            Fs=100, 
-#                            videoname='chripstim',
-#                            pulse_duration=1,
-#                            post_pulse_wait=7,
-#                            phase1_params=(0.01, 1, 20),
-#                            phase2_params=(1, 20),
-                           
-#                            ):
-    
-    
-    
     
 def video_file_to_dict(video_file):
     '''
@@ -1262,64 +874,6 @@ def video_file_to_dict(video_file):
 def plot_spectrum(spectrum, color):
     bins = np.linspace(380,780,81)
     plt.plot(bins, spectrum, color=color)
-
-def interp_spectra(spectra):
-    '''
-    This function needs generalising.
-
-    Parameters
-    ----------
-    spectra : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    intp_tbl : TYPE
-        DESCRIPTION.
-
-    '''
-    tbl = spectra.unstack(level=2)
-    tbl.columns = [val[1] for val in tbl.columns]
-    
-    intp_tbl = pd.DataFrame()
-    for led, df in tbl.groupby(['led']):
-        intensities = df.index.get_level_values('intensity')
-        new_intensities = np.linspace(intensities.min(), intensities.max(), 4096)
-        new_intensities = new_intensities.astype('int')
-        df.reset_index(inplace=True, drop=True)
-        df.columns = range(0, df.shape[1])
-        df.index = df.index * 63
-        n = df.reindex(new_intensities).interpolate(method='linear')
-        n['intensity'] = n.index
-        n['led'] = led
-        intp_tbl = intp_tbl.append(n)
-    intp_tbl.set_index(['led','intensity'], inplace=True)
-    return intp_tbl
-
-def predict_spd(intensity=[0,0,0,0,0,0,0,0,0,0], lkp_table=None):
-    '''
-    Predict the spectral power distribution for a given list of led 
-    intensities using linear interpolation.
-
-    Parameters
-    ----------
-    intensity : list
-        List of intensity values for each led. The default is [0,0,0,0,0,0,0,0,0,0].
-    lkp_table : DataFrame
-        A wide-format DataFrame with hierarchichal pd.MultIndex [led, intensity] 
-        and a column for each of 81 5-nm wavelength bins. 4096*10 rows, containing
-        predicted output for each led at all possible intensities.
-
-    Returns
-    -------
-    spectrum : np.array
-        Predicted spectrum for given intensities.
-        
-    '''
-    spectrum = np.zeros(81)
-    for led, val in enumerate(intensity):
-        spectrum += lkp_table.loc[(led, val)].to_numpy()
-    return spectrum
 
 def get_led_colors(rgb=False):
     if rgb:
