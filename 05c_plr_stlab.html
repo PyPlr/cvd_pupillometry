@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automated pupillometer with STLAB &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PIPR with STLAB" href="05d_pipr_stlab.html" />
+    <link rel="prev" title="PsychoPy PLR" href="05b_plr_psychopy.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="Automated-pupillometer-with-STLAB">
+<h1>Automated pupillometer with STLAB<a class="headerlink" href="#Automated-pupillometer-with-STLAB" title="Permalink to this headline">¶</a></h1>
+<p>Automated pupillometers are the standard instruments for measuring the PLR. These handheld devices are aimed at a persons eye to deliver a light stimulus and use infrared video recording and internal algorithms to provide an instant readout of the PLR and its associated parameters. Our own <a class="reference external" href="https://neuroptics.com/plr-3000-hand-held/">NeurOptics PLR-3000</a> is one such device, and it does an absolutely fantastic job. The STLAB-integrating sphere rig is no match for its compactness, portability
+and ease of use, but we figured at least that we could make it function in a similar way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">op</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span>
+<span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
+<span class="kn">from</span> <span class="nn">pyplr.utils</span> <span class="kn">import</span> <span class="n">unpack_data_pandas</span>
+<span class="kn">from</span> <span class="nn">pyplr.preproc</span> <span class="kn">import</span> <span class="n">butterworth_series</span>
+<span class="kn">from</span> <span class="nn">pyplr.plr</span> <span class="kn">import</span> <span class="n">PLR</span>
+<span class="kn">from</span> <span class="nn">pyplr.protocol</span> <span class="kn">import</span> <span class="p">(</span><span class="n">input_subject_id_gui</span><span class="p">,</span>
+                            <span class="n">subject_dir</span><span class="p">,</span>
+                            <span class="n">record_dir</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">subject_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">baseline</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
+         <span class="n">duration</span><span class="o">=</span><span class="mf">8.</span><span class="p">,</span>
+         <span class="n">sample_rate</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+         <span class="n">stimulus</span><span class="o">=</span><span class="s1">&#39;./stimuli/PLR-3000-180-mw.dsf&#39;</span><span class="p">,</span>
+         <span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+         <span class="n">control</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+         <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="c1"># set up subject and recording</span>
+    <span class="k">if</span> <span class="n">subject_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">subject_id</span> <span class="o">=</span> <span class="n">input_subject_id_gui</span><span class="p">()</span>
+    <span class="n">subj_dir</span> <span class="o">=</span> <span class="n">subject_dir</span><span class="p">(</span><span class="n">subject_id</span><span class="p">)</span>
+    <span class="n">rec_dir</span> <span class="o">=</span> <span class="n">record_dir</span><span class="p">(</span><span class="n">subj_dir</span><span class="p">)</span>
+
+    <span class="c1"># set up pupil</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+    <span class="c1"># setup stlab</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="n">stimulus</span><span class="p">)</span>
+
+    <span class="c1"># # set up pupil trigger</span>
+    <span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">control</span><span class="p">:</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Press Enter to administer stimulus...&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">record</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">))</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
+
+    <span class="c1"># start LightStamper and PupilGrabber</span>
+    <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">6.</span><span class="p">)</span>
+    <span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.1.3d&#39;</span><span class="p">,</span>
+                                 <span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="o">+</span><span class="n">baseline</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># baseline</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
+
+    <span class="k">while</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">running</span><span class="p">()</span> <span class="ow">or</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Waiting for futures...&#39;</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">record</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;light was not detected. Ending program.&#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># retrieve and process pupil data</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">butterworth_series</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="mi">120</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">])</span>
+
+    <span class="c1"># lightstamper timestamp</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># find the closest timestamp in the pupil data</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="o">-</span><span class="p">(</span><span class="n">baseline</span><span class="o">*</span><span class="n">sample_rate</span><span class="p">))</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="p">(</span><span class="n">duration</span><span class="o">*</span><span class="n">sample_rate</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">plr</span> <span class="o">=</span> <span class="n">PLR</span><span class="p">(</span><span class="n">plr</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">diameter_3d</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+              <span class="n">sample_rate</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+              <span class="n">onset_idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
+              <span class="n">stim_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plr</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">,</span> <span class="s1">&#39;plr_parameters.csv&#39;</span><span class="p">))</span>
+    <span class="n">plr</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">,</span> <span class="s1">&#39;plr_plot.png&#39;</span><span class="p">),</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">,</span> <span class="s1">&#39;raw_data.csv&#39;</span><span class="p">))</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">main</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Killed by user&#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="05_example_protocols.html">Example protocols</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="05a_plr_simple.html">Simple PLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05b_plr_psychopy.html">PsychoPy PLR</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Automated pupillometer with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05d_pipr_stlab.html">PIPR with STLAB</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="05_example_protocols.html">Example protocols</a><ul>
+      <li>Previous: <a href="05b_plr_psychopy.html" title="previous chapter">PsychoPy PLR</a></li>
+      <li>Next: <a href="05d_pipr_stlab.html" title="next chapter">PIPR with STLAB</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/05c_plr_stlab.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

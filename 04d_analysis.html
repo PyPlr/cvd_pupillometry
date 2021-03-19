@@ -1,0 +1,1222 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analysis of pupil data &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example protocols" href="05_example_protocols.html" />
+    <link rel="prev" title="Integrating sphere" href="04c_integrating_sphere.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Analysis-of-pupil-data">
+<h1>Analysis of pupil data<a class="headerlink" href="#Analysis-of-pupil-data" title="Permalink to this headline">¶</a></h1>
+<p>There are many valid approaches to the analysis of pupillometry data, but the optimal approach will depend on the type of experiment being run and the research question in mind. <a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fneur.2019.00129/full">Kelbsch et al. (2019)</a> provide an informative view on standards in pupillometry, and there are <a class="reference external" href="https://github.com/samhforbes/PupillometryR">some</a> <a class="reference external" href="https://github.com/beOn/cili">great</a> <a class="reference external" href="https://github.com/ihrke/pypillometry">examples</a> of
+community-developed packages for streamlining pupillometry data analysis. Whilst it is always worth exploring the wider options that are available, <em>PyPlr</em> includes a set of pandas-reliant (you won’t regret <a class="reference external" href="https://bitbucket.org/hrojas/learn-pandas/src/master/">learning pandas!</a>) scripting tools for implementing a standard data processing pipeline that is optimised to work with some of the idiosynchrasies of Pupil Labs data. So far we have found these tools to be adequate for analysing our
+own data, but we welcome suggestions for improvements.</p>
+<p>For a general introduction to analysing Pupil Labs pupillometry data, see <a class="reference external" href="https://github.com/pupil-labs/pupil-tutorials/blob/master/01_load_exported_data_and_visualize_pupillometry.ipynb">here</a> . The following describes a typical <em>PyPlr</em> analysis pipeline with tools from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> and <code class="docutils literal notranslate"><span class="pre">pyplr.preproc</span></code>.</p>
+<div class="section" id="Export-with-Pupil-Player">
+<h2>Export with Pupil Player<a class="headerlink" href="#Export-with-Pupil-Player" title="Permalink to this headline">¶</a></h2>
+<p>The first step in our pipeline is to export the data using <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/">Pupil Player</a>, making sure the required plugins (e.g., Annotation Player plugin) are enabled. Currently this must be done individually for each recording. Below is printed the file structure of a typical recording after export (more info on recording format <a class="reference external" href="https://docs.pupil-labs.com/developer/core/recording-format/#recording-format">here</a>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;../&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="n">rec_dir</span> <span class="o">=</span> <span class="s1">&#39;/Users/jtm/OneDrive - Nexus365/protocols/pipr_protocol/JTM&#39;</span>
+<span class="n">utils</span><span class="o">.</span><span class="n">print_file_structure</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+JTM/
+    .DS_Store
+    annotation.pldata
+    annotation_player.pldata
+    annotation_player_timestamps.npy
+    annotation_timestamps.npy
+    blinks.pldata
+    blinks_timestamps.npy
+    eye1.intrinsics
+    eye1.mp4
+    eye1_lookup.npy
+    eye1_timestamps.npy
+    fixations.pldata
+    fixations_timestamps.npy
+    gaze.pldata
+    gaze_timestamps.npy
+    info.player.json
+    notify.pldata
+    notify_timestamps.npy
+    pupil.pldata
+    pupil_timestamps.npy
+    surface_definitions_v01
+    user_info.csv
+    world.intrinsics
+    world.mp4
+    world_lookup.npy
+    world_timestamps.npy
+    analysis/
+        plr_extraction.png
+        plr_metrics.csv
+        plr_overall_metrics.png
+        processed.csv
+        pupil_processing.png
+    exports/
+        000/
+            annotations.csv
+            export_info.csv
+            gaze_positions.csv
+            pupil_gaze_positions_info.txt
+            pupil_positions.csv
+            world.mp4
+            world_timestamps.csv
+            world_timestamps.npy
+    pyplr_analysis/
+    offline_data/
+        tokens/
+            gaze_positions_consumer_Vis_Polyline.token
+            gaze_positions_producer_GazeFromRecording.token
+            pupil_positions_consumer_Pupil_From_Recording.token
+            pupil_positions_consumer_System_Timelines.token
+            pupil_positions_producer_Pupil_From_Recording.token
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Load-exported-data">
+<h2>Load exported data<a class="headerlink" href="#Load-exported-data" title="Permalink to this headline">¶</a></h2>
+<p>Now we can set up some constants and use <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> to get things moving. <code class="docutils literal notranslate"><span class="pre">new_subject(...)</span></code> returns a dictionary with the root directory, recording id, data directory and a newly made output directory for the analysis results. Then, passing the data directory to <code class="docutils literal notranslate"><span class="pre">load_pupil(...)</span></code>, we load the <em>pupil_positions.csv</em> exported data with the specified columns.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="c1"># Columns to load</span>
+<span class="n">use_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;method&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pupil_timestamp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;eye_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diameter_3d&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
+
+<span class="c1"># Get a handle on a subject</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">new_subject</span><span class="p">(</span>
+    <span class="n">rec_dir</span><span class="p">,</span> <span class="n">export</span><span class="o">=</span><span class="s1">&#39;000&#39;</span><span class="p">,</span> <span class="n">out_dir_nm</span><span class="o">=</span><span class="s1">&#39;pyplr_analysis&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load pupil data</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_pupil</span><span class="p">(</span>
+    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;data_dir&#39;</span><span class="p">],</span> <span class="n">eye_id</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
+
+<span class="n">samples</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+************************************************************
+*************************** JTM ****************************
+************************************************************
+Loaded 48552 samples
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>eye_id</th>
+      <th>confidence</th>
+      <th>diameter</th>
+      <th>method</th>
+      <th>diameter_3d</th>
+    </tr>
+    <tr>
+      <th>pupil_timestamp</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>85838.895658</th>
+      <td>1</td>
+      <td>0.977211</td>
+      <td>50.102968</td>
+      <td>3d c++</td>
+      <td>6.105771</td>
+    </tr>
+    <tr>
+      <th>85838.903656</th>
+      <td>1</td>
+      <td>0.997867</td>
+      <td>50.037086</td>
+      <td>3d c++</td>
+      <td>6.099682</td>
+    </tr>
+    <tr>
+      <th>85838.911644</th>
+      <td>1</td>
+      <td>0.998295</td>
+      <td>49.702628</td>
+      <td>3d c++</td>
+      <td>6.060059</td>
+    </tr>
+    <tr>
+      <th>85838.919551</th>
+      <td>1</td>
+      <td>0.997833</td>
+      <td>49.968637</td>
+      <td>3d c++</td>
+      <td>6.093759</td>
+    </tr>
+    <tr>
+      <th>85838.927504</th>
+      <td>1</td>
+      <td>0.998183</td>
+      <td>49.883191</td>
+      <td>3d c++</td>
+      <td>6.084404</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>86246.730916</th>
+      <td>1</td>
+      <td>0.818574</td>
+      <td>56.684975</td>
+      <td>3d c++</td>
+      <td>6.966634</td>
+    </tr>
+    <tr>
+      <th>86246.739307</th>
+      <td>1</td>
+      <td>0.947873</td>
+      <td>56.824819</td>
+      <td>3d c++</td>
+      <td>6.983579</td>
+    </tr>
+    <tr>
+      <th>86246.746889</th>
+      <td>1</td>
+      <td>0.969337</td>
+      <td>57.176728</td>
+      <td>3d c++</td>
+      <td>7.027931</td>
+    </tr>
+    <tr>
+      <th>86246.758588</th>
+      <td>1</td>
+      <td>0.956524</td>
+      <td>56.838490</td>
+      <td>3d c++</td>
+      <td>6.988390</td>
+    </tr>
+    <tr>
+      <th>86246.762987</th>
+      <td>1</td>
+      <td>0.927155</td>
+      <td>56.933094</td>
+      <td>3d c++</td>
+      <td>7.000156</td>
+    </tr>
+  </tbody>
+</table>
+<p>48552 rows × 5 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Preprocessing">
+<h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
+<p>Preprocessing pupillometry data is relatively straight-forward and typically involves dealing with signal loss due to eye blinks and smoothing out any high frequency noise. There are <a class="reference external" href="https://osf.io/jyz43/">sophisticated algorithms</a> for detecting blinks in a pupil time course, but Pupil Player has its own <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#blink-detection">Blink Detection</a> plugin that detects blinks based on rapid changes in the <a class="reference external" href="https://docs.pupil-labs.com/core/terminology/#confidence">confidence
+metric</a>. Whilst you can export these blink events and use the timestamps to index and mask the pupil timecourse, we find that it is more effective to mask the pupil data using thresholds on the first derivative and confidence metric. Then, we can follow up with linear interpolation and smoothing.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lines.linewidth&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">graphing</span>
+<span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">preproc</span>
+
+<span class="c1"># sampling rate of the data</span>
+<span class="n">SAMPLE_RATE</span> <span class="o">=</span> <span class="mi">120</span>
+
+<span class="c1"># Pupil columns to analyse</span>
+<span class="n">pupil_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">,</span> <span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
+
+<span class="c1"># Make figure for processing</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">graphing</span><span class="o">.</span><span class="n">pupil_preprocessing</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot the raw data</span>
+<span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Raw&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center right&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pixels&#39;</span><span class="p">,</span> <span class="s1">&#39;mm&#39;</span><span class="p">])</span>
+
+<span class="c1"># Mask first derivative</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">mask_pupil_first_derivative</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mask_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+<span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Masked 1st deriv (3*SD)&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Mask confidence</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">mask_pupil_confidence</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">mask_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+<span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Masked confidence (&lt;0.8)&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Interpolate</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">interpolate_pupil</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">interp_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+<span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Linear interpolation&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Smooth</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">butterworth_series</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="n">SAMPLE_RATE</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Butterworth filtered&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/04d_analysis_7_0.png" src="_images/04d_analysis_7_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Extraction">
+<h2>Extraction<a class="headerlink" href="#Extraction" title="Permalink to this headline">¶</a></h2>
+<p>Having cleaned the timecourse, we now need to extract the events of interest. This requires the annotation events sent during the recording, which have the timestamps needed for extraction. The annotations can be loaded with <code class="docutils literal notranslate"><span class="pre">utlis.load_annotations(...)</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">events</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;data_dir&#39;</span><span class="p">])</span>
+<span class="n">events</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Loaded 6 events
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>index</th>
+      <th>label</th>
+      <th>duration</th>
+      <th>color</th>
+      <th>creation_time</th>
+      <th>creator</th>
+      <th>protocol</th>
+      <th>pulse_duration</th>
+      <th>pulse_spec</th>
+    </tr>
+    <tr>
+      <th>timestamp</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>85854.348667</th>
+      <td>1835</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>red</td>
+      <td>2020-11-10 09:39:10.888989</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 0, 0, 0, 0, 0, 0, 1979]</td>
+    </tr>
+    <tr>
+      <th>85919.820362</th>
+      <td>9629</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>blue</td>
+      <td>2020-11-10 09:39:10.882007</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 2500, 0, 0, 0, 0, 0, 0]</td>
+    </tr>
+    <tr>
+      <th>85985.280630</th>
+      <td>17422</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>blue</td>
+      <td>2020-11-10 09:39:10.882007</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 2500, 0, 0, 0, 0, 0, 0]</td>
+    </tr>
+    <tr>
+      <th>86050.768628</th>
+      <td>25217</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>red</td>
+      <td>2020-11-10 09:39:10.888989</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 0, 0, 0, 0, 0, 0, 1979]</td>
+    </tr>
+    <tr>
+      <th>86116.228025</th>
+      <td>33008</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>blue</td>
+      <td>2020-11-10 09:39:10.882007</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 2500, 0, 0, 0, 0, 0, 0]</td>
+    </tr>
+    <tr>
+      <th>86181.688172</th>
+      <td>40801</td>
+      <td>LIGHT_ON</td>
+      <td>NaN</td>
+      <td>red</td>
+      <td>2020-11-10 09:39:10.888989</td>
+      <td>jtm</td>
+      <td>pulse</td>
+      <td>1000</td>
+      <td>[0, 0, 0, 0, 0, 0, 0, 0, 0, 1979]</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Now all we need to do is pass our samples and events to the <code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> function, along with some parameters defining the number of samples we want to extract and how much we want to offset the data relative to the event. Here we are extracting 65 second epochs and offsetting by 5 seconds.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr.utils</span> <span class="kn">import</span> <span class="n">extract</span>
+
+<span class="n">DURATION</span> <span class="o">=</span> <span class="mi">7800</span>
+<span class="n">ONSET_IDX</span> <span class="o">=</span> <span class="mi">600</span>
+
+<span class="c1"># Extract the events and their baselines</span>
+<span class="n">ranges</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span>
+                 <span class="n">events</span><span class="p">,</span>
+                 <span class="n">offset</span><span class="o">=-</span><span class="n">ONSET_IDX</span><span class="p">,</span>
+                 <span class="n">duration</span><span class="o">=</span><span class="n">DURATION</span><span class="p">,</span>
+                 <span class="n">borrow_attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
+
+<span class="n">baselines</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># New columns for percent signal change</span>
+<span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;diameter_pc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ranges</span><span class="o">.</span><span class="n">diameter</span> <span class="o">/</span> <span class="n">baselines</span><span class="o">.</span><span class="n">diameter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="mi">100</span>
+<span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;diameter_3dpc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ranges</span><span class="o">.</span><span class="n">diameter_3d</span> <span class="o">/</span> <span class="n">baselines</span><span class="o">.</span><span class="n">diameter_3d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="mi">100</span>
+
+<span class="n">ranges</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Extracted ranges for 6 events
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>eye_id</th>
+      <th>confidence</th>
+      <th>diameter</th>
+      <th>method</th>
+      <th>diameter_3d</th>
+      <th>interpolated</th>
+      <th>orig_idx</th>
+      <th>color</th>
+      <th>diameter_pc</th>
+      <th>diameter_3dpc</th>
+    </tr>
+    <tr>
+      <th>event</th>
+      <th>onset</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">0</th>
+      <th>0</th>
+      <td>1.0</td>
+      <td>0.998989</td>
+      <td>48.404937</td>
+      <td>3d c++</td>
+      <td>5.990967</td>
+      <td>0</td>
+      <td>85849.311553</td>
+      <td>red</td>
+      <td>-5.101817</td>
+      <td>-5.115773</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>0.998972</td>
+      <td>48.436117</td>
+      <td>3d c++</td>
+      <td>5.994949</td>
+      <td>0</td>
+      <td>85849.319757</td>
+      <td>red</td>
+      <td>-5.040688</td>
+      <td>-5.052716</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.0</td>
+      <td>0.999134</td>
+      <td>48.469848</td>
+      <td>3d c++</td>
+      <td>5.999237</td>
+      <td>0</td>
+      <td>85849.327708</td>
+      <td>red</td>
+      <td>-4.974559</td>
+      <td>-4.984796</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>0.998426</td>
+      <td>48.505896</td>
+      <td>3d c++</td>
+      <td>6.003802</td>
+      <td>0</td>
+      <td>85849.335675</td>
+      <td>red</td>
+      <td>-4.903885</td>
+      <td>-4.912503</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>0.998895</td>
+      <td>48.544031</td>
+      <td>3d c++</td>
+      <td>6.008612</td>
+      <td>0</td>
+      <td>85849.343669</td>
+      <td>red</td>
+      <td>-4.829121</td>
+      <td>-4.836323</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">5</th>
+      <th>7795</th>
+      <td>1.0</td>
+      <td>0.922093</td>
+      <td>54.375155</td>
+      <td>3d c++</td>
+      <td>6.707360</td>
+      <td>0</td>
+      <td>86242.127040</td>
+      <td>red</td>
+      <td>8.869837</td>
+      <td>8.516100</td>
+    </tr>
+    <tr>
+      <th>7796</th>
+      <td>1.0</td>
+      <td>0.977674</td>
+      <td>54.338056</td>
+      <td>3d c++</td>
+      <td>6.703963</td>
+      <td>0</td>
+      <td>86242.135026</td>
+      <td>red</td>
+      <td>8.795558</td>
+      <td>8.461144</td>
+    </tr>
+    <tr>
+      <th>7797</th>
+      <td>1.0</td>
+      <td>0.933031</td>
+      <td>54.304633</td>
+      <td>3d c++</td>
+      <td>6.701016</td>
+      <td>0</td>
+      <td>86242.142965</td>
+      <td>red</td>
+      <td>8.728638</td>
+      <td>8.413458</td>
+    </tr>
+    <tr>
+      <th>7798</th>
+      <td>1.0</td>
+      <td>0.970404</td>
+      <td>54.274990</td>
+      <td>3d c++</td>
+      <td>6.698505</td>
+      <td>0</td>
+      <td>86242.150957</td>
+      <td>red</td>
+      <td>8.669287</td>
+      <td>8.372836</td>
+    </tr>
+    <tr>
+      <th>7799</th>
+      <td>1.0</td>
+      <td>0.903852</td>
+      <td>54.249187</td>
+      <td>3d c++</td>
+      <td>6.696413</td>
+      <td>0</td>
+      <td>86242.162996</td>
+      <td>red</td>
+      <td>8.617624</td>
+      <td>8.338998</td>
+    </tr>
+  </tbody>
+</table>
+<p>46800 rows × 10 columns</p>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> returns a pandas DataFrame with a two-level (event, onset) hierarchichal index. The original index to the data is preserved as a column, along with any attributes borrowed from the annotations events.</p>
+</div>
+<div class="section" id="Plotting-and-parametrisation">
+<h2>Plotting and parametrisation<a class="headerlink" href="#Plotting-and-parametrisation" title="Permalink to this headline">¶</a></h2>
+<p>It is common practice to describe a PLR with paremeters relating to time, velocity and acceleration. So once you have an array of data representing a pupil’s response to light, be it from a single trial or an average of multiple trials, simply pass it to <code class="docutils literal notranslate"><span class="pre">pyplr.plr.PLR</span></code> along with some basic parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr.plr</span> <span class="kn">import</span> <span class="n">PLR</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
+<span class="n">plr</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">plr</span> <span class="o">=</span> <span class="n">PLR</span><span class="p">(</span><span class="n">plr</span><span class="p">,</span>
+          <span class="n">sample_rate</span><span class="o">=</span><span class="n">SAMPLE_RATE</span><span class="p">,</span>
+          <span class="n">onset_idx</span><span class="o">=</span><span class="n">ONSET_IDX</span><span class="p">,</span>
+          <span class="n">stim_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now you can do a quick plot with options to display the velocity and acceleration traces and the derived parameters:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plr</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vel_acc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">print_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/04d_analysis_16_0.png" src="_images/04d_analysis_16_0.png" />
+</div>
+</div>
+<p>Or simply access the parameters as a DataFrame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">params</span> <span class="o">=</span> <span class="n">plr</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+<span class="n">params</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Baseline</th>
+      <td>6.751031</td>
+    </tr>
+    <tr>
+      <th>Latency_a</th>
+      <td>0.225000</td>
+    </tr>
+    <tr>
+      <th>Latency_b</th>
+      <td>0.283333</td>
+    </tr>
+    <tr>
+      <th>T2MaxVel</th>
+      <td>0.425000</td>
+    </tr>
+    <tr>
+      <th>T2MaxCon</th>
+      <td>1.550000</td>
+    </tr>
+    <tr>
+      <th>T2Rec75pc</th>
+      <td>18.825000</td>
+    </tr>
+    <tr>
+      <th>PeakCon</th>
+      <td>3.164023</td>
+    </tr>
+    <tr>
+      <th>ConAmplitude</th>
+      <td>3.587008</td>
+    </tr>
+    <tr>
+      <th>VelConMax</th>
+      <td>5.940593</td>
+    </tr>
+    <tr>
+      <th>VelConAve</th>
+      <td>2.670336</td>
+    </tr>
+    <tr>
+      <th>AccConMax</th>
+      <td>35.127363</td>
+    </tr>
+    <tr>
+      <th>ConTime</th>
+      <td>1.325000</td>
+    </tr>
+    <tr>
+      <th>VelRedMax</th>
+      <td>0.999670</td>
+    </tr>
+    <tr>
+      <th>AccRedMax</th>
+      <td>7.021978</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="04_overview.html">Overview</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="04a_pyplr_and_pupil_core.html"><em>PyPlr</em> and Pupil Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04b_stlab_light_source.html">Spectra Tune Lab light source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04c_integrating_sphere.html">Integrating sphere</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Analysis of pupil data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="04_overview.html">Overview</a><ul>
+      <li>Previous: <a href="04c_integrating_sphere.html" title="previous chapter">Integrating sphere</a></li>
+      <li>Next: <a href="05_example_protocols.html" title="next chapter">Example protocols</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/04d_analysis.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

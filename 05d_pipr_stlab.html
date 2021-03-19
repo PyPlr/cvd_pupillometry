@@ -1,0 +1,581 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PIPR with STLAB &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example analyses" href="06_example_analyses.html" />
+    <link rel="prev" title="Automated pupillometer with STLAB" href="05c_plr_stlab.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="PIPR-with-STLAB">
+<h1>PIPR with STLAB<a class="headerlink" href="#PIPR-with-STLAB" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the classical rod and cone photoreceptors, the retina also contains <a class="reference external" href="https://en.wikipedia.org/wiki/Intrinsically_photosensitive_retinal_ganglion_cell">intrinsically photosensetive retinal ganglion cells (ipRGCs)</a>. These cells express a photopigment called <a class="reference external" href="https://en.wikipedia.org/wiki/Melanopsin">melanopsin</a>, which is maximally sensetive to short wavelength (blue) light. The ipRGCs project to the suprachiasmatic neucleus and the olivary pretectal nucleus and are involved in
+‘non-visual’ functions, such as circadian photoentrainment and steady-state pupil control. The <a class="reference external" href="https://iovs.arvojournals.org/article.aspx?articleid=2186454">post-illumination pupil response (PIPR)</a> describes the sustained constriction of the pupil following exposure to short wavelength blue light, and is assumed to be a unique non-invasive signature of melanopsin processing in the human retina. Here we describe a standard protocol for measuring the PIPR with our STLAB-integrating sphere rig.</p>
+<img alt="_images/eye_retina.png" src="_images/eye_retina.png" />
+<div class="section" id="Preparing-stimuli">
+<h2>Preparing stimuli<a class="headerlink" href="#Preparing-stimuli" title="Permalink to this headline">¶</a></h2>
+<p>As an optimum protocol for exploring melanopsin function, <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3175993/">Park et al. (2011)</a> recommend comparing the pupil responses to high intensity (~400 lx) 1-second pulses of short and long wavelength light presented in darkness following a period of dark adaptation. Our first task is therefore to prepare stimuli that fit this specification. We can start by creating a <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> from our calibrated spectrometer data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;../&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">CalibrationContext</span>
+
+<span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span>
+    <span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/05d_pipr_stlab_3_0.png" src="_images/05d_pipr_stlab_3_0.png" />
+</div>
+</div>
+<p>To confirm which LED is best suited for stimulating melanopsin we can calculate the peak spectral sensitivity for each LED at its maximum intensity setting.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">cc</span><span class="o">.</span><span class="n">lkp</span><span class="o">.</span><span class="n">xs</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="mi">4095</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+led
+0    427
+1    447
+2    465
+3    470
+4    505
+5    517
+6    540
+7    594
+8    635
+9    657
+dtype: int64
+</pre></div></div>
+</div>
+<p>Melanopsin has a peak spectral sensitivity of ~480 nm, which means that LED 3 is our best bet for the melanopic light stimulus. LED 9 is the best choice for the comparison stimulus as it will have the least overlap with the melanopsin spectral sensitivity curve. Having decided which LEDs to use, we can find the intensity settings for the target 400 lux.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">blue_led</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">red_led</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">target_lux</span> <span class="o">=</span> <span class="mi">800</span>
+
+<span class="c1"># find the required intensity setting of the blue led for 800 lux</span>
+<span class="n">blue_intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">lux</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">blue_led</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">target_lux</span><span class="p">)</span>
+                                      <span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+                                      <span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
+                                      <span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># find the intensity setting of the red led for 800 lux</span>
+<span class="n">red_intensity</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">match_led</span><span class="o">=</span><span class="n">blue_led</span><span class="p">,</span>
+                         <span class="n">match_led_intensity</span><span class="o">=</span><span class="n">blue_intensity</span><span class="p">,</span>
+                         <span class="n">target_led</span><span class="o">=</span><span class="n">red_led</span><span class="p">,</span>
+                         <span class="n">match_type</span><span class="o">=</span><span class="s1">&#39;irrad&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>It is helpful to visualise the stimuli along with the spectral sensetivity curve for melanopsin.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">pyplr.CIE</span> <span class="kn">import</span> <span class="n">get_CIES026</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">sss</span> <span class="o">=</span> <span class="n">get_CIES026</span><span class="p">(</span><span class="n">asdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">lkp</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">blue_led</span><span class="p">,</span> <span class="n">blue_intensity</span><span class="p">)],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">lkp</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">red_led</span><span class="p">,</span> <span class="n">red_intensity</span><span class="p">)],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sss</span><span class="p">[</span><span class="s1">&#39;Mel&#39;</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Melanopsin spectral sensitivity&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength (nm)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m2/nm&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/05d_pipr_stlab_9_0.png" src="_images/05d_pipr_stlab_9_0.png" />
+</div>
+</div>
+<p>Finally, we can make video files for use with STLAB.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">stlab</span>
+
+<span class="n">blue_spec</span><span class="p">,</span> <span class="n">red_spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
+<span class="n">blue_spec</span><span class="p">[</span><span class="n">blue_led</span><span class="p">]</span> <span class="o">=</span> <span class="n">blue_intensity</span>
+<span class="n">red_spec</span><span class="p">[</span><span class="n">red_led</span><span class="p">]</span> <span class="o">=</span> <span class="n">red_intensity</span>
+
+<span class="n">stlab</span><span class="o">.</span><span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">blue_spec</span><span class="p">,</span>
+                     <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                     <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;1s_blue&#39;</span><span class="p">,</span>
+                     <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span><span class="s1">&#39;blue&#39;</span><span class="p">})</span>
+<span class="n">stlab</span><span class="o">.</span><span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">red_spec</span><span class="p">,</span>
+                     <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                     <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;1s_red&#39;</span><span class="p">,</span>
+                     <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span><span class="s1">&#39;red&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#34;1s_blue.dsf&#34; saved in the current working directory.
+&#34;1s_red.dsf&#34; saved in the current working directory.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Running-the-protocol">
+<h2>Running the protocol<a class="headerlink" href="#Running-the-protocol" title="Permalink to this headline">¶</a></h2>
+<p>Now we are ready to run the protocol. For optimal results, do this after a 20-minute period of dark adatation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">shuffle</span>
+
+<span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
+<span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span>
+
+<span class="c1"># make list of stims</span>
+<span class="n">stims</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;1s_blue.dsf&#39;</span><span class="p">,</span> <span class="s1">&#39;1s_red.dsf&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="n">shuffle</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span>
+
+<span class="c1"># connect to Pupil Core</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+<span class="c1"># connect to stlab</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
+
+<span class="c1"># start recording</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()))</span>
+
+<span class="c1"># wait a few seconds</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
+<span class="c1"># loop over the list of stims</span>
+<span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stims</span><span class="p">:</span>
+
+    <span class="c1"># load video file and create trigger with metadata</span>
+    <span class="n">vf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="n">stim</span><span class="p">)</span>
+    <span class="n">annotation</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">),</span> <span class="o">**</span><span class="n">vf</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]}</span>
+
+    <span class="c1"># baseline</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">10.</span><span class="p">)</span>
+
+    <span class="c1"># set up and start the LightStamper thread</span>
+    <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
+        <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+    <span class="c1"># wait 200 ms</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># play the video file</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">60.</span><span class="p">)</span>
+
+<span class="c1"># finish recording</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="05_example_protocols.html">Example protocols</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="05a_plr_simple.html">Simple PLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05b_plr_psychopy.html">PsychoPy PLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05c_plr_stlab.html">Automated pupillometer with STLAB</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">PIPR with STLAB</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="05_example_protocols.html">Example protocols</a><ul>
+      <li>Previous: <a href="05c_plr_stlab.html" title="previous chapter">Automated pupillometer with STLAB</a></li>
+      <li>Next: <a href="06_example_analyses.html" title="next chapter">Example analyses</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/05d_pipr_stlab.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

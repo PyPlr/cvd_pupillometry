@@ -1,0 +1,248 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Pupil Core device timing\n",
+    "========================\n",
+    "\n",
+    "`PupilCore().light_stamper(...)` stamps light stimuli with the timestamp associated with the first frame where a light becomes visible to the world camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture's ability to synchronise the clocks of the cameras on a Pupil Core headset, but how well does it handle this task? When we discovered that the near-infrared from STLAB's amber channel gets detected by both eye and world cameras, we realised that we could test it ourselves using the `.light_stamper(...)` method. The protocol basically involves putting the Pupil Core headset inside the integrating sphere and repeatedly flashing a bright orange light in a dark room. Prior to each flash, we instantiate a `.light_stamper(...)` for each of the cameras. This gives us the pupil timestamp where the light was detected for each camera, allowing us to check how well the data streams are synchronised.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Testing protocol\n",
+    "----------------"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "STLAB device setup complete...\n",
+      "\"1s_near_IR_pulse.dsf\" saved in the current working directory.\n",
+      "video file loaded...\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "playing video file...\n",
+      "Light stamped on frame.eye.1 at 441592.275011\n",
+      "Light stamped on frame.world at 441592.22962\n",
+      "Light stamped on frame.eye.0 at 441592.284636\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "playing video file...\n",
+      "Light stamped on frame.world at 441599.40408199996\n",
+      "Light stamped on frame.eye.1 at 441599.463925\n",
+      "Light stamped on frame.eye.0 at 441599.46389\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "Waiting for a light to stamp...\n",
+      "playing video file...\n",
+      "Light stamped on frame.world at 441606.587979\n",
+      "Light stamped on frame.eye.1 at 441606.64714799996\n",
+      "Light stamped on frame.eye.0 at 441606.651018\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'OK'"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from time import sleep\n",
+    "\n",
+    "from pyplr.stlab import SpectraTuneLab, pulse_protocol\n",
+    "from pyplr.pupil import PupilCore\n",
+    "\n",
+    "# set up pupil\n",
+    "p = PupilCore()\n",
+    "\n",
+    "# setup stlab and make spectrum with near-IR\n",
+    "d = SpectraTuneLab(password='83e47941d9e930f6')\n",
+    "spec = [0, 0, 0, 0, 0, 0, 0, 4095, 0, 0]\n",
+    "pulse_protocol(spec, 1000, '1s_near_IR_pulse')\n",
+    "d.load_video_file('1s_near_IR_pulse.dsf')\n",
+    "\n",
+    "# trigger params\n",
+    "threshold = 10\n",
+    "timeout = 6.\n",
+    "\n",
+    "# make annotations for each camera\n",
+    "world_annotation = p.new_annotation('LIGHT_ON_WORLD')\n",
+    "eye_0_annotation = p.new_annotation('LIGHT_ON_EYE_0')\n",
+    "eye_1_annotation = p.new_annotation('LIGHT_ON_EYE_1')\n",
+    "\n",
+    "# start recording and wait 10 s\n",
+    "p.command('R pupil_core_camera_sync_tests')\n",
+    "sleep(5.)\n",
+    "\n",
+    "# results\n",
+    "results = {'world': [],\n",
+    "           'eye_0': [],\n",
+    "           'eye_1': []}\n",
+    "\n",
+    "# begin testing protocol\n",
+    "for i in range(50):\n",
+    "    # start light_stampers\n",
+    "    lst_world = p.light_stamper(\n",
+    "        world_annotation, threshold, timeout,\n",
+    "        topic='frame.world')\n",
+    "    lst_eye_0 = p.light_stamper(\n",
+    "        eye_0_annotation, threshold, timeout,\n",
+    "        topic='frame.eye.0')\n",
+    "    lst_eye_1 = p.light_stamper(\n",
+    "        eye_1_annotation, threshold, timeout, \n",
+    "        topic='frame.eye.1')\n",
+    "    \n",
+    "    # wait 100 ms then flash light\n",
+    "    sleep(1.)\n",
+    "    d.play_video_file()\n",
+    "    \n",
+    "    sleep(timeout)\n",
+    "    \n",
+    "    results['world'].append(lst_world.result())\n",
+    "    results['eye_0'].append(lst_eye_0.result())\n",
+    "    results['eye_1'].append(lst_eye_1.result())\n",
+    "\n",
+    "# wait for 5 s and stop recording\n",
+    "sleep(5.)   \n",
+    "p.command('r')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Only three trials are printed above, but we actually performed the test for 50 trials. Looks like the world camera leads by about 60 ms, with eye cameras closely in sync with one another. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<seaborn.axisgrid.FacetGrid at 0x28054ae1408>"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 360x360 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "\n",
+    "for k in results.keys():\n",
+    "    results[k] = np.array([val[1] for val in results[k]])\n",
+    "    \n",
+    "df = pd.DataFrame(results)\n",
+    "diffs = (pd.DataFrame([(df.eye_0-df.world)*1000, \n",
+    "                       (df.eye_1-df.world)*1000,\n",
+    "                       (df.eye_0-df.eye_1)*1000], \n",
+    "                      index=['eye0 - world',\n",
+    "                             'eye1 - world',\n",
+    "                             'eye0 - eye1'])\n",
+    "           .T.melt(var_name='camdiff', value_name='timestamp'))\n",
+    "g = sns.catplot(x=\"camdiff\", y=\"timestamp\", data=diffs, kind='box')\n",
+    "(g.set(xlabel='Comparison',\n",
+    "       ylabel='Time difference (ms)'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "diffs.to_csv('win_sync_tests.csv')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "MacOS\n",
+    "-----\n",
+    "\n",
+    "Results"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Windows\n",
+    "-------\n",
+    "\n",
+    "Results"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Implications for latency measures\n",
+    "---------------------------------\n",
+    "\n",
+    "- biological implausability on mac\n",
+    "- Repeatability and possibility of correction\n",
+    "- etc.\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

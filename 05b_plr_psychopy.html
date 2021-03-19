@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PsychoPy PLR &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Automated pupillometer with STLAB" href="05c_plr_stlab.html" />
+    <link rel="prev" title="Simple PLR" href="05a_plr_simple.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="PsychoPy-PLR">
+<h1>PsychoPy PLR<a class="headerlink" href="#PsychoPy-PLR" title="Permalink to this headline">¶</a></h1>
+<p>You may decide that a standard computer monitor is sufficient for presenting a light stimulus, in which case you could use <em>PyPlr</em> with PsychoPy. This minimal example presentes a 1-second white flash on a monitor and saves a recording with an annotation marking the onset of the flash. Just make sure the participant’s head is stabelised and that the Pupil Core world camera can see the screen.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="kn">from</span> <span class="nn">psychopy</span> <span class="kn">import</span> <span class="n">core</span><span class="p">,</span> <span class="n">visual</span>
+
+<span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">display_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span><span class="mi">768</span><span class="p">)):</span>
+
+    <span class="c1"># set up Pupil Core</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+    <span class="c1"># setup windows and stims</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">,</span> <span class="n">screen</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+    <span class="n">white</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;pix&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">)</span>
+    <span class="n">white</span><span class="o">.</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span>
+    <span class="n">black</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;pix&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">)</span>
+    <span class="n">black</span><span class="o">.</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span>
+
+    <span class="c1"># set up pupil trigger</span>
+    <span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subject</span><span class="p">))</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="c1"># start LightStamper</span>
+    <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">6.</span><span class="p">)</span>
+
+    <span class="c1"># baseline</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="c1"># present stimulus</span>
+    <span class="n">white</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">flip</span><span class="p">()</span>
+    <span class="n">core</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">black</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">flip</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+
+    <span class="c1"># Close the window</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Close PsychoPy</span>
+    <span class="n">core</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">main</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Killed by user&#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Check out the PLR STLAB example for ideas on how to make an automated pupillometer with <em>PyPlr</em> and PsychoPy. Also, try comparing pupil responses to the red and blue channels of your monitor, as you might just see a PIPR.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="05_example_protocols.html">Example protocols</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="05a_plr_simple.html">Simple PLR</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">PsychoPy PLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05c_plr_stlab.html">Automated pupillometer with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05d_pipr_stlab.html">PIPR with STLAB</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="05_example_protocols.html">Example protocols</a><ul>
+      <li>Previous: <a href="05a_plr_simple.html" title="previous chapter">Simple PLR</a></li>
+      <li>Next: <a href="05c_plr_stlab.html" title="next chapter">Automated pupillometer with STLAB</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/05b_plr_psychopy.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

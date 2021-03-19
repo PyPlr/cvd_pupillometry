@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyPlr and Pupil Core &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Spectra Tune Lab light source" href="04b_stlab_light_source.html" />
+    <link rel="prev" title="Overview" href="04_overview.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="PyPlr-and-Pupil-Core">
+<h1><em>PyPlr</em> and Pupil Core<a class="headerlink" href="#PyPlr-and-Pupil-Core" title="Permalink to this headline">¶</a></h1>
+<p><em>PyPlr</em> works with <a class="reference external" href="https://pupil-labs.com/products/core/">Pupil Core</a>—an affordable, open-source, versatile, research-grade eye tracking ecosystem with high sampling rates, precise model-based 3D estimation of pupil size, and many other features which make it well-suited to our application (see <a class="reference external" href="https://arxiv.org/abs/1405.0006">Kassner et al., 2014</a>, for a detailed overview of the system). In particular, we leverage real-time data streaming with the forward facing World Camera to
+timestamp the onset of light stimuli with good temporal accuracy, opening the door to integration with virtually any light source given a suitable geometry.</p>
+<p>The best place to start learning more about Pupil Core is on the <a class="reference external" href="https://docs.pupil-labs.com/core/">Pupil Labs website</a>, but the features most relevant to <em>PyPlr</em> are:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#world-window">Pupil Capture</a>—Software for interfacing with a Pupil Core headset.</p></li>
+<li><p><a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/#load-a-recording">Pupil Player</a>—Software for visualising and exporting data.</p></li>
+<li><p><a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/">Pupil Core Network API</a>—Fast and reliable real-time communication and data streaming with <a class="reference external" href="https://zeromq.org/">ZeroMQ</a> (an open source universal messaging library) and <a class="reference external" href="https://msgpack.org/index.html">MessagePack</a> (a binary format for computer data interchange).</p></li>
+</ul>
+<div class="section" id="PyPlr’s-pupil.py-module">
+<h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> module<a class="headerlink" href="#PyPlr’s-pupil.py-module" title="Permalink to this headline">¶</a></h2>
+<p><em>PyPlr</em> has a module called <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> which facilitates working with the Pupil Core Network API by wrapping all of the tricky ZeroMQ and MessagePack stuff into a single device class called <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code>. This class has a <code class="docutils literal notranslate"><span class="pre">.command(...)</span></code> method giving convenient access to all of the commands available via <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">Pupil Remote</a>. With Pupil Capture already running, we can make a short recording as follows:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
+<span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;OK&#39;
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Annotations-and-notifications">
+<h2>Annotations and notifications<a class="headerlink" href="#Annotations-and-notifications" title="Permalink to this headline">¶</a></h2>
+<p>To extract experimental events and calculate time-critical PLR parameters (e.g., constriction latency, time-to-peak constriction) we need a reliable indication in the pupil data of the time at which a light stimulus was administered. The Pupil Labs <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">Annotation Capture</a> plugin helps us with this. The plugin allows timestamps to be marked with a label, which is basically the same as sending a ‘trigger’, ‘message’, or ‘event
+marker’. Annotations can be made programmatically with <code class="docutils literal notranslate"><span class="pre">.new_annotation(...)</span></code> and sent with <code class="docutils literal notranslate"><span class="pre">.send_annotation(...)</span></code>. It’s important to make sure that the Annotation Capture plugin has been enabled. You can do this manually in the Pupil Capture GUI or programmatically by sending a <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#notification-message">notification message</a>, which is a special kind of message that the Pupil software uses to coordinate all activities. The following
+example shows how to enable the Annotation Capture plugin with a notification and then sends an annotation with the label <code class="docutils literal notranslate"><span class="pre">'my_event'</span></code> halfway through a 10 second recording.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;start_plugin&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Annotation_Capture&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{}</span>
+          <span class="p">})</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
+<span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;my_event&#39;</span><span class="p">,</span>
+    <span class="n">custom_fields</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;whatever&#39;</span><span class="p">:</span><span class="s1">&#39;info&#39;</span><span class="p">,</span><span class="s1">&#39;you&#39;</span><span class="p">:</span><span class="s1">&#39;want&#39;</span><span class="p">})</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">send_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;OK&#39;
+</pre></div></div>
+</div>
+<p>Once the recording is finished, we can open it with Pupil Player and use the <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/#annotation-export">Annotation Player</a> plugin to view and export the annotations to CSV format. Any custom labels assigned to the annotation will be included as a column in the exported CSV file. By default, the timestamp of an annotation made with the <code class="docutils literal notranslate"><span class="pre">.new_annotation(...)</span></code> method is set with <code class="docutils literal notranslate"><span class="pre">.get_corrected_pupil_time(...)</span></code>, which gives the current pupil
+time (corrected for transmission delay), but this can be overridden at a later point if desired.</p>
+<p>Notifications can be used for many things, but there is no single exhaustive document. One way to find out what you can manipulate with a notification is to open <a class="reference external" href="https://github.com/pupil-labs/pupil">the codebase</a> and search for <code class="docutils literal notranslate"><span class="pre">.notify_all(</span></code> and <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">on_notify(</span></code>. Alternatively, you can subscribe to the properties of a plugin and then send a notification telling it to broadcast its properties. For example:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">subscribe_to_topic</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;notify.pupil_detector.properties&#39;</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span>
+    <span class="s1">&#39;topic&#39;</span><span class="p">:</span> <span class="s1">&#39;notify.pupil_detector.broadcast_properties&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;pupil_detector.broadcast_properties&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;eye_id&#39;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">})</span>
+
+<span class="n">properties</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">recv_from_subscriber</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&#39;notify.pupil_detector.properties.0.Detector2DPlugin&#39;,
+ {&#39;subject&#39;: &#39;pupil_detector.properties.0.Detector2DPlugin&#39;,
+  &#39;topic&#39;: &#39;notify.pupil_detector.properties.0.Detector2DPlugin&#39;,
+  &#39;values&#39;: {&#39;blur_size&#39;: 5,
+             &#39;canny_aperture&#39;: 5,
+             &#39;canny_ration&#39;: 2,
+             &#39;canny_treshold&#39;: 160,
+             &#39;coarse_detection&#39;: True,
+             &#39;coarse_filter_max&#39;: 280,
+             &#39;coarse_filter_min&#39;: 128,
+             &#39;contour_size_min&#39;: 5,
+             &#39;ellipse_roundness_ratio&#39;: 0.1,
+             &#39;ellipse_true_support_min_dist&#39;: 2.5,
+             &#39;final_perimeter_ratio_range_max&#39;: 1.2,
+             &#39;final_perimeter_ratio_range_min&#39;: 0.6,
+             &#39;initial_ellipse_fit_treshhold&#39;: 1.8,
+             &#39;intensity_range&#39;: 23,
+             &#39;pupil_size_max&#39;: 100,
+             &#39;pupil_size_min&#39;: 10,
+             &#39;strong_area_ratio_range_max&#39;: 1.1,
+             &#39;strong_area_ratio_range_min&#39;: 0.6,
+             &#39;strong_perimeter_ratio_range_max&#39;: 1.1,
+             &#39;strong_perimeter_ratio_range_min&#39;: 0.8,
+             &#39;support_pixel_ratio_exponent&#39;: 2.0}})
+</pre></div></div>
+</div>
+<p>Bare in mind that for most use cases it will be best to verify manually in Pupil Capture that all of your most important settings are as they should be.</p>
+</div>
+<div class="section" id="Getting-pupil-data-in-real-time">
+<h2>Getting pupil data in real-time<a class="headerlink" href="#Getting-pupil-data-in-real-time" title="Permalink to this headline">¶</a></h2>
+<p>The Pupil Capture continuously generates data from the camera frames it receives from a Pupil Core headset and makes them available via the <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#reading-from-the-ipc-backbone">IPC backbone</a>. <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code> has a <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> method which simplifies access to these data. Just specify the topic of interest and how long you want to spend grabbing data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.1.3d&#39;</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Grabbing 10 seconds of pupil.1.3d
+PupilGrabber done grabbing 10 seconds of pupil.1.3d
+</pre></div></div>
+</div>
+<p>Crucially, <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> does its work in a thread using Python’s <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> framework, returning a <code class="docutils literal notranslate"><span class="pre">Future</span></code> object that grants access to the data once the thread has concluded:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;id&#39;: 1,
+ &#39;topic&#39;: &#39;pupil.1.3d&#39;,
+ &#39;method&#39;: &#39;pye3d 0.0.5 real-time&#39;,
+ &#39;norm_pos&#39;: [0.3985542681895381, 0.4872121928497438],
+ &#39;diameter&#39;: 31.07015699622092,
+ &#39;confidence&#39;: 1.0,
+ &#39;timestamp&#39;: 59132.475851,
+ &#39;sphere&#39;: {&#39;center&#39;: [3.0121959398542617,
+   3.0584489808353905,
+   38.774452202770995],
+  &#39;radius&#39;: 10.392304845413264},
+ &#39;projected_sphere&#39;: {&#39;center&#39;: [186.13898262425758, 146.6007379485103],
+  &#39;axes&#39;: [217.5786515706832, 217.5786515706832],
+  &#39;angle&#39;: 0.0},
+ &#39;circle_3d&#39;: {&#39;center&#39;: [-3.473979035519928,
+   -0.08232400147758101,
+   31.286790400686012],
+  &#39;normal&#39;: [-0.624132478007217, -0.3022210211336496, -0.7205005928391071],
+  &#39;radius&#39;: 1.2067793333387498},
+ &#39;diameter_3d&#39;: 2.1463475823932923,
+ &#39;ellipse&#39;: {&#39;center&#39;: [127.5373658206522, 123.06907371606148],
+  &#39;axes&#39;: [23.254159848837222, 31.07015699622092],
+  &#39;angle&#39;: 23.552991071760573},
+ &#39;location&#39;: [127.5373658206522, 123.06907371606148],
+ &#39;model_confidence&#39;: 1.0,
+ &#39;theta&#39;: 1.8778180987009694,
+ &#39;phi&#39;: -2.2846481119511255}
+</pre></div></div>
+</div>
+<p>The data are returned as a list of dictionaries, with each dictionary representing a single <a class="reference external" href="https://docs.pupil-labs.com/developer/core/overview/#timing-data-conventions">data point</a>. With the <code class="docutils literal notranslate"><span class="pre">unpack_data_pandas(...)</span></code> helper function from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code>, we can organise the whole lot and inspect the pupil timecourse:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">pyplr.utils</span> <span class="kn">import</span> <span class="n">unpack_data_pandas</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Pupil diameter (mm)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Pupil timestamp (s)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/04a_pyplr_and_pupil_core_12_0.png" src="_images/04a_pyplr_and_pupil_core_12_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Timestamping-a-light-stimulus">
+<h2>Timestamping a light stimulus<a class="headerlink" href="#Timestamping-a-light-stimulus" title="Permalink to this headline">¶</a></h2>
+<p>The simplest way to timestamp a light stimulus would be to control the light source programatically and send an annotation as close as possible to when we change the status of the light:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">send_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+<span class="n">my_light</span><span class="o">.</span><span class="n">on</span><span class="p">()</span> <span class="c1"># turn hypothetical light source on</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
+<span class="n">my_light</span><span class="o">.</span><span class="n">off</span><span class="p">()</span> <span class="c1"># now turn it off</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But in reality this will be problematic as the light source will have a latency of its own, which is difficult to reference. In fact, the light source we have been using takes commands via generic HTTP requests and has a variable response time on the order of a few hundred miliseconds. Given that we may want to calculate pupil constriction latency to a light stimulus, which is typically around 200-300 ms, this variable latency is problematic.</p>
+<p>To solve the issue and to make it easy to integrate <em>PyPlr</em> and Pupil Core with any light source, we developed a method called <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>. This method uses real-time data from the forward facing World Camera to timestamp light onsets based on the average RGB value.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span> <span class="s1">&#39;start_plugin&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Annotation_Capture&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{}</span>
+         <span class="p">})</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">notify</span><span class="p">({</span><span class="s1">&#39;subject&#39;</span><span class="p">:</span><span class="s1">&#39;frame_publishing.set_format&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;format&#39;</span><span class="p">:</span><span class="s1">&#39;bgr&#39;</span><span class="p">})</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R our_recording&#39;</span><span class="p">)</span>
+
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+
+<span class="n">annotation</span> <span class="o">=</span> <span class="n">new_annotation</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+
+<span class="n">timeout</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">lightstamper</span><span class="p">(</span>
+    <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+    <span class="n">subscription</span><span class="o">=</span><span class="s1">&#39;frame.world&#39;</span><span class="p">)</span>
+
+<span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Waiting for a light to stamp...
+Light stamped on frame.world at 678425.8230890001
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(True, 678425.8230890001)
+</pre></div></div>
+</div>
+<p>Like <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code>, this method runs in its own thread with <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code>. The underlying algorithm simply grabs frames from the World Camera and sends an annotation with the timestamp linked to the first frame where the average RGB value exceeds a given threshold. To work properly, the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> requires a suitable stimulus geometry, an appropriately tuned threshold value, and the following settings in Pupil Capture:</p>
+<ul class="simple">
+<li><p><strong>Auto Exposure Mode</strong> of the relevant camera must to be set to <strong>Manual</strong></p></li>
+<li><p><strong>Frame Publisher Format</strong> must be set to <strong>BGR</strong>.</p></li>
+</ul>
+<p>In our testing, <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> flawlessy captures the first frame where a light becomes visible, as verified using Pupil Player and the Annotation Player plugin. Timestamping accuracy therefore is limited only by frame rate and how well the Pupil software is able to synchronise the clocks of the eye and world cameras. Our light source has an LED channel with enough near infrared light that it can be detected by both eye and world cameras, so we were able to test this (results
+elsewhere).</p>
+<p><code class="docutils literal notranslate"><span class="pre">PupilCore(...)</span></code> also has some other cool features, like a <code class="docutils literal notranslate"><span class="pre">.fixation_trigger(...)</span></code> method that allow you to wait for a fixation that satisfies criteria relating to dispersion, duration and location of gaze samples. Check out the code for more insight!</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="04_overview.html">Overview</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><em>PyPlr</em> and Pupil Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04b_stlab_light_source.html">Spectra Tune Lab light source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04c_integrating_sphere.html">Integrating sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="04d_analysis.html">Analysis of pupil data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="04_overview.html">Overview</a><ul>
+      <li>Previous: <a href="04_overview.html" title="previous chapter">Overview</a></li>
+      <li>Next: <a href="04b_stlab_light_source.html" title="next chapter">Spectra Tune Lab light source</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/04a_pyplr_and_pupil_core.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
