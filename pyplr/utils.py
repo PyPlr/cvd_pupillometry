@@ -230,7 +230,7 @@ def extract(samples,
     idx = 0
     for start_idx in range_idxs:
         # get the start time and add the required number of indices
-        end_idx = start_idx + range_duration - 1  # pandas.loc indexing is inclusive
+        end_idx = start_idx + range_duration - 1  # .loc indexing is inclusive
         new_df = deepcopy(
             samples.loc[samples.index[start_idx] : samples.index[end_idx]])
         for ba in borrow_attributes:

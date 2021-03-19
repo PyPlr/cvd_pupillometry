@@ -322,11 +322,27 @@ def butterworth_series(samples,
                        filt_order=3,
                        cutoff_freq=.01,
                        inplace=False):
-    '''
-    Applies a butterworth filter to the given fields
-    See documentation on scipy's butter method FMI.
-    
-    The cutoff freq should be 4/(sample_rate/2)
+    '''Applies a Butterworth filter to the given fields. 
+
+    Parameters
+    ----------
+    samples : `pandas.DataFrame`
+        DataFrame of samples containing the pupil data.
+    fields : list, optional
+        List of columns to be filtered. The default is ['diameter'].
+    filt_order : int, optional
+        Order of the filter. The default is 3.
+    cutoff_freq : float
+        Normalised cut-off frequency in hertz. For 4 Hz cut-off, this should 
+        4/(sample_rate/2). The default is .01.
+    inplace : bool, optional
+        Whether to modify `samples` in place. The default is False.
+
+    Returns
+    -------
+    samps : 
+        The samples.
+
     '''
     samps = samples if inplace else samples.copy(deep=True)
     B, A = signal.butter(filt_order, cutoff_freq, output='BA')
