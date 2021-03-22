@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pyplr
-Version: 0.0.4
+Version: 0.0.5
 Summary: Software for researching the pupillary light reflex
 Home-page: https://github.com/PyPlr/cvd_pupillometry
 Author: Joel T. Martin
@@ -21,5 +21,5 @@ Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Topic :: Scientific/Engineering :: Information Analysis
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Intended Audience :: Science/Research
-Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
 Description-Content-Type: text/markdown
