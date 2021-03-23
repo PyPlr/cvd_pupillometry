@@ -289,16 +289,6 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Preparing-stimuli">
 <h2>Preparing stimuli<a class="headerlink" href="#Preparing-stimuli" title="Permalink to this headline">¶</a></h2>
 <p>As an optimum protocol for exploring melanopsin function, <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3175993/">Park et al. (2011)</a> recommend comparing the pupil responses to high intensity (~400 lx) 1-second pulses of short and long wavelength light presented in darkness following a period of dark adaptation. Our first task is therefore to prepare stimuli that fit this specification. We can start by creating a <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> from our calibrated spectrometer data.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;../&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -316,7 +306,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/05d_pipr_stlab_3_0.png" src="_images/05d_pipr_stlab_3_0.png" />
+<img alt="_images/05d_pipr_stlab_2_0.png" src="_images/05d_pipr_stlab_2_0.png" />
 </div>
 </div>
 <p>To confirm which LED is best suited for stimulating melanopsin we can calculate the peak spectral sensitivity for each LED at its maximum intensity setting.</p>
@@ -399,7 +389,7 @@ dtype: int64
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/05d_pipr_stlab_9_0.png" src="_images/05d_pipr_stlab_9_0.png" />
+<img alt="_images/05d_pipr_stlab_8_0.png" src="_images/05d_pipr_stlab_8_0.png" />
 </div>
 </div>
 <p>Finally, we can make video files for use with STLAB.</p>

@@ -33,7 +33,7 @@ Requirements
 .. include:: ../requirements.txt
    :literal:
 
-The following additional packages may also be helpful:
+The following additional packages may also be helpful for development:
 
 .. include:: ../dev-requirements.txt
    :literal:

@@ -68,8 +68,6 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "import sys\n",
-    "sys.path.insert(0, '../')\n",
     "import pandas as pd\n",
     "import seaborn as sns\n",
     "sns.set_context('notebook', font_scale=1.1)\n"
@@ -489,8 +487,6 @@
     }
    ],
    "source": [
-    "import pandas as pd\n",
-    "\n",
     "from pyplr.oceanops import predict_dark_counts, calibrated_radiance\n",
     "\n",
     "# load Ocean Optics data\n",
@@ -597,7 +593,6 @@
    "source": [
     "import ast\n",
     "import matplotlib.pyplot as plt\n",
-    "import seaborn as sns\n",
     "\n",
     "# load data from 40 random spectra\n",
     "test_specs = pd.read_csv(\n",
