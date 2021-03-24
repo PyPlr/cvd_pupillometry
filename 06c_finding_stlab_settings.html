@@ -1,0 +1,1099 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>a-opic irradiance matching with STLAB &#8212; PyPlr v1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="a-opic-irradiance-matching-with-STLAB">
+<h1><em>a</em>-opic irradiance matching with STLAB<a class="headerlink" href="#a-opic-irradiance-matching-with-STLAB" title="Permalink to this headline">¶</a></h1>
+<p>This example demonstrates how to find the STLAB settings that match a given spectrum for <span class="math notranslate nohighlight">\(a\)</span>-opic irradiance. In this particular case, what we are trying to match is the spectral output of the NeurOptics PLR-3000 device, which administers light stimuli with 4 white LEDs. The PLR-3000 settings were measured with an OceanOptics STS-VIS spectrometer placed where the eye would normally be, and calibrated using our standard pipeline.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pyplr.CIE</span> <span class="kn">import</span> <span class="n">get_CIES026</span>
+
+<span class="c1"># Load PLR-3000 data</span>
+<span class="n">plr3000</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s1">&#39;../data/PLR-3000_oo_calibrated_spectra.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot SPDs</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">plr3000</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+    <span class="n">plr3000</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$\lambda$ [nm]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;PLR-3000 settings&#39;</span><span class="p">)</span>
+    <span class="n">leg</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+        <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">leg</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot a-opic irradiances</span>
+<span class="n">sss</span> <span class="o">=</span> <span class="n">get_CIES026</span><span class="p">(</span><span class="n">asdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sss</span> <span class="o">=</span> <span class="n">sss</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plr_3k_ao</span> <span class="o">=</span> <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sss</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                 <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;uW&#39;</span><span class="p">],</span>
+                       <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aopic&#39;</span><span class="p">],</span>
+                       <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;irradiance&#39;</span><span class="p">))</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;irradiance&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;aopic&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+    <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06c_finding_stlab_settings_1_0.png" src="_images/06c_finding_stlab_settings_1_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06c_finding_stlab_settings_1_1.png" src="_images/06c_finding_stlab_settings_1_1.png" />
+</div>
+</div>
+<p>Start by making the calibration context</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">CalibrationContext</span>
+
+<span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span>
+    <span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
+<span class="n">cc</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>380</th>
+      <th>381</th>
+      <th>382</th>
+      <th>383</th>
+      <th>384</th>
+      <th>385</th>
+      <th>386</th>
+      <th>387</th>
+      <th>388</th>
+      <th>389</th>
+      <th>...</th>
+      <th>771</th>
+      <th>772</th>
+      <th>773</th>
+      <th>774</th>
+      <th>775</th>
+      <th>776</th>
+      <th>777</th>
+      <th>778</th>
+      <th>779</th>
+      <th>780</th>
+    </tr>
+    <tr>
+      <th>led</th>
+      <th>intensity</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">0</th>
+      <th>0</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000013</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>130</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>195</th>
+      <td>0.000026</td>
+      <td>0.000020</td>
+      <td>0.000023</td>
+      <td>0.000012</td>
+      <td>0.000033</td>
+      <td>0.000040</td>
+      <td>0.000030</td>
+      <td>0.000032</td>
+      <td>0.000035</td>
+      <td>0.000028</td>
+      <td>...</td>
+      <td>0.000015</td>
+      <td>0.000000</td>
+      <td>0.000008</td>
+      <td>0.000011</td>
+      <td>0.000000</td>
+      <td>0.000013</td>
+      <td>0.000012</td>
+      <td>0.000000</td>
+      <td>0.000017</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>260</th>
+      <td>0.000147</td>
+      <td>0.000152</td>
+      <td>0.000158</td>
+      <td>0.000165</td>
+      <td>0.000155</td>
+      <td>0.000145</td>
+      <td>0.000154</td>
+      <td>0.000141</td>
+      <td>0.000171</td>
+      <td>0.000167</td>
+      <td>...</td>
+      <td>0.000083</td>
+      <td>0.000075</td>
+      <td>0.000087</td>
+      <td>0.000083</td>
+      <td>0.000072</td>
+      <td>0.000087</td>
+      <td>0.000085</td>
+      <td>0.000008</td>
+      <td>0.000101</td>
+      <td>0.000082</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">9</th>
+      <th>3835</th>
+      <td>0.003778</td>
+      <td>0.004093</td>
+      <td>0.003488</td>
+      <td>0.003937</td>
+      <td>0.003176</td>
+      <td>0.003136</td>
+      <td>0.003321</td>
+      <td>0.002896</td>
+      <td>0.003240</td>
+      <td>0.003787</td>
+      <td>...</td>
+      <td>0.002468</td>
+      <td>0.002702</td>
+      <td>0.002610</td>
+      <td>0.002494</td>
+      <td>0.002934</td>
+      <td>0.002626</td>
+      <td>0.002619</td>
+      <td>0.002212</td>
+      <td>0.002527</td>
+      <td>0.002909</td>
+    </tr>
+    <tr>
+      <th>3900</th>
+      <td>0.003541</td>
+      <td>0.003839</td>
+      <td>0.003389</td>
+      <td>0.003721</td>
+      <td>0.003089</td>
+      <td>0.003009</td>
+      <td>0.003012</td>
+      <td>0.002801</td>
+      <td>0.003189</td>
+      <td>0.003692</td>
+      <td>...</td>
+      <td>0.002366</td>
+      <td>0.002733</td>
+      <td>0.002390</td>
+      <td>0.002299</td>
+      <td>0.002797</td>
+      <td>0.002622</td>
+      <td>0.002441</td>
+      <td>0.002099</td>
+      <td>0.002625</td>
+      <td>0.002919</td>
+    </tr>
+    <tr>
+      <th>3965</th>
+      <td>0.003653</td>
+      <td>0.003971</td>
+      <td>0.003476</td>
+      <td>0.004007</td>
+      <td>0.003401</td>
+      <td>0.003161</td>
+      <td>0.003371</td>
+      <td>0.002836</td>
+      <td>0.003298</td>
+      <td>0.003639</td>
+      <td>...</td>
+      <td>0.002297</td>
+      <td>0.002765</td>
+      <td>0.002593</td>
+      <td>0.002545</td>
+      <td>0.002785</td>
+      <td>0.002709</td>
+      <td>0.002760</td>
+      <td>0.002129</td>
+      <td>0.002687</td>
+      <td>0.002693</td>
+    </tr>
+    <tr>
+      <th>4030</th>
+      <td>0.003891</td>
+      <td>0.003956</td>
+      <td>0.003668</td>
+      <td>0.003874</td>
+      <td>0.003149</td>
+      <td>0.003184</td>
+      <td>0.003271</td>
+      <td>0.002737</td>
+      <td>0.003217</td>
+      <td>0.003631</td>
+      <td>...</td>
+      <td>0.002531</td>
+      <td>0.002757</td>
+      <td>0.002546</td>
+      <td>0.002377</td>
+      <td>0.002724</td>
+      <td>0.002598</td>
+      <td>0.002409</td>
+      <td>0.002036</td>
+      <td>0.002534</td>
+      <td>0.002836</td>
+    </tr>
+    <tr>
+      <th>4095</th>
+      <td>0.003615</td>
+      <td>0.004133</td>
+      <td>0.003597</td>
+      <td>0.004069</td>
+      <td>0.003316</td>
+      <td>0.003332</td>
+      <td>0.003100</td>
+      <td>0.003010</td>
+      <td>0.003414</td>
+      <td>0.003781</td>
+      <td>...</td>
+      <td>0.002344</td>
+      <td>0.002647</td>
+      <td>0.002569</td>
+      <td>0.002451</td>
+      <td>0.002913</td>
+      <td>0.002743</td>
+      <td>0.002612</td>
+      <td>0.002170</td>
+      <td>0.002548</td>
+      <td>0.002757</td>
+    </tr>
+  </tbody>
+</table>
+<p>640 rows × 401 columns</p>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06c_finding_stlab_settings_3_1.png" src="_images/06c_finding_stlab_settings_3_1.png" />
+</div>
+</div>
+<p>Search for STLAB settings that match PLR-3000 for <em>a</em>-opic irradiance</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># At least 5 LEDs are required here</span>
+<span class="n">num_leds</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">use</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">,</span><span class="s1">&#39;Mel&#39;</span><span class="p">,</span> <span class="s1">&#39;Rods&#39;</span><span class="p">]</span>
+<span class="n">keep</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Loop through all possible combinations in 10 choose 5</span>
+<span class="k">for</span> <span class="n">choose</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">num_leds</span><span class="p">):</span>
+
+    <span class="c1"># Get the irradiances for each LED at maximum</span>
+    <span class="n">settings_to_irradiances</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">aopic</span><span class="o">.</span><span class="n">loc</span><span class="p">[[(</span><span class="n">led</span><span class="p">,</span> <span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">led</span> <span class="ow">in</span> <span class="n">choose</span><span class="p">],</span> <span class="n">use</span><span class="p">]</span>
+
+    <span class="c1"># Take the inverse</span>
+    <span class="n">irradiances_to_settings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">settings_to_irradiances</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the required input fraction for the chosen LEDs</span>
+    <span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+        <span class="n">plr_irradiances</span> <span class="o">=</span> <span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">,</span> <span class="n">use</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">plr_irradiances</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">irradiances_to_settings</span><span class="p">)</span>
+
+        <span class="c1"># Keep the settings where all values are greater than 0 and less then 1</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">keep</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mw</span><span class="p">,</span> <span class="n">choose</span><span class="p">,</span> <span class="n">settings</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; settings found&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+82 settings found
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">predicted</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>380</th>
+      <th>381</th>
+      <th>382</th>
+      <th>383</th>
+      <th>384</th>
+      <th>385</th>
+      <th>386</th>
+      <th>387</th>
+      <th>388</th>
+      <th>389</th>
+      <th>...</th>
+      <th>771</th>
+      <th>772</th>
+      <th>773</th>
+      <th>774</th>
+      <th>775</th>
+      <th>776</th>
+      <th>777</th>
+      <th>778</th>
+      <th>779</th>
+      <th>780</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.000123</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 401 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="n">predicted</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="n">plr_mws</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
+<span class="n">idx</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_mws</span><span class="p">:</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">keep</span> <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mw</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+        <span class="n">leds</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4095</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
+        <span class="k">for</span> <span class="n">led</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">leds</span><span class="p">,</span> <span class="n">intensities</span><span class="p">):</span>
+            <span class="n">spec</span><span class="p">[</span><span class="n">led</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">predict_spd</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">predicted</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mw</span><span class="p">)</span>
+
+<span class="n">settings</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;mw&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+<span class="n">predicted</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">predicted</span><span class="p">[</span><span class="s1">&#39;mw&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+
+<span class="n">keeps</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_mws</span><span class="p">:</span>
+    <span class="n">predmw</span> <span class="o">=</span> <span class="n">predicted</span><span class="p">[</span><span class="n">predicted</span><span class="o">.</span><span class="n">mw</span><span class="o">==</span><span class="n">mw</span><span class="p">]</span>
+    <span class="n">predmw</span> <span class="o">=</span> <span class="n">predmw</span><span class="p">[</span><span class="n">predmw</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="n">predmw</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
+    <span class="n">keeps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+
+<span class="n">optimal_predicted</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keeps</span><span class="p">]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span>
+<span class="n">optimal_settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keeps</span><span class="p">]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span>
+<span class="n">optimal_settings</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
+<span class="ansi-red-intense-fg ansi-bold">AttributeError</span>                            Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-74-ba8297b38d05&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">     14</span>        <span class="ansi-red-intense-fg ansi-bold"># ax1.plot(w_m2_nm.columns, pred)</span>
+<span class="ansi-green-fg">     15</span>         predicted <span class="ansi-yellow-intense-fg ansi-bold">=</span> predicted<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>pred<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 16</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>settings <span class="ansi-yellow-intense-fg ansi-bold">=</span> settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>spec<span class="ansi-yellow-intense-fg ansi-bold">.</span>T<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     17</span>         idx<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>mw<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     18</span>
+
+<span class="ansi-red-intense-fg ansi-bold">AttributeError</span>: &#39;list&#39; object has no attribute &#39;T&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">16</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mw</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">optimal_settings</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+    <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;plr_3000: </span><span class="si">{}</span><span class="s1"> uW&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mw</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">optimal_predicted</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;optimal_stlab: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">optimal_settings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()),</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">predicted</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">lw</span><span class="o">=.</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$\lambda$ [nm]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
+<span class="ansi-red-intense-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-34-6717db3c850b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">      1</span> fig<span class="ansi-yellow-intense-fg ansi-bold">,</span> axs <span class="ansi-yellow-intense-fg ansi-bold">=</span> plt<span class="ansi-yellow-intense-fg ansi-bold">.</span>subplots<span class="ansi-yellow-intense-fg ansi-bold">(</span>nrows<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">4</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> sharex<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-green-intense-fg ansi-bold">True</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> figsize<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-cyan-intense-fg ansi-bold">14</span><span class="ansi-yellow-intense-fg ansi-bold">,</span><span class="ansi-cyan-intense-fg ansi-bold">16</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 2</span><span class="ansi-yellow-intense-fg ansi-bold"> </span><span class="ansi-green-intense-fg ansi-bold">for</span> ax<span class="ansi-yellow-intense-fg ansi-bold">,</span> mw <span class="ansi-green-intense-fg ansi-bold">in</span> zip<span class="ansi-yellow-intense-fg ansi-bold">(</span>axs<span class="ansi-yellow-intense-fg ansi-bold">,</span> optimal_settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>index<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">      3</span>     w_m2_nm<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>plot<span class="ansi-yellow-intense-fg ansi-bold">(</span>label<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;plr_3000: {} uW&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>format<span class="ansi-yellow-intense-fg ansi-bold">(</span>mw<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> ax<span class="ansi-yellow-intense-fg ansi-bold">=</span>ax<span class="ansi-yellow-intense-fg ansi-bold">,</span> color<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;k&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> linestyle<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;--&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      4</span>     ax<span class="ansi-yellow-intense-fg ansi-bold">.</span>plot<span class="ansi-yellow-intense-fg ansi-bold">(</span>w_m2_nm<span class="ansi-yellow-intense-fg ansi-bold">.</span>columns<span class="ansi-yellow-intense-fg ansi-bold">,</span> optimal_predicted<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> label<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;optimal_stlab: &#39;</span> <span class="ansi-yellow-intense-fg ansi-bold">+</span> str<span class="ansi-yellow-intense-fg ansi-bold">(</span>optimal_settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>to_list<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> linestyle<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;--&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      5</span>     ax<span class="ansi-yellow-intense-fg ansi-bold">.</span>legend<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+
+<span class="ansi-red-intense-fg ansi-bold">NameError</span>: name &#39;optimal_settings&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06c_finding_stlab_settings_8_1.png" src="_images/06c_finding_stlab_settings_8_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[125]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">pulse_protocol</span><span class="p">,</span> <span class="n">video_file_to_dict</span>
+<span class="k">for</span> <span class="n">mw</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">optimal_settings</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+    <span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                   <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                   <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;PLR-3000-</span><span class="si">{}</span><span class="s1">-mw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mw</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
+&#34;PLR-3000-10-mw.dsf&#34; saved in the current working directory.
+[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
+&#34;PLR-3000-50-mw.dsf&#34; saved in the current working directory.
+[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
+&#34;PLR-3000-121-mw.dsf&#34; saved in the current working directory.
+[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
+&#34;PLR-3000-180-mw.dsf&#34; saved in the current working directory.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[124]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">vf</span> <span class="o">=</span> <span class="n">video_file_to_dict</span><span class="p">(</span><span class="s1">&#39;PLR-3000-180-mw.dsf&#39;</span><span class="p">)</span>
+<span class="n">vf</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[124]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;header&#39;: {&#39;version&#39;: 1,
+  &#39;model&#39;: &#39;VEGA10&#39;,
+  &#39;channels&#39;: 10,
+  &#39;spectracount&#39;: 4,
+  &#39;transitionsCount&#39;: 4,
+  &#39;fluxReference&#39;: 0,
+  &#39;repeats&#39;: 1},
+ &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-02-10 13:23:00.011513&#39;,
+  &#39;creator&#39;: &#39;jtm&#39;,
+  &#39;protocol&#39;: &#39;pulse&#39;,
+  &#39;pulse_spec&#39;: &#39;[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]&#39;,
+  &#39;pulse_duration&#39;: &#39;1000&#39;},
+ &#39;spectra&#39;: [[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0],
+  [0, 1105, 143, 0, 0, 0, 740, 70, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+ &#39;transitions&#39;: [{&#39;spectrum&#39;: 0, &#39;power&#39;: 100, &#39;time&#39;: 0, &#39;flags&#39;: 0},
+  {&#39;spectrum&#39;: 1, &#39;power&#39;: 100, &#39;time&#39;: 1000, &#39;flags&#39;: 0},
+  {&#39;spectrum&#39;: 2, &#39;power&#39;: 100, &#39;time&#39;: 1000, &#39;flags&#39;: 0},
+  {&#39;spectrum&#39;: 3, &#39;power&#39;: 100, &#39;time&#39;: 1100, &#39;flags&#39;: 0}]}
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/orange_eye.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">PyPlr</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="10_funding.html">Funding</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Joel T. Martin and Manuel Spitschan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/06c_finding_stlab_settings.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
