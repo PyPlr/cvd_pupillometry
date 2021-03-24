@@ -31,7 +31,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
     
     '''
     
-    def __init__(self, username, identity, password, 
+    def __init__(self, password, username='admin', identity=1, 
                  lighthub_ip='192.168.7.2', external=None):
         '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
         more info.
@@ -49,7 +49,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         None.
 
         '''
-        super().__init__(username, identity, password, lighthub_ip)
+        super().__init__(password, username, identity, lighthub_ip)
         self.external = external
         self._ready_cache()
 
