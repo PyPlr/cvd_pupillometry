@@ -251,7 +251,7 @@ class PLR:
         return pd.DataFrame.from_dict(
             params, orient='index', columns=['value'])
     
-    def plot(self, vel_acc=True, print_params=True):
+    def plot(self, vel=True, acc=True, print_params=True):
         '''Plot a PLR with option to add descriptive parameters and velocity / 
         acceleration profiles. 
         
@@ -281,12 +281,14 @@ class PLR:
         ax.set_ylabel('Pupil Size')
         ax.set_xlabel('Time (s)')
         
-        if vel_acc:
+        if vel or acc:
             ax2 = ax.twinx()
-            vel = self.velocity_profile()
-            acc = self.acceleration_profile()
-            ax2.plot(time, vel, color='g', lw=2.5)
-            ax2.plot(time, acc, color='r', lw=1)
+            if vel:
+                vel = self.velocity_profile()
+                ax2.plot(time, vel, color='g', lw=2.5)
+            if acc:
+                acc = self.acceleration_profile()
+                ax2.plot(time, acc, color='r', lw=1)
             ax2.set_ylabel('Velocity / Acceleration')
         
         if print_params:

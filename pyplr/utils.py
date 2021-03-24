@@ -285,6 +285,6 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
 def unpack_data_numpy(data, what):
     return np.array([entry[what] for entry in data])
 
-def unpack_data_pandas(data):
+def unpack_data_pandas(data, cols=['timestamp','diameter']):
     return (pd.DataFrame(data)
               .set_index('timestamp')) 
