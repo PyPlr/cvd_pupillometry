@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="PsychoPy PLR" href="05b_plr_psychopy.html" />
@@ -283,7 +285,7 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Simple-PLR">
 <h1>Simple PLR<a class="headerlink" href="#Simple-PLR" title="Permalink to this headline">¶</a></h1>
-<p>This example demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> methods to measure and plot a simple PLR relative to the onset of any light source given a suitable geometry. For this example it was a lightswitch in a dark room.</p>
+<p>This example demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> methods to measure and plot a simple PLR relative to the onset of any light source given a suitable geometry, which in this case was a lightswitch in a dark room.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -321,16 +323,16 @@ div.rendered_html tbody tr:hover {
 <span class="c1"># Wait a few seconds...</span>
 <span class="n">sleep</span><span class="p">(</span><span class="n">BASELINE</span><span class="p">)</span>
 
-<span class="c1">####################</span>
-<span class="c1"># Shine the light! #</span>
-<span class="c1">####################</span>
+<span class="c1"># Shine the light!</span>
 
+<span class="c1"># Wait for the futures</span>
 <span class="k">while</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">running</span><span class="p">()</span> <span class="ow">or</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Waiting for futures...&#39;</span><span class="p">)</span>
     <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Retrieve and process pupil data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span>
+                         <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;diameter_3d&#39;</span><span class="p">])</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">butterworth_series</span><span class="p">(</span>
     <span class="n">data</span><span class="p">,</span>
     <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
@@ -362,12 +364,12 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Waiting for a light to stamp...
-Grabbing 10 seconds of pupil.1.3d
-Waiting for futures...
-Light stamped on frame.world at 30656.814154
+Waiting for a light to stamp...Grabbing 10 seconds of pupil.1.3d
+
 Waiting for futures...
 Waiting for futures...
+Waiting for futures...
+Light stamped on frame.world at 66498.433002
 Waiting for futures...
 Waiting for futures...
 Waiting for futures...

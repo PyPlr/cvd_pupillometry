@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Analysis of pupil data" href="04d_analysis.html" />
@@ -293,9 +295,9 @@ to allow for secondary stimuli (e.g., a fixation target) or to allow for exclusi
 </div>
 <div class="section" id="Calibration">
 <h2>Calibration<a class="headerlink" href="#Calibration" title="Permalink to this headline">¶</a></h2>
-<p>To build a calibrated forward model of our STLAB-sphere rig that is representative of what an observer actually sees when looking into it, we collected measurements with an external spectrometer positioned at the plane of the viewing port. <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate</span></code> simplifies this with a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLabSampler</span></code> class, which is just a sub-class of <code class="docutils literal notranslate"><span class="pre">pyplr.stlab.SpectraTuneLab</span></code> with added sampling methods and support for an external spectrometer. Any spectrometer with a python interface can be
-integrated here with minimal effort, but we used an <a class="reference external" href="https://www.oceaninsight.com/products/spectrometers/microspectrometer/sts-series/sts-vis/">Ocean Optics STS-VIS</a>, which is supported by <code class="docutils literal notranslate"><span class="pre">pyplr.oceanops</span></code> and the <a class="reference external" href="https://pypi.org/project/seabreeze/">Seabreeze</a> Python library.</p>
-<p>It would take a long time to sample every possible device setting, so we opted to sample the full range of intensities in steps of 65 for each LED.</p>
+<p>To build a calibrated forward model of our STLAB-sphere rig that represents what an observer actually sees when looking into it, we collected measurements with an external spectrometer positioned at the plane of the viewing port. The <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate</span></code> module streamlines this process with a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLabSampler()</span></code> class, which is just a sub-class of <code class="docutils literal notranslate"><span class="pre">pyplr.stlab.SpectraTuneLab</span></code> with added sampling methods and support for an external spectrometer. Any spectrometer with a python interface
+can be integrated here with minimal effort, but we used an <a class="reference external" href="https://www.oceaninsight.com/products/spectrometers/microspectrometer/sts-series/sts-vis/">Ocean Optics STS-VIS</a>, supported by <code class="docutils literal notranslate"><span class="pre">pyplr.oceanops</span></code> and the <a class="reference external" href="https://pypi.org/project/seabreeze/">Seabreeze</a> Python library.</p>
+<p>It would take a long time to sample every possible device setting, so we opted to sample the full range of intensities in steps of 63 for each LED.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">SpectraTuneLabSampler</span>
 <span class="kn">from</span> <span class="nn">pyplr.oceanops</span> <span class="kn">import</span> <span class="n">OceanOptics</span>
 
@@ -315,52 +317,41 @@ integrated here with minimal effort, but we used an <a class="reference external
 </pre></div>
 </div>
 <p>The above code instructs STLAB to cycle through all of the specified settings and obtain measurements with the on-board spectrometer and external spectrometer (if specified), and then finally to save the data to CSV format in the current working directory.</p>
-<p>Calibrating the resulting OceanOptics data turned out to be an involved process that was complicated by the need to account for the effect of spectrometer PCB temperature and integration time on the raw data. Our pipeline is shown below, minus the code for fitting the data in MATLAB.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<p>Calibrating the resulting OceanOptics data was an involved process complicated by the need to account for the effect of spectrometer PCB temperature and integration time on the raw data. Our pipeline is shown below, minus the code for fitting the data in MATLAB.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyplr.oceanops</span> <span class="kn">import</span> <span class="n">predict_dark_counts</span><span class="p">,</span> <span class="n">calibrated_radiance</span>
 
-</pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pyplr.oceanops</span> <span class="kn">import</span> <span class="n">predict_dark_counts</span><span class="p">,</span> <span class="n">calibrated_radiance</span>
-
-<span class="c1"># load Ocean Optics data</span>
-<span class="n">oo_spectra_fname</span> <span class="o">=</span> <span class="s1">&#39;../data/S1_oo_led_intensity_spectra.csv&#39;</span>
-<span class="n">oo_info_fname</span> <span class="o">=</span> <span class="s1">&#39;../data/S1_oo_led_intensity_info.csv&#39;</span>
+<span class="c1"># Load Ocean Optics data</span>
+<span class="n">oo_spectra_fname</span> <span class="o">=</span> <span class="s1">&#39;../data/S2_oo_led_intensity_spectra.csv&#39;</span>
+<span class="n">oo_info_fname</span> <span class="o">=</span> <span class="s1">&#39;../data/S2_oo_led_intensity_info.csv&#39;</span>
 <span class="n">oo_spectra</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="n">oo_spectra_fname</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;led&#39;</span><span class="p">,</span><span class="s1">&#39;intensity&#39;</span><span class="p">])</span>
 <span class="n">oo_spectra</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">oo_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">oo_info_fname</span><span class="p">)</span>
 
-<span class="c1"># load a file with parameters accounting for the relationship</span>
+<span class="c1"># Load a file with parameters accounting for the relationship</span>
 <span class="c1"># between temperature and integration time. This was created by</span>
-<span class="c1"># sampling the dark spectrum across a range of integration times</span>
-<span class="c1"># and temperatures and fitting the data in MATLAB.</span>
+<span class="c1"># sampling the dark spectrum across a range of temperatures</span>
+<span class="c1"># and times and fitting the data in MATLAB.</span>
 <span class="n">darkcal</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span>
     <span class="s1">&#39;../data/oo_dark_cal.txt&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="c1"># predict the dark spectrum for the temperatures and</span>
+<span class="c1"># Predict the dark spectrum for the temperatures and</span>
 <span class="c1"># integration times of our measurements</span>
 <span class="n">oo_dark_counts</span> <span class="o">=</span> <span class="n">predict_dark_counts</span><span class="p">(</span><span class="n">oo_info</span><span class="p">,</span> <span class="n">darkcal</span><span class="p">)</span>
 
-<span class="c1"># load some spectrometer constants</span>
+<span class="c1"># Load some spectrometer constants</span>
 <span class="n">cal_per_wl</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s1">&#39;../data/oo_calibration.csv&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">sensor_area_cm2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s1">&#39;../data/oo_sensorArea.csv&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-<span class="c1"># calculate calibrated radiance</span>
+<span class="c1"># Calculate calibrated radiance</span>
 <span class="n">w_m2_nm</span> <span class="o">=</span> <span class="n">calibrated_radiance</span><span class="p">(</span>
     <span class="n">oo_spectra</span><span class="p">,</span>
     <span class="n">oo_info</span><span class="p">,</span>
@@ -368,19 +359,19 @@ integrated here with minimal effort, but we used an <a class="reference external
     <span class="n">cal_per_wl</span><span class="p">,</span>
     <span class="n">sensor_area_cm2</span><span class="p">)</span>
 
-<span class="c1"># clean up</span>
+<span class="c1"># Clean up</span>
 <span class="n">w_m2_nm</span><span class="p">[</span><span class="s1">&#39;led&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">oo_info</span><span class="p">[</span><span class="s1">&#39;led&#39;</span><span class="p">]</span>
 <span class="n">w_m2_nm</span><span class="p">[</span><span class="s1">&#39;intensity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">oo_info</span><span class="p">[</span><span class="s1">&#39;intensity&#39;</span><span class="p">]</span>
 <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;led&#39;</span><span class="p">,</span> <span class="s1">&#39;intensity&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">w_m2_nm</span> <span class="o">=</span> <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">w_m2_nm</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;../data/S1_corrected_oo_spectra.csv&#39;</span><span class="p">)</span>
+<span class="n">w_m2_nm</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">)</span>
 <span class="n">w_m2_nm</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -472,8 +463,8 @@ integrated here with minimal effort, but we used an <a class="reference external
       <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
-      <td>0.000000e+00</td>
       <td>0.000000</td>
+      <td>0.000013</td>
       <td>0.000000</td>
       <td>0.000000</td>
     </tr>
@@ -496,7 +487,7 @@ integrated here with minimal effort, but we used an <a class="reference external
       <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
-      <td>0.000000e+00</td>
+      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
@@ -520,57 +511,57 @@ integrated here with minimal effort, but we used an <a class="reference external
       <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
-      <td>0.000000e+00</td>
+      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>195</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000004</td>
-      <td>0.000000</td>
-      <td>0.000010</td>
-      <td>0.000016</td>
-      <td>0.000002</td>
+      <td>0.000026</td>
+      <td>0.000020</td>
+      <td>0.000023</td>
+      <td>0.000012</td>
+      <td>0.000033</td>
+      <td>0.000040</td>
+      <td>0.000030</td>
       <td>0.000032</td>
-      <td>0.000013</td>
-      <td>0.000015</td>
+      <td>0.000035</td>
+      <td>0.000028</td>
       <td>...</td>
-      <td>0.000002</td>
+      <td>0.000015</td>
       <td>0.000000</td>
+      <td>0.000008</td>
+      <td>0.000011</td>
       <td>0.000000</td>
+      <td>0.000013</td>
+      <td>0.000012</td>
       <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000003</td>
-      <td>5.243781e-07</td>
-      <td>0.000000</td>
-      <td>0.000009</td>
+      <td>0.000017</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>260</th>
-      <td>0.000120</td>
-      <td>0.000078</td>
-      <td>0.000143</td>
-      <td>0.000142</td>
-      <td>0.000143</td>
-      <td>0.000136</td>
-      <td>0.000148</td>
-      <td>0.000136</td>
-      <td>0.000151</td>
-      <td>0.000161</td>
+      <td>0.000147</td>
+      <td>0.000152</td>
+      <td>0.000158</td>
+      <td>0.000165</td>
+      <td>0.000155</td>
+      <td>0.000145</td>
+      <td>0.000154</td>
+      <td>0.000141</td>
+      <td>0.000171</td>
+      <td>0.000167</td>
       <td>...</td>
-      <td>0.000067</td>
-      <td>0.000062</td>
-      <td>0.000076</td>
-      <td>0.000079</td>
-      <td>0.000058</td>
-      <td>0.000078</td>
-      <td>6.537223e-05</td>
-      <td>0.000000</td>
-      <td>0.000086</td>
+      <td>0.000083</td>
+      <td>0.000075</td>
+      <td>0.000087</td>
+      <td>0.000083</td>
+      <td>0.000072</td>
+      <td>0.000087</td>
+      <td>0.000085</td>
+      <td>0.000008</td>
+      <td>0.000101</td>
       <td>0.000082</td>
     </tr>
     <tr>
@@ -601,139 +592,139 @@ integrated here with minimal effort, but we used an <a class="reference external
     <tr>
       <th rowspan="5" valign="top">9</th>
       <th>3835</th>
-      <td>0.004805</td>
-      <td>0.004619</td>
-      <td>0.004544</td>
-      <td>0.004574</td>
-      <td>0.004250</td>
-      <td>0.003880</td>
-      <td>0.004228</td>
-      <td>0.003484</td>
-      <td>0.003731</td>
-      <td>0.004273</td>
+      <td>0.003778</td>
+      <td>0.004093</td>
+      <td>0.003488</td>
+      <td>0.003937</td>
+      <td>0.003176</td>
+      <td>0.003136</td>
+      <td>0.003321</td>
+      <td>0.002896</td>
+      <td>0.003240</td>
+      <td>0.003787</td>
       <td>...</td>
-      <td>0.002943</td>
-      <td>0.003430</td>
-      <td>0.003303</td>
-      <td>0.003304</td>
-      <td>0.003584</td>
-      <td>0.003266</td>
-      <td>3.256202e-03</td>
-      <td>0.002860</td>
-      <td>0.003361</td>
-      <td>0.003514</td>
+      <td>0.002468</td>
+      <td>0.002702</td>
+      <td>0.002610</td>
+      <td>0.002494</td>
+      <td>0.002934</td>
+      <td>0.002626</td>
+      <td>0.002619</td>
+      <td>0.002212</td>
+      <td>0.002527</td>
+      <td>0.002909</td>
     </tr>
     <tr>
       <th>3900</th>
-      <td>0.004468</td>
-      <td>0.004790</td>
-      <td>0.004257</td>
-      <td>0.004693</td>
-      <td>0.003956</td>
-      <td>0.003621</td>
-      <td>0.004206</td>
-      <td>0.003458</td>
-      <td>0.003854</td>
-      <td>0.004562</td>
+      <td>0.003541</td>
+      <td>0.003839</td>
+      <td>0.003389</td>
+      <td>0.003721</td>
+      <td>0.003089</td>
+      <td>0.003009</td>
+      <td>0.003012</td>
+      <td>0.002801</td>
+      <td>0.003189</td>
+      <td>0.003692</td>
       <td>...</td>
-      <td>0.002951</td>
-      <td>0.003260</td>
-      <td>0.003288</td>
-      <td>0.003022</td>
-      <td>0.003308</td>
-      <td>0.003081</td>
-      <td>3.191800e-03</td>
-      <td>0.002890</td>
-      <td>0.003207</td>
-      <td>0.003290</td>
+      <td>0.002366</td>
+      <td>0.002733</td>
+      <td>0.002390</td>
+      <td>0.002299</td>
+      <td>0.002797</td>
+      <td>0.002622</td>
+      <td>0.002441</td>
+      <td>0.002099</td>
+      <td>0.002625</td>
+      <td>0.002919</td>
     </tr>
     <tr>
       <th>3965</th>
-      <td>0.004797</td>
-      <td>0.005050</td>
-      <td>0.004623</td>
-      <td>0.004957</td>
-      <td>0.004305</td>
-      <td>0.004161</td>
-      <td>0.004243</td>
-      <td>0.003879</td>
-      <td>0.003819</td>
-      <td>0.004699</td>
+      <td>0.003653</td>
+      <td>0.003971</td>
+      <td>0.003476</td>
+      <td>0.004007</td>
+      <td>0.003401</td>
+      <td>0.003161</td>
+      <td>0.003371</td>
+      <td>0.002836</td>
+      <td>0.003298</td>
+      <td>0.003639</td>
       <td>...</td>
-      <td>0.003149</td>
-      <td>0.003538</td>
-      <td>0.003434</td>
-      <td>0.003165</td>
-      <td>0.003345</td>
-      <td>0.003596</td>
-      <td>3.275223e-03</td>
-      <td>0.002831</td>
-      <td>0.003219</td>
-      <td>0.003477</td>
+      <td>0.002297</td>
+      <td>0.002765</td>
+      <td>0.002593</td>
+      <td>0.002545</td>
+      <td>0.002785</td>
+      <td>0.002709</td>
+      <td>0.002760</td>
+      <td>0.002129</td>
+      <td>0.002687</td>
+      <td>0.002693</td>
     </tr>
     <tr>
       <th>4030</th>
-      <td>0.004834</td>
-      <td>0.005387</td>
-      <td>0.004674</td>
-      <td>0.005162</td>
-      <td>0.004448</td>
-      <td>0.004247</td>
-      <td>0.004708</td>
-      <td>0.004041</td>
-      <td>0.004074</td>
-      <td>0.005171</td>
+      <td>0.003891</td>
+      <td>0.003956</td>
+      <td>0.003668</td>
+      <td>0.003874</td>
+      <td>0.003149</td>
+      <td>0.003184</td>
+      <td>0.003271</td>
+      <td>0.002737</td>
+      <td>0.003217</td>
+      <td>0.003631</td>
       <td>...</td>
-      <td>0.003273</td>
-      <td>0.003528</td>
-      <td>0.003760</td>
-      <td>0.003473</td>
-      <td>0.003938</td>
-      <td>0.003540</td>
-      <td>3.482008e-03</td>
-      <td>0.003338</td>
-      <td>0.003347</td>
-      <td>0.003911</td>
+      <td>0.002531</td>
+      <td>0.002757</td>
+      <td>0.002546</td>
+      <td>0.002377</td>
+      <td>0.002724</td>
+      <td>0.002598</td>
+      <td>0.002409</td>
+      <td>0.002036</td>
+      <td>0.002534</td>
+      <td>0.002836</td>
     </tr>
     <tr>
       <th>4095</th>
-      <td>0.005099</td>
-      <td>0.005310</td>
-      <td>0.005037</td>
-      <td>0.005156</td>
-      <td>0.004420</td>
-      <td>0.004231</td>
-      <td>0.004623</td>
-      <td>0.004095</td>
-      <td>0.004487</td>
-      <td>0.004984</td>
+      <td>0.003615</td>
+      <td>0.004133</td>
+      <td>0.003597</td>
+      <td>0.004069</td>
+      <td>0.003316</td>
+      <td>0.003332</td>
+      <td>0.003100</td>
+      <td>0.003010</td>
+      <td>0.003414</td>
+      <td>0.003781</td>
       <td>...</td>
-      <td>0.003231</td>
-      <td>0.003729</td>
-      <td>0.003792</td>
-      <td>0.003311</td>
-      <td>0.003832</td>
-      <td>0.003505</td>
-      <td>3.427454e-03</td>
-      <td>0.003110</td>
-      <td>0.003654</td>
-      <td>0.003819</td>
+      <td>0.002344</td>
+      <td>0.002647</td>
+      <td>0.002569</td>
+      <td>0.002451</td>
+      <td>0.002913</td>
+      <td>0.002743</td>
+      <td>0.002612</td>
+      <td>0.002170</td>
+      <td>0.002548</td>
+      <td>0.002757</td>
     </tr>
   </tbody>
 </table>
 <p>640 rows × 401 columns</p>
 </div></div>
 </div>
-<p>We can now pass the calibrated spectrometer data to <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate.CalibrationContext(...)</span></code>. This will use linear interpolation to create lookup tables that predict the spectral output for the full range of device settings, along with the alphaopic irradiances, lux and radiance values.</p>
+<p>We can now pass the calibrated spectrometer data to <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate.CalibrationContext(...)</span></code>, which will use linear interpolation to create lookup tables that predict the spectral output for the full range of device settings, along with the alphaopic irradiances, lux and radiance values.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">CalibrationContext</span>
 
 <span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span>
-    <span class="s1">&#39;../data/S1_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -742,30 +733,30 @@ integrated here with minimal effort, but we used an <a class="reference external
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/04c_integrating_sphere_7_0.png" src="_images/04c_integrating_sphere_7_0.png" />
+<img alt="_images/04c_integrating_sphere_6_0.png" src="_images/04c_integrating_sphere_6_0.png" />
 </div>
 </div>
-<p>Crucially, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output from a list of STLAB led-intensity values. Here we compare the predicted output to the actual mneasured output for 40 random device settings.</p>
+<p>Of note, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output of STLABfrom a list of led-intensity values. Here we compare the predicted output to the actual measured output for 40 random device settings.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">ast</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="c1"># load data from 40 random spectra</span>
+<span class="c1"># Load data from 40 random spectra</span>
 <span class="n">test_specs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s1">&#39;../data/S2_corrected_40_random_oo_spectra.csv&#39;</span><span class="p">)</span>
 <span class="n">test_spec_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s1">&#39;../data/S2_oo_40_random_spectra_info.csv&#39;</span><span class="p">)</span>
 
-<span class="c1"># set up fgiure</span>
+<span class="c1"># Set up figure</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span>
     <span class="n">nrows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">axs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ax</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">axs</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
 
-<span class="c1"># predict, measure and plot for 8 random inputs</span>
+<span class="c1"># Predict, measure and plot for 20 random inputs</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axs</span><span class="p">):</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">predict_spd</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span>
         <span class="n">test_spec_info</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="s1">&#39;intensities&#39;</span><span class="p">]))</span>
@@ -784,22 +775,37 @@ integrated here with minimal effort, but we used an <a class="reference external
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/04c_integrating_sphere_9_0.png" src="_images/04c_integrating_sphere_9_0.png" />
+<img alt="_images/04c_integrating_sphere_8_0.png" src="_images/04c_integrating_sphere_8_0.png" />
 </div>
 </div>
 </div>
 <div class="section" id="Safety">
 <h2>Safety<a class="headerlink" href="#Safety" title="Permalink to this headline">¶</a></h2>
-<p>Pending…</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
+<p>We evaluated the safety of our stimulation system in accordance with the <a class="reference external" href="https://landingpage.bsigroup.com/LandingPage/Undated?UPI=000000000030149289">British Standards Document on the Photobiological Safety of Lamps and Lamp Systems (BS EN 62471)</a>. Initial scoping measurements collected with a Photo Research SpectraScan PR-670 for all LEDs at 100% gave a luminance reading of 18000 cd/m<span class="math notranslate nohighlight">\(^2\)</span>. In particular, we addressed the following statements from the BS EN 62471:</p>
+<p><strong>BS EN 62471: Section 4.1 (Annex ZB, page 40)</strong></p>
+<blockquote>
+<div><p>Detailed spectral data is required if the luminance of the source exceeds 10<span class="math notranslate nohighlight">\(^4\)</span> cd/m<span class="math notranslate nohighlight">\(^-\)</span><span class="math notranslate nohighlight">\(^2\)</span></p>
+</div></blockquote>
+<p>The maximum output of our source exceeded this specification so we obtained detailed spectral measurements.</p>
+<p><strong>BS EN 62471: Section 4.3.3</strong></p>
+<blockquote>
+<div><p>To protect against retinal photochemical injury from chronic blue-light exposure, the integrated spectral radiance of the light source weighted against the blue-light hazard function, <span class="math notranslate nohighlight">\(B(\lambda)\)</span>, i.e., the blue light weighted radiance, LB, shall not exceed the levels defined by:</p>
+<p>𝐿 ∙𝑡= ∑700∑ 𝐿 (𝜆,𝑡)∙𝐵(𝜆)∙∆𝑡∙∆𝜆≤106 𝐽∙𝑚−2 ∙𝑠𝑟−1 (for𝑡≤104𝑠)</p>
+<p>𝐿 = ∑700∑ 𝐿 ∙𝐵(𝜆)∙∆𝜆≤100𝑊∙𝑚−2 ∙𝑠𝑟−1 (for𝑡&gt;104𝑠)</p>
+<p>Where:</p>
+<p>𝐿𝜆(𝜆, 𝑡) is the spectral radiance in 𝑊 ∙ 𝑚−2 ∙ 𝑠𝑟−1 ∙ 𝑛𝑚−1 𝐵(𝜆) is the blue-light hazard weighting function</p>
+<p>∆𝜆 is the bandwidth in nm</p>
+<p>𝑡 is the exposure duration in seconds</p>
+</div></blockquote>
+<p>Using the minimum radiance limit for the retinal blue light hazard exposure limit, given as 100 𝑊 ∙ 𝑚−2 ∙ 𝑠𝑟−1 for exposures of greater than 10000s, we can see that both sources are below this retinal blue light hazard exposure limit. These findings were confirmed by processing the data with the NPL EyeLight software.</p>
+<p><strong>Section 4.2.1 (Annex ZB, page 40)</strong></p>
+<blockquote>
+<div><p>When the luminance of the source is adequately high (&gt;10cd.m-2), and the exposure duration is greater the 0.25s, a 3mm pupil diameter (7mm2 area) was used to derive the exposure limit</p>
+</div></blockquote>
+<p>Given that our sphere may be used in a dark room following a period of dark adaptation, pupil diameter will be greater than 3mm at the start of exposure. Typical experimental exposures will also be greater than 0.25s.</p>
+<p>Pupil ratio (7)2 = 5.4 3</p>
+<p>To take this into account we applied a pupil correction factor of 6, which reduces the retinal blue light hazard exposure limit to 16.6 𝑊 ∙ 𝑚−2 ∙ 𝑠𝑟−1.</p>
+<p>In conclusion, when running the source at 100% and applying a safety factor to correct for the pupil size, our stimulation system is above the radiance retinal blue light hazard exposure limit value of 100 𝑊 ∙ 𝑚−2 ∙ 𝑠𝑟−1 for an exposure of 10000s.</p>
 </div>
 </div>
 

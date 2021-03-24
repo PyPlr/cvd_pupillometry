@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Integrating sphere" href="04c_integrating_sphere.html" />
@@ -283,11 +285,12 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Spectra-Tune-Lab-light-source">
 <h1>Spectra Tune Lab light source<a class="headerlink" href="#Spectra-Tune-Lab-light-source" title="Permalink to this headline">¶</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. The device can be controlled programmatically with most languages via its
-<em>RESTFUL_API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with the STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli. <em>PyPlr</em> therefore has full native support for STLAB.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with most languages via its
+<em>RESTFUL_API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
 <div class="section" id="PyPlr’s-stlab.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> module<a class="headerlink" href="#PyPlr’s-stlab.py-module" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> encapsulates the RESTFUL_API in a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab</span></code> device class and streamlines various routines with helper functions. STLAB connects via ethernet to a small computer called the LIGHT_HUB (a BeagleBone running Linux), which in turn connects via USB to the controlling computer. When all hardware is correctly assembled and the appropriate software installed, establishing a connection to the device is easy:</p>
+<p><code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> provides full native support for STLAB by encapsulating its <em>RESTFUL_API</em> in a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab()</span></code> device class and streamlining various routines with helper functions. STLAB connects via ethernet to a small computer called the <em>LIGHT_HUB</em> (a BeagleBone running Linux), which in turn connects via USB to the controlling computer. When all hardware is correctly assembled and the appropriate software installed, establishing a connection to the device is easy (note that a password is
+required for access to the <em>LIGHT_HUB</em>):</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -298,7 +301,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>With this handle on the device we can access the methods available from the RESTFUL_API. For example, to blink each of the LEDs in turn at max intensity for ~1 second, we can use the <code class="docutils literal notranslate"><span class="pre">.set_spectrum_a(...)</span></code> method:</p>
+<p>With this handle on the device we can access the methods available from the <em>RESTFUL_API</em>. For example, to blink each of the LEDs in turn at max intensity for ~1 second, we can use the <code class="docutils literal notranslate"><span class="pre">.set_spectrum_a(...)</span></code> method:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>

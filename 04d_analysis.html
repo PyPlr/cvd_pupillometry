@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Example protocols" href="05_example_protocols.html" />
@@ -286,17 +288,18 @@ div.rendered_html tbody tr:hover {
 <p>There are many valid approaches to the analysis of pupillometry data, but the optimal approach will depend on the type of experiment being run and the research question in mind. <a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fneur.2019.00129/full">Kelbsch et al. (2019)</a> provide an informative view on standards in pupillometry, and there are <a class="reference external" href="https://github.com/samhforbes/PupillometryR">some</a> <a class="reference external" href="https://github.com/beOn/cili">great</a> <a class="reference external" href="https://github.com/ihrke/pypillometry">examples</a> of
 community-developed packages for streamlining pupillometry data analysis. Whilst it is always worth exploring the wider options that are available, <em>PyPlr</em> includes a set of pandas-reliant (you won’t regret <a class="reference external" href="https://bitbucket.org/hrojas/learn-pandas/src/master/">learning pandas!</a>) scripting tools for implementing a standard data processing pipeline that is optimised to work with some of the idiosynchrasies of Pupil Labs data. So far we have found these tools to be adequate for analysing our
 own data, but we welcome suggestions for improvements.</p>
-<p>For a general introduction to analysing Pupil Labs pupillometry data, see <a class="reference external" href="https://github.com/pupil-labs/pupil-tutorials/blob/master/01_load_exported_data_and_visualize_pupillometry.ipynb">here</a> . The following describes a typical <em>PyPlr</em> analysis pipeline with tools from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> and <code class="docutils literal notranslate"><span class="pre">pyplr.preproc</span></code>.</p>
+<p>See <a class="reference external" href="https://github.com/pupil-labs/pupil-tutorials/blob/master/01_load_exported_data_and_visualize_pupillometry.ipynb">here</a> for a general introduction to analysing Pupil Labs pupillometry data. What follows is a typical <em>PyPlr</em> analysis pipeline with tools from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> and <code class="docutils literal notranslate"><span class="pre">pyplr.preproc</span></code>.</p>
 <div class="section" id="Export-with-Pupil-Player">
 <h2>Export with Pupil Player<a class="headerlink" href="#Export-with-Pupil-Player" title="Permalink to this headline">¶</a></h2>
 <p>The first step in our pipeline is to export the data using <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/">Pupil Player</a>, making sure the required plugins (e.g., Annotation Player plugin) are enabled. Currently this must be done individually for each recording. Below is printed the file structure of a typical recording after export (more info on recording format <a class="reference external" href="https://docs.pupil-labs.com/developer/core/recording-format/#recording-format">here</a>).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">utils</span>
 
+<span class="c1"># Pupil Labs recording directory</span>
 <span class="n">rec_dir</span> <span class="o">=</span> <span class="s1">&#39;/Users/jtm/OneDrive - Nexus365/protocols/pipr_protocol/JTM&#39;</span>
 <span class="n">utils</span><span class="o">.</span><span class="n">print_file_structure</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">)</span>
 </pre></div>
@@ -363,15 +366,13 @@ JTM/
 </div>
 <div class="section" id="Load-exported-data">
 <h2>Load exported data<a class="headerlink" href="#Load-exported-data" title="Permalink to this headline">¶</a></h2>
-<p>Now we can set up some constants and use <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> to get things moving. <code class="docutils literal notranslate"><span class="pre">new_subject(...)</span></code> returns a dictionary with the root directory, recording id, data directory and a newly made output directory for the analysis results. Then, passing the data directory to <code class="docutils literal notranslate"><span class="pre">load_pupil(...)</span></code>, we load the <em>pupil_positions.csv</em> exported data with the specified columns.</p>
+<p>Now we can set up some constants and use <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> to get things moving. <code class="docutils literal notranslate"><span class="pre">new_subject(...)</span></code> returns a dictionary with the root directory, recording id, data directory and a newly made output directory for the analysis results. Then, passing the data directory to <code class="docutils literal notranslate"><span class="pre">load_pupil(...)</span></code>, we load the specified columns from the <em>pupil_positions.csv</em> exported data.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">utils</span>
-
-<span class="c1"># Columns to load</span>
+<span></span><span class="c1"># Columns to load</span>
 <span class="n">use_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">,</span>
             <span class="s1">&#39;method&#39;</span><span class="p">,</span>
             <span class="s1">&#39;pupil_timestamp&#39;</span><span class="p">,</span>
@@ -386,7 +387,6 @@ JTM/
 <span class="c1"># Load pupil data</span>
 <span class="n">samples</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_pupil</span><span class="p">(</span>
     <span class="n">s</span><span class="p">[</span><span class="s1">&#39;data_dir&#39;</span><span class="p">],</span> <span class="n">eye_id</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
-
 <span class="n">samples</span>
 </pre></div>
 </div>
@@ -403,7 +403,7 @@ Loaded 48552 samples
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -538,29 +538,27 @@ Loaded 48552 samples
 <div class="section" id="Preprocessing">
 <h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
 <p>Preprocessing pupillometry data is relatively straight-forward and typically involves dealing with signal loss due to eye blinks and smoothing out any high frequency noise. There are <a class="reference external" href="https://osf.io/jyz43/">sophisticated algorithms</a> for detecting blinks in a pupil time course, but Pupil Player has its own <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#blink-detection">Blink Detection</a> plugin that detects blinks based on rapid changes in the <a class="reference external" href="https://docs.pupil-labs.com/core/terminology/#confidence">confidence
-metric</a>. Whilst you can export these blink events and use the timestamps to index and mask the pupil timecourse, we find that it is more effective to mask the pupil data using thresholds on the first derivative and confidence metric. Then, we can follow up with linear interpolation and smoothing.</p>
+metric</a>. Whilst you can export these blink events and use the timestamps to index and mask the pupil timecourse, we find that it is effective simply to mask the pupil data with thresholds on the first derivative and confidence metric, and then to follow up with linear interpolation and smoothing.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lines.linewidth&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
-<span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">graphing</span>
+<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">graphing</span>
 <span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">preproc</span>
 
-<span class="c1"># sampling rate of the data</span>
+<span class="c1"># Sampling frequency</span>
 <span class="n">SAMPLE_RATE</span> <span class="o">=</span> <span class="mi">120</span>
 
 <span class="c1"># Pupil columns to analyse</span>
 <span class="n">pupil_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">,</span> <span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
 
 <span class="c1"># Make figure for processing</span>
-<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">graphing</span><span class="o">.</span><span class="n">pupil_preprocessing</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">graphing</span><span class="o">.</span><span class="n">pupil_preprocessing</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;Example&#39;</span><span class="p">)</span>
 
 <span class="c1"># Plot the raw data</span>
 <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Raw&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center right&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pixels&#39;</span><span class="p">,</span> <span class="s1">&#39;mm&#39;</span><span class="p">])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center right&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span> <span class="s1">&#39;pixels&#39;</span><span class="p">])</span>
 
 <span class="c1"># Mask first derivative</span>
 <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">mask_pupil_first_derivative</span><span class="p">(</span>
@@ -582,10 +580,11 @@ metric</a>. Whilst you can export these blink events and use the timestamps to i
 
 <span class="c1"># Smooth</span>
 <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">butterworth_series</span><span class="p">(</span>
-    <span class="n">samples</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="n">SAMPLE_RATE</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="n">SAMPLE_RATE</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Butterworth filtered&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;3rd order Butterworth filter with 4 Hz cut-off&#39;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
 
 </pre></div>
 </div>
@@ -600,9 +599,9 @@ metric</a>. Whilst you can export these blink events and use the timestamps to i
 </div>
 <div class="section" id="Extraction">
 <h2>Extraction<a class="headerlink" href="#Extraction" title="Permalink to this headline">¶</a></h2>
-<p>Having cleaned the timecourse, we now need to extract the events of interest. This requires the annotation events sent during the recording, which have the timestamps needed for extraction. The annotations can be loaded with <code class="docutils literal notranslate"><span class="pre">utlis.load_annotations(...)</span></code>.</p>
+<p>Having cleaned the timecourse we need to extract the events of interest. This requires the annotation events sent during the recording, which have the timestamps needed for extraction. These can be loaded with <code class="docutils literal notranslate"><span class="pre">utlis.load_annotations(...)</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -620,7 +619,7 @@ Loaded 6 events
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -742,32 +741,24 @@ Loaded 6 events
 </table>
 </div></div>
 </div>
-<p>Now all we need to do is pass our samples and events to the <code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> function, along with some parameters defining the number of samples we want to extract and how much we want to offset the data relative to the event. Here we are extracting 65 second epochs and offsetting by 5 seconds.</p>
+<p>Now we can pass our samples and events to <code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> along with some parameters defining the number of samples to extract and how much to offset the data relative to the event. Here we extract-65 second epochs and offset by a 5 second baseline period.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pyplr.utils</span> <span class="kn">import</span> <span class="n">extract</span>
-
+<span></span><span class="c1"># Number of samples to extract and which sample</span>
+<span class="c1"># should mark the onset of the event</span>
 <span class="n">DURATION</span> <span class="o">=</span> <span class="mi">7800</span>
 <span class="n">ONSET_IDX</span> <span class="o">=</span> <span class="mi">600</span>
 
-<span class="c1"># Extract the events and their baselines</span>
-<span class="n">ranges</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span>
-                 <span class="n">events</span><span class="p">,</span>
-                 <span class="n">offset</span><span class="o">=-</span><span class="n">ONSET_IDX</span><span class="p">,</span>
-                 <span class="n">duration</span><span class="o">=</span><span class="n">DURATION</span><span class="p">,</span>
-                 <span class="n">borrow_attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
-
-<span class="n">baselines</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c1"># New columns for percent signal change</span>
-<span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;diameter_pc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">ranges</span><span class="o">.</span><span class="n">diameter</span> <span class="o">/</span> <span class="n">baselines</span><span class="o">.</span><span class="n">diameter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="mi">100</span>
-<span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;diameter_3dpc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">ranges</span><span class="o">.</span><span class="n">diameter_3d</span> <span class="o">/</span> <span class="n">baselines</span><span class="o">.</span><span class="n">diameter_3d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="mi">100</span>
-
+<span class="c1"># Extract the event ranges</span>
+<span class="n">ranges</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span>
+    <span class="n">events</span><span class="p">,</span>
+    <span class="n">offset</span><span class="o">=-</span><span class="n">ONSET_IDX</span><span class="p">,</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">DURATION</span><span class="p">,</span>
+    <span class="n">borrow_attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
 <span class="n">ranges</span>
 </pre></div>
 </div>
@@ -781,7 +772,7 @@ Extracted ranges for 6 events
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -812,8 +803,200 @@ Extracted ranges for 6 events
       <th>interpolated</th>
       <th>orig_idx</th>
       <th>color</th>
+    </tr>
+    <tr>
+      <th>event</th>
+      <th>onset</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">0</th>
+      <th>0</th>
+      <td>1.0</td>
+      <td>0.998989</td>
+      <td>48.404937</td>
+      <td>3d c++</td>
+      <td>5.990967</td>
+      <td>0</td>
+      <td>85849.311553</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>0.998972</td>
+      <td>48.436117</td>
+      <td>3d c++</td>
+      <td>5.994949</td>
+      <td>0</td>
+      <td>85849.319757</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.0</td>
+      <td>0.999134</td>
+      <td>48.469848</td>
+      <td>3d c++</td>
+      <td>5.999237</td>
+      <td>0</td>
+      <td>85849.327708</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>0.998426</td>
+      <td>48.505896</td>
+      <td>3d c++</td>
+      <td>6.003802</td>
+      <td>0</td>
+      <td>85849.335675</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>0.998895</td>
+      <td>48.544031</td>
+      <td>3d c++</td>
+      <td>6.008612</td>
+      <td>0</td>
+      <td>85849.343669</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">5</th>
+      <th>7795</th>
+      <td>1.0</td>
+      <td>0.922093</td>
+      <td>54.375155</td>
+      <td>3d c++</td>
+      <td>6.707360</td>
+      <td>0</td>
+      <td>86242.127040</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>7796</th>
+      <td>1.0</td>
+      <td>0.977674</td>
+      <td>54.338056</td>
+      <td>3d c++</td>
+      <td>6.703963</td>
+      <td>0</td>
+      <td>86242.135026</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>7797</th>
+      <td>1.0</td>
+      <td>0.933031</td>
+      <td>54.304633</td>
+      <td>3d c++</td>
+      <td>6.701016</td>
+      <td>0</td>
+      <td>86242.142965</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>7798</th>
+      <td>1.0</td>
+      <td>0.970404</td>
+      <td>54.274990</td>
+      <td>3d c++</td>
+      <td>6.698505</td>
+      <td>0</td>
+      <td>86242.150957</td>
+      <td>red</td>
+    </tr>
+    <tr>
+      <th>7799</th>
+      <td>1.0</td>
+      <td>0.903852</td>
+      <td>54.249187</td>
+      <td>3d c++</td>
+      <td>6.696413</td>
+      <td>0</td>
+      <td>86242.162996</td>
+      <td>red</td>
+    </tr>
+  </tbody>
+</table>
+<p>46800 rows × 8 columns</p>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> returns a pandas DataFrame with a two-level (event, onset) <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/advanced.html">hierarchichal index</a>. The original index to the data is preserved in a column along with any attributes borrowed from the annotations. Now is a good time to create additional columns expressing the pupil data as percent signal change from baseline.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Calculate baselines</span>
+<span class="n">baselines</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ONSET_IDX</span><span class="p">),</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># New columns for percent signal change</span>
+<span class="n">ranges</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">percent_signal_change</span><span class="p">(</span>
+    <span class="n">ranges</span><span class="p">,</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">pupil_cols</span><span class="p">)</span>
+<span class="n">ranges</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>eye_id</th>
+      <th>confidence</th>
+      <th>diameter</th>
+      <th>method</th>
+      <th>diameter_3d</th>
+      <th>interpolated</th>
+      <th>orig_idx</th>
+      <th>color</th>
+      <th>diameter_3d_pc</th>
       <th>diameter_pc</th>
-      <th>diameter_3dpc</th>
     </tr>
     <tr>
       <th>event</th>
@@ -842,8 +1025,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>85849.311553</td>
       <td>red</td>
-      <td>-5.101817</td>
-      <td>-5.115773</td>
+      <td>-6.907039</td>
+      <td>-7.009474</td>
     </tr>
     <tr>
       <th>1</th>
@@ -855,8 +1038,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>85849.319757</td>
       <td>red</td>
-      <td>-5.040688</td>
-      <td>-5.052716</td>
+      <td>-6.845173</td>
+      <td>-6.949574</td>
     </tr>
     <tr>
       <th>2</th>
@@ -868,8 +1051,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>85849.327708</td>
       <td>red</td>
-      <td>-4.974559</td>
-      <td>-4.984796</td>
+      <td>-6.778534</td>
+      <td>-6.884774</td>
     </tr>
     <tr>
       <th>3</th>
@@ -881,8 +1064,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>85849.335675</td>
       <td>red</td>
-      <td>-4.903885</td>
-      <td>-4.912503</td>
+      <td>-6.707607</td>
+      <td>-6.815521</td>
     </tr>
     <tr>
       <th>4</th>
@@ -894,8 +1077,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>85849.343669</td>
       <td>red</td>
-      <td>-4.829121</td>
-      <td>-4.836323</td>
+      <td>-6.632865</td>
+      <td>-6.742260</td>
     </tr>
     <tr>
       <th>...</th>
@@ -922,8 +1105,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>86242.127040</td>
       <td>red</td>
-      <td>8.869837</td>
-      <td>8.516100</td>
+      <td>8.891820</td>
+      <td>8.796684</td>
     </tr>
     <tr>
       <th>7796</th>
@@ -935,8 +1118,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>86242.135026</td>
       <td>red</td>
-      <td>8.795558</td>
-      <td>8.461144</td>
+      <td>8.836673</td>
+      <td>8.722455</td>
     </tr>
     <tr>
       <th>7797</th>
@@ -948,8 +1131,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>86242.142965</td>
       <td>red</td>
-      <td>8.728638</td>
-      <td>8.413458</td>
+      <td>8.788822</td>
+      <td>8.655579</td>
     </tr>
     <tr>
       <th>7798</th>
@@ -961,8 +1144,8 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>86242.150957</td>
       <td>red</td>
-      <td>8.669287</td>
-      <td>8.372836</td>
+      <td>8.748060</td>
+      <td>8.596268</td>
     </tr>
     <tr>
       <th>7799</th>
@@ -974,42 +1157,40 @@ Extracted ranges for 6 events
       <td>0</td>
       <td>86242.162996</td>
       <td>red</td>
-      <td>8.617624</td>
-      <td>8.338998</td>
+      <td>8.714104</td>
+      <td>8.544640</td>
     </tr>
   </tbody>
 </table>
 <p>46800 rows × 10 columns</p>
 </div></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">utils.extract(...)</span></code> returns a pandas DataFrame with a two-level (event, onset) hierarchichal index. The original index to the data is preserved as a column, along with any attributes borrowed from the annotations events.</p>
 </div>
 <div class="section" id="Plotting-and-parametrisation">
 <h2>Plotting and parametrisation<a class="headerlink" href="#Plotting-and-parametrisation" title="Permalink to this headline">¶</a></h2>
-<p>It is common practice to describe a PLR with paremeters relating to time, velocity and acceleration. So once you have an array of data representing a pupil’s response to light, be it from a single trial or an average of multiple trials, simply pass it to <code class="docutils literal notranslate"><span class="pre">pyplr.plr.PLR</span></code> along with some basic parameters.</p>
+<p>It is common practice when analysing the PLR to describe it in terms of paremeters relating to time, velocity and acceleration. So once you have an array of data representing a pupil’s response to light, be it from a single trial or an average of multiple trials, simply pass it to <code class="docutils literal notranslate"><span class="pre">pyplr.plr.PLR</span></code> along with some basic parameters.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.plr</span> <span class="kn">import</span> <span class="n">PLR</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
-<span class="n">plr</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-<span class="n">plr</span> <span class="o">=</span> <span class="n">PLR</span><span class="p">(</span><span class="n">plr</span><span class="p">,</span>
+
+<span class="n">average_plr</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">plr</span> <span class="o">=</span> <span class="n">PLR</span><span class="p">(</span><span class="n">average_plr</span><span class="p">,</span>
           <span class="n">sample_rate</span><span class="o">=</span><span class="n">SAMPLE_RATE</span><span class="p">,</span>
           <span class="n">onset_idx</span><span class="o">=</span><span class="n">ONSET_IDX</span><span class="p">,</span>
           <span class="n">stim_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Now you can do a quick plot with options to display the velocity and acceleration traces and the derived parameters:</p>
+<p>Now you can do a quick plot with options to display the velocity and acceleration profiles and the derived parameters:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plr</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vel_acc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">print_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plr</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">acc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">print_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1017,12 +1198,12 @@ Extracted ranges for 6 events
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/04d_analysis_15_0.png" src="_images/04d_analysis_15_0.png" />
+<img alt="_images/04d_analysis_16_0.png" src="_images/04d_analysis_16_0.png" />
 </div>
 </div>
 <p>Or simply access the parameters as a DataFrame.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1032,7 +1213,7 @@ Extracted ranges for 6 events
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">

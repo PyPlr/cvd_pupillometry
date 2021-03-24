@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="PIPR with STLAB" href="05d_pipr_stlab.html" />
@@ -63,20 +65,20 @@ and ease of use, but we figured at least that we could make it function in a sim
          <span class="n">control</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
          <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-    <span class="c1"># set up subject and recording</span>
+    <span class="c1"># Set up subject and recording</span>
     <span class="k">if</span> <span class="n">subject_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">subject_id</span> <span class="o">=</span> <span class="n">input_subject_id_gui</span><span class="p">()</span>
     <span class="n">subj_dir</span> <span class="o">=</span> <span class="n">subject_dir</span><span class="p">(</span><span class="n">subject_id</span><span class="p">)</span>
     <span class="n">rec_dir</span> <span class="o">=</span> <span class="n">record_dir</span><span class="p">(</span><span class="n">subj_dir</span><span class="p">)</span>
 
-    <span class="c1"># set up pupil</span>
+    <span class="c1"># Set up Pupil Core</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 
-    <span class="c1"># setup stlab</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
+    <span class="c1"># Setup STLAB</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;****************&#39;</span><span class="p">)</span>
     <span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="n">stimulus</span><span class="p">)</span>
 
-    <span class="c1"># # set up pupil trigger</span>
+    <span class="c1"># Prepare annotation</span>
     <span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">control</span><span class="p">:</span>
@@ -86,15 +88,19 @@ and ease of use, but we figured at least that we could make it function in a sim
         <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">))</span>
         <span class="n">sleep</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
 
-    <span class="c1"># start LightStamper and PupilGrabber</span>
-    <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">6.</span><span class="p">)</span>
-    <span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.1.3d&#39;</span><span class="p">,</span>
-                                 <span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="o">+</span><span class="n">baseline</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># Start light_stamper and pupil_grabber</span>
+    <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
+        <span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">6.</span><span class="p">)</span>
+    <span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span>
+        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.1.3d&#39;</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">duration</span><span class="o">+</span><span class="n">baseline</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="c1"># baseline</span>
+    <span class="c1"># Baseline period</span>
     <span class="n">sleep</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span>
+
+    <span class="c1"># Present Stimulus</span>
     <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
 
+    <span class="c1"># Wait for futures</span>
     <span class="k">while</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">running</span><span class="p">()</span> <span class="ow">or</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Waiting for futures...&#39;</span><span class="p">)</span>
         <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -106,24 +112,30 @@ and ease of use, but we figured at least that we could make it function in a sim
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;light was not detected. Ending program.&#39;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1"># retrieve and process pupil data</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    <span class="c1"># Retrieve and process pupil data</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span>
+        <span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">,</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">])</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">butterworth_series</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="mi">120</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="n">sample_rate</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">])</span>
 
-    <span class="c1"># lightstamper timestamp</span>
+    <span class="c1"># Get light_stamper timestamp</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="c1"># find the closest timestamp in the pupil data</span>
+    <span class="c1"># Find the closest timestamp in the pupil data</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
 
+    <span class="c1"># Trim</span>
     <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="o">-</span><span class="p">(</span><span class="n">baseline</span><span class="o">*</span><span class="n">sample_rate</span><span class="p">))</span>
     <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="p">(</span><span class="n">duration</span><span class="o">*</span><span class="n">sample_rate</span><span class="p">))</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
     <span class="n">data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+    <span class="c1"># Analyse PLR</span>
     <span class="n">plr</span> <span class="o">=</span> <span class="n">PLR</span><span class="p">(</span><span class="n">plr</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">diameter_3d</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
-              <span class="n">sample_rate</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+              <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
               <span class="n">onset_idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
               <span class="n">stim_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">plr</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rec_dir</span><span class="p">,</span> <span class="s1">&#39;plr_parameters.csv&#39;</span><span class="p">))</span>

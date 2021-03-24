@@ -13,6 +13,8 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Automated pupillometer with STLAB" href="05c_plr_stlab.html" />
@@ -35,7 +37,7 @@
             
   <div class="section" id="PsychoPy-PLR">
 <h1>PsychoPy PLR<a class="headerlink" href="#PsychoPy-PLR" title="Permalink to this headline">¶</a></h1>
-<p>You may decide that a standard computer monitor is sufficient for presenting a light stimulus, in which case you could use <em>PyPlr</em> with PsychoPy. This minimal example presentes a 1-second white flash on a monitor and saves a recording with an annotation marking the onset of the flash. Just make sure the participant’s head is stabelised and that the Pupil Core world camera can see the screen.</p>
+<p>If you decide that a standard computer monitor is sufficient for presenting a light stimulus, you could use <em>PyPlr</em> with PsychoPy. This minimal example presentes a 1-second white flash on a monitor and saves a recording with an annotation marking the onset of the flash. Just make sure the participant’s head is stabelised and that the Pupil Core world camera can see the screen.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 
@@ -48,36 +50,36 @@
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">display_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span><span class="mi">768</span><span class="p">)):</span>
 
-    <span class="c1"># set up Pupil Core</span>
+    <span class="c1"># Set up Pupil Core</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 
-    <span class="c1"># setup windows and stims</span>
-    <span class="n">win</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">,</span> <span class="n">screen</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+    <span class="c1"># Setup windows and stimulus</span>
+    <span class="n">win</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">,</span> <span class="n">screen</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
     <span class="n">white</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;pix&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">)</span>
     <span class="n">white</span><span class="o">.</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span>
     <span class="n">black</span> <span class="o">=</span> <span class="n">visual</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;pix&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">display_size</span><span class="p">)</span>
     <span class="n">black</span><span class="o">.</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span>
 
-    <span class="c1"># set up pupil trigger</span>
+    <span class="c1"># Set up pupil trigger</span>
     <span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
 
+    <span class="c1"># Start recording</span>
     <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subject</span><span class="p">))</span>
     <span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
 
-    <span class="c1"># start LightStamper</span>
+    <span class="c1"># Start light_stamper</span>
     <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">6.</span><span class="p">)</span>
 
-    <span class="c1"># baseline</span>
+    <span class="c1"># Baseline</span>
     <span class="n">sleep</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
 
-    <span class="c1"># present stimulus</span>
+    <span class="c1"># Present stimulus</span>
     <span class="n">white</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
     <span class="n">win</span><span class="o">.</span><span class="n">flip</span><span class="p">()</span>
     <span class="n">core</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="n">black</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
     <span class="n">win</span><span class="o">.</span><span class="n">flip</span><span class="p">()</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    <span class="n">core</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mf">6.0</span><span class="p">)</span>
 
     <span class="c1"># Close the window</span>
     <span class="n">win</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
