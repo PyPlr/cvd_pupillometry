@@ -5,10 +5,10 @@ Example protocols
    :maxdepth: 2
    :caption: Contents:
 
-   plr_simple
-   plr_psychopy
-   plr_stlab
-   pipr_stlab
+   05a_plr_simple
+   05b_plr_psychopy
+   05c_plr_stlab
+   05d_pipr_stlab
 
 .. rubric:: Tables and indices
 ------------------------------

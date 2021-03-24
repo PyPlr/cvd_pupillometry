@@ -216,7 +216,7 @@ class PupilCore:
             Dictionary of detector properties.
 
         '''
-        self.broadcast_pupil_detector_properties(detector_name, eye_id)
+        self._broadcast_pupil_detector_properties(detector_name, eye_id)
         subscriber = self.subscribe_to_topic(
             topic='notify.pupil_detector.properties')
         topic, payload = self.recv_from_subscriber(subscriber)

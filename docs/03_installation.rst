@@ -16,7 +16,7 @@ Installation
 
     $ pip install pyplr
 
-(`link to the PyPI project page <https://pypi.org/project/pyplr-jtmbeta/>`_).
+(`link to the PyPI project page <https://pypi.org/project/pyplr/>`_).
 
 The latest development version can also be installed from GitHub with *pip*:
 
@@ -33,7 +33,7 @@ Requirements
 .. include:: ../requirements.txt
    :literal:
 
-The following additional packages may also be helpful:
+The following additional packages may also be helpful for development:
 
 .. include:: ../dev-requirements.txt
    :literal:
