@@ -285,25 +285,33 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Spectra-Tune-Lab-light-source">
 <h1>Spectra Tune Lab light source<a class="headerlink" href="#Spectra-Tune-Lab-light-source" title="Permalink to this headline">¶</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with most languages via its
-<em>RESTFUL_API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with most languages via its <em>RESTFUL_API</em>,
+which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
 <div class="section" id="PyPlr’s-stlab.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> module<a class="headerlink" href="#PyPlr’s-stlab.py-module" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> provides full native support for STLAB by encapsulating its <em>RESTFUL_API</em> in a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab()</span></code> device class and streamlining various routines with helper functions. STLAB connects via ethernet to a small computer called the <em>LIGHT_HUB</em> (a BeagleBone running Linux), which in turn connects via USB to the controlling computer. When all hardware is correctly assembled and the appropriate software installed, establishing a connection to the device is easy (note that a password is
 required for access to the <em>LIGHT_HUB</em>):</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;****************&#39;</span><span class="p">)</span>
+<span></span><span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">stlab</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">stlab</span><span class="o">.</span><span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+STLAB device setup complete...
+</pre></div></div>
+</div>
 <p>With this handle on the device we can access the methods available from the <em>RESTFUL_API</em>. For example, to blink each of the LEDs in turn at max intensity for ~1 second, we can use the <code class="docutils literal notranslate"><span class="pre">.set_spectrum_a(...)</span></code> method:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -322,13 +330,13 @@ required for access to the <em>LIGHT_HUB</em>):</p>
 <p>Note that spectrums are defined by passing a list of 10 values between 0-4095 (that’s one for each LED channel, 12-bit resolution), corresponding to the minimum and maximum output of the device.</p>
 <p>STLAB also has an on-board spectrometer. The easiest way to get data from the spectrometer is with <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate.SpectraTuneLabSampler</span></code>, a subclass of <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab</span></code> with added sampling methods.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">SpectraTuneLabSampler</span>
 
-<span class="n">d</span> <span class="o">=</span> <span class="n">stlab</span><span class="o">.</span><span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;****************&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLabSampler</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
 <span class="n">leds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">]</span>
 <span class="n">intensity</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4095</span><span class="p">]</span>
 <span class="n">d</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">leds</span><span class="o">=</span><span class="n">leds</span><span class="p">,</span> <span class="n">intensities</span><span class="o">=</span><span class="n">intensity</span><span class="p">)</span>
@@ -342,6 +350,7 @@ required for access to the <em>LIGHT_HUB</em>):</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+STLAB device setup complete...
 Sampling 10 leds at the following intensities: [4095]
 Measurement: 1 / 10, LED: 0, intensity: 4095
 Measurement: 2 / 10, LED: 1, intensity: 4095
@@ -356,7 +365,7 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -378,7 +387,6 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th></th>
       <th>380</th>
       <th>385</th>
       <th>390</th>
@@ -390,8 +398,6 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
       <th>420</th>
       <th>425</th>
       <th>...</th>
-      <th>735</th>
-      <th>740</th>
       <th>745</th>
       <th>750</th>
       <th>755</th>
@@ -400,308 +406,278 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
       <th>770</th>
       <th>775</th>
       <th>780</th>
-    </tr>
-    <tr>
       <th>led</th>
       <th>intensity</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>2004.972615</td>
-      <td>2837.923981</td>
+      <td>23.092050</td>
+      <td>69.099876</td>
+      <td>163.715586</td>
+      <td>292.749028</td>
+      <td>646.445204</td>
+      <td>1293.727715</td>
+      <td>2318.856104</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>0</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>1</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>198.546429</td>
-      <td>462.320051</td>
+      <td>13.482852</td>
+      <td>10.065324</td>
+      <td>20.364725</td>
+      <td>29.868263</td>
+      <td>65.026672</td>
+      <td>142.974411</td>
+      <td>311.837770</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>1</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>2</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>7.154347</td>
-      <td>15.241870</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.689246</td>
+      <td>2.240837</td>
+      <td>3.999032</td>
+      <td>7.308575</td>
+      <td>15.892703</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>2</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>3</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.554478</td>
-      <td>4.192380</td>
+      <td>0.000000</td>
+      <td>3.733973</td>
+      <td>0.000000</td>
+      <td>1.982641</td>
+      <td>0.859144</td>
+      <td>2.412213</td>
+      <td>7.467946</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>3</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>4</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.574092</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.434468</td>
+      <td>0.956312</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.000000</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>4</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>5</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
+      <td>2.748689</td>
+      <td>1.536901</td>
+      <td>1.241343</td>
+      <td>1.655125</td>
+      <td>1.448234</td>
+      <td>2.009794</td>
+      <td>2.748689</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>5</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>6</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>12.919197</td>
-      <td>18.564373</td>
+      <td>0.000000</td>
+      <td>3.008748</td>
+      <td>0.000000</td>
+      <td>4.851946</td>
+      <td>9.324410</td>
+      <td>14.420308</td>
+      <td>14.718472</td>
       <td>...</td>
+      <td>50.823453</td>
+      <td>73.700784</td>
+      <td>55.106176</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>6</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>7</th>
-      <th>4095</th>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.000000</td>
-      <td>0.865724</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.007043</td>
+      <td>2.098007</td>
       <td>...</td>
+      <td>93.403277</td>
+      <td>85.766531</td>
+      <td>70.493039</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>7</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>8</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>8</td>
+      <td>4095</td>
     </tr>
     <tr>
       <th>9</th>
-      <th>4095</th>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>9</td>
+      <td>4095</td>
     </tr>
   </tbody>
 </table>
-<p>10 rows × 81 columns</p>
+<p>10 rows × 83 columns</p>
 </div></div>
 </div>
 <p>With these data, we can plot the spectral power distributions of the 10 channels at maximum and their CIE 1931 <em>xy</em> chromaticity coordinates, which define the gamut of the device. Note that we can calculate the <em>xy</em> chromaticity coordinates quickly by passing the spectra data frames to <code class="docutils literal notranslate"><span class="pre">stlab.spectra_to_xyz(...)</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">colour.plotting</span> <span class="kn">import</span> <span class="n">plot_chromaticity_diagram_CIE1931</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
 
+<span class="c1"># Prepare spectra</span>
+<span class="n">spectra</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">stlab_spectra</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;led&#39;</span><span class="p">,</span><span class="s1">&#39;intensity&#39;</span><span class="p">]))</span>
 <span class="n">xyz</span> <span class="o">=</span> <span class="n">stlab</span><span class="o">.</span><span class="n">spectra_to_xyz</span><span class="p">(</span><span class="n">spectra</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">xyz</span> <span class="o">=</span> <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xyz</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># join the dots</span>
 <span class="n">long_spectra</span> <span class="o">=</span> <span class="n">stlab</span><span class="o">.</span><span class="n">spectra_wide_to_long</span><span class="p">(</span><span class="n">spectra</span><span class="p">)</span>
 
-<span class="c1"># set up figure</span>
+<span class="c1"># Set up figure</span>
 <span class="n">f</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
 
-<span class="c1"># plot SPDs</span>
+<span class="c1"># Plot SPDs</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span>
     <span class="n">x</span><span class="o">=</span><span class="s1">&#39;wavelength&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;flux&#39;</span><span class="p">,</span>
     <span class="n">data</span><span class="o">=</span><span class="n">long_spectra</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;led&quot;</span><span class="p">,</span>
@@ -711,7 +687,7 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Wavelength (nm)&quot;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Flux (mW)&quot;</span><span class="p">)</span>
 
-<span class="c1"># plotting the *CIE xy* chromaticity coordinates.</span>
+<span class="c1"># Plotting the *CIE xy* chromaticity coordinates.</span>
 <span class="n">plot_chromaticity_diagram_CIE1931</span><span class="p">(</span>
     <span class="n">standalone</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_spectral_locus</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -741,17 +717,19 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 <span class="n">spectra</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">leds</span><span class="o">=</span><span class="n">leds</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="n">intensities</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We do this with an OceanOptics VIS spectrometer in order to create a forward model for the STLAB-sphere rig.</p>
+<p>We do this elsewhere with an OceanOptics VIS spectrometer in order to create a forward model for the STLAB-sphere rig.</p>
 </div>
 <div class="section" id="Device-timing-in-standard-mode">
 <h2>Device timing in standard mode<a class="headerlink" href="#Device-timing-in-standard-mode" title="Permalink to this headline">¶</a></h2>
-<p>The STLAB queues commands received by the LIGHT_HUB and processes them when possible. According to the device manual, response times in the standard mode of operation are on the order of around 250 milliseconds. We can test this.</p>
+<p>The STLAB queues commands received by the <em>LIGHT_HUB</em> and processes them when possible. According to the device manual, response times in the standard mode of operation are on the order of around 250 milliseconds. We can test this.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="n">on</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4095</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
 <span class="n">off</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
@@ -771,7 +749,7 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Execution time summary:&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">exec_times</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">exec_times</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Execution time (s)&#39;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Execution time (s)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -782,13 +760,13 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 <div class="highlight"><pre>
 Execution time summary:
 count    400.000000
-mean       0.125621
-std        0.036022
-min        0.105718
-25%        0.119646
-50%        0.122219
-75%        0.124715
-max        0.547319
+mean       0.208223
+std        0.021075
+min        0.179315
+25%        0.200251
+50%        0.200554
+75%        0.207376
+max        0.385547
 dtype: float64
 </pre></div></div>
 </div>
@@ -806,7 +784,7 @@ dtype: float64
 <h2>Playing video files<a class="headerlink" href="#Playing-video-files" title="Permalink to this headline">¶</a></h2>
 <p>Using the asynchronous mode requires the creation of <em>dynamic sequence files</em>, which are essentially JSON files with a particular file structure and a .DSF extension. <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> has some handy tools for creating video files. For example, we can create a 2-second pulse of bright red light using <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -831,7 +809,7 @@ dtype: float64
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -929,7 +907,7 @@ dtype: float64
 </div>
 <p>Calling <code class="docutils literal notranslate"><span class="pre">stlab.video_file_to_dict(...)</span></code>, we can see how the video file looks internally:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -938,7 +916,7 @@ dtype: float64
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -950,7 +928,7 @@ dtype: float64
   &#39;transitionsCount&#39;: 4,
   &#39;fluxReference&#39;: 0,
   &#39;repeats&#39;: 1},
- &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-02-15 16:10:46.433666&#39;,
+ &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-03-24 14:05:04.537285&#39;,
   &#39;creator&#39;: &#39;jtm&#39;,
   &#39;whatever&#39;: &#39;info&#39;,
   &#39;you&#39;: &#39;want&#39;,
@@ -975,7 +953,7 @@ dtype: float64
 <p><strong>4. TRANSITIONS</strong> - <strong>“spectrum”</strong> looks at the index from the list of lists to pick up the proper spectrum. This is set based on the index of the DataFrame passed to <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code>. - <strong>“time”</strong> is the start of the current spectrum in milliseconds time since the start of video file playback. Here the 1st spectrum starts at t=0sec, the 2nd spectrum stats at t=3sec.</p>
 <p>Once you’ve made a video file, playing it is easy:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -984,13 +962,22 @@ dtype: float64
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 video file loaded...
 playing video file...
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Response [200]&gt;
 </pre></div></div>
 </div>
 <p>Bear in mind that <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code> is just one of a few convenience functions that call an underlying <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code> function. The latter will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the ‘time’ column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences.</p>

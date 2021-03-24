@@ -319,7 +319,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <p>The above code instructs STLAB to cycle through all of the specified settings and obtain measurements with the on-board spectrometer and external spectrometer (if specified), and then finally to save the data to CSV format in the current working directory.</p>
 <p>Calibrating the resulting OceanOptics data was an involved process complicated by the need to account for the effect of spectrometer PCB temperature and integration time on the raw data. Our pipeline is shown below, minus the code for fitting the data in MATLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -371,7 +371,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -717,7 +717,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 </div>
 <p>We can now pass the calibrated spectrometer data to <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate.CalibrationContext(...)</span></code>, which will use linear interpolation to create lookup tables that predict the spectral output for the full range of device settings, along with the alphaopic irradiances, lux and radiance values.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -736,9 +736,9 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <img alt="_images/04c_integrating_sphere_6_0.png" src="_images/04c_integrating_sphere_6_0.png" />
 </div>
 </div>
-<p>Of note, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output of STLABfrom a list of led-intensity values. Here we compare the predicted output to the actual measured output for 40 random device settings.</p>
+<p>Of note, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output of STLAB from a list of led-intensity values. Here we compare the predicted output to the actual measured output for 40 random device settings.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -781,7 +781,8 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 </div>
 <div class="section" id="Safety">
 <h2>Safety<a class="headerlink" href="#Safety" title="Permalink to this headline">¶</a></h2>
-<p>We evaluated the safety of our stimulation system in accordance with the <a class="reference external" href="https://landingpage.bsigroup.com/LandingPage/Undated?UPI=000000000030149289">British Standards Document on the Photobiological Safety of Lamps and Lamp Systems (BS EN 62471)</a>. Initial scoping measurements collected with a Photo Research SpectraScan PR-670 for all LEDs at 100% gave a luminance reading of 18000 cd/m<span class="math notranslate nohighlight">\(^2\)</span>. In particular, we addressed the following statements from the BS EN 62471:</p>
+<p>We evaluated the safety of our stimulation system in accordance with the <a class="reference external" href="https://landingpage.bsigroup.com/LandingPage/Undated?UPI=000000000030149289">British Standards Document on the Photobiological Safety of Lamps and Lamp Systems (BS EN 62471)</a>. Initial scoping measurements collected with a Photo Research SpectraScan PR-670 for all LEDs at 100% gave a luminance reading of 18000 cd/m<span class="math notranslate nohighlight">\(^2\)</span> at the plane of the viewing port.</p>
+<p>We ddressed the following statements from the BS EN 62471:</p>
 <p><strong>BS EN 62471: Section 4.1 (Annex ZB, page 40)</strong></p>
 <blockquote>
 <div><p>Detailed spectral data is required if the luminance of the source exceeds 10<span class="math notranslate nohighlight">\(^4\)</span> cd/m<span class="math notranslate nohighlight">\(^-\)</span><span class="math notranslate nohighlight">\(^2\)</span></p>
