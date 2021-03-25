@@ -292,7 +292,7 @@ div.rendered_html tbody tr:hover {
 <h2>Preparing stimuli<a class="headerlink" href="#Preparing-stimuli" title="Permalink to this headline">¶</a></h2>
 <p>As an optimum protocol for exploring melanopsin function, <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3175993/">Park et al. (2011)</a> recommend comparing the pupil responses to high intensity (~400 lx) 1-second pulses of short and long wavelength light presented in darkness following a period of dark adaptation. Our first task is therefore to prepare stimuli that fit this specification. We can start by creating a <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> from our calibrated spectrometer data.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -313,7 +313,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>To confirm which LED is best suited for stimulating melanopsin we can calculate the peak spectral sensitivity for each LED at its maximum intensity setting.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -322,7 +322,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -343,7 +343,7 @@ dtype: int64
 </div>
 <p>Melanopsin has a peak spectral sensitivity of ~480 nm, which means that LED 3 is our best bet for the melanopic light stimulus. LED 9 is the best choice for the comparison stimulus as it will have the least overlap with the melanopsin spectral sensitivity curve. Having decided which LEDs to use, we can find the intensity settings for the target 400 lux.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -367,7 +367,7 @@ dtype: int64
 </div>
 <p>It is helpful to visualise the stimuli along with the spectral sensetivity curve for melanopsin.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -396,7 +396,7 @@ dtype: int64
 </div>
 <p>Finally, we can make video files for use with STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -478,15 +478,6 @@ dtype: int64
 <span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 </pre></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
 </div>
 </div>
 </div>
