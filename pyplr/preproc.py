@@ -83,12 +83,12 @@ def mask_pupil_first_derivative(samples,
     '''
     samps = samples.copy(deep=True)
     for col in mask_cols:
-        d = samples[col].diff()
-        m = samples[col].diff().mean()
-        s = samples[col].diff().std() * threshold
+        d = samps[col].diff()
+        m = samps[col].diff().mean()
+        s = samps[col].diff().std() * threshold
         #TODO: check this works properly
         samps[col] = samps[col].mask((d < (m-s)) | (d > (m+s)))
-        samps[samps[col] == 0] = np.nan
+        samps.loc[samps[col]==0, col] = np.nan
     return samps
 
 def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
@@ -171,7 +171,12 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
     samps['interpolated'] = 0
     samps.loc[samps[interp_cols].isna().any(axis=1), 'interpolated'] = 1
     samps[interp_cols] = samps[interp_cols].interpolate(
-        method=method, order=order, axis=0, inplace=False)
+        method=method,
+        order=order,
+        axis=0, 
+        inplace=False,
+        limit=10000,
+        limit_direction='both')
     return samps
 
 def percent_signal_change(ranges, baselines, pupil_cols=[]):
