@@ -22,10 +22,14 @@ random.shuffle(stims)
 subject_id = input_subject_id_gui()
 subj_dir = subject_dir(subject_id)
 
-# parameters for a 1s beep to notify impending stimulus
-frequency = 466  # b flat
-duration = 200  # 1 s
-    
+# Parameters for a 1s beep to notify impending stimulus
+alert_frequency = 466  # b flat
+alert_duration = 200  # 1 s
+
+# Parameters for beep to say you can relax for a bit
+rest_frequency = 300  # b flat
+rest_duration = 1000  # 1 s  
+
 # connect to Pupil Core
 p = PupilCore()
 
@@ -46,7 +50,12 @@ for i, stim in enumerate(stims):
     annotation = {**p.new_annotation('LIGHT_ON'), **vf['metadata']}
     
     # notification of stimulus in 5 - 10 s
-    winsound.Beep(frequency, duration)
+    winsound.Beep(alert_frequency, alert_duration)
+    
+    # freeze model
+    p.freeze_3d_model(eye_id=0, frozen=True)
+    sleep(.01)
+    p.freeze_3d_model(eye_id=1, frozen=True)
 
     # baseline of 5 - 10 s
     sleep(random.randrange(5000, 10001, 1) / 1000)
@@ -60,8 +69,15 @@ for i, stim in enumerate(stims):
     
     # play the video file
     d.play_video_file()
-    sleep(60.)  
+    sleep(60.)
+    
+    # notification of stimulus in 5 - 10 s
+    winsound.Beep(rest_frequency, rest_duration)
+    
     if (i+1) < len(stims):
+        p.freeze_3d_model(eye_id=0, frozen=False)
+        sleep(.01)
+        p.freeze_3d_model(eye_id=1, frozen=False)
         sleep(60.)
 
 # finish recording

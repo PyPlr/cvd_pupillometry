@@ -33,7 +33,7 @@ def new_record_id(subject_dir):
     for base, dirs, files in os.walk(subject_dir):
         if str(recording_id).zfill(3) == op.basename(base):
             recording_id += 1
-    return str(recording_id).zfill(3)
+    return 'rec' + str(recording_id).zfill(3)
 
 def record_dir(subj_dir):
     record_id = new_record_id(subj_dir)

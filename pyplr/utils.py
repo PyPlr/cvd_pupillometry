@@ -225,6 +225,8 @@ def extract(samples,
         [list(range(len(event_starts))), list(range(range_duration))],
         names=['event', 'onset'])
     
+    # TODO: can add option for time index here
+    
     # get the samples
     df = pd.DataFrame()
     idx = 0

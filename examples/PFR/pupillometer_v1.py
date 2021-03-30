@@ -8,6 +8,7 @@ Script for measuring the pupil flash response.
 import sys
 import os.path as op
 from time import sleep
+import winsound
 
 import numpy as np
 
@@ -21,14 +22,13 @@ from pyplr.utils import unpack_data_pandas
 from pyplr.preproc import butterworth_series
 from pyplr.plr import PLR
 
-def main(subject_id=None, 
-         baseline=2., 
+def main(subject_id='000', 
+         baseline=1., 
          duration=8.,
          sample_rate=120,
          stimulus='./stimuli/PLR-3000-180-mw.dsf',
          record=True, 
-         control=False,
-         config=None):
+         control=False):
     
     # set up subject and recording
     if subject_id is None:
@@ -72,11 +72,17 @@ def main(subject_id=None,
     if not lst_future.result()[0]:
         print('light was not detected. Ending program.')
         sys.exit(0)
-        
+    
+    # finished
+    winsound.Beep(400, 200)
+
     # retrieve and process pupil data
     data = unpack_data_pandas(pgr_future.result())
     data = butterworth_series(
-        data, filt_order=3, cutoff_freq=4/(120/2), fields=['diameter_3d'])
+        data, 
+        filt_order=3, 
+        cutoff_freq=4/(sample_rate/2), 
+        fields=['diameter_3d'])
     
     # lightstamper timestamp
     ts = lst_future.result()[1]
@@ -90,7 +96,7 @@ def main(subject_id=None,
     data.reset_index(inplace=True)
 
     plr = PLR(plr=data.diameter_3d.to_numpy(),
-              sample_rate=120, 
+              sample_rate=sample_rate, 
               onset_idx=idx,
               stim_duration=1)
     plr.parameters().to_csv(op.join(rec_dir, 'plr_parameters.csv'))

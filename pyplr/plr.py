@@ -299,9 +299,12 @@ class PLR:
                 
         return fig
 
-##########################################
-# FUNCTIONS FOR CALCULATING PIPR METRICS #
-##########################################
+# TODO: is this worth it? 
+class PIPR(PLR):
+    def __init__(self, plr, sample_rate, onset_idx, stim_duration, other_plr=None):
+        super().__init__(plr, sample_rate, onset_idx, stim_duration)
+        self.other_plr = other_plr
+        
 
 # def pipr_amplitude(plr, sample_rate, window):
 #     return plr[window[0]:window[1]].mean()

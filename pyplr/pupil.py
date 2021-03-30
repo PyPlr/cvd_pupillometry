@@ -252,6 +252,8 @@ class PupilCore:
                         'values': {'is_long_term_model_frozen': frozen},
                         'eye_id': eye_id,
                         'detector_plugin_class_name': 'Pye3DPlugin'}
+        mode = 'Freezing' if frozen else 'Unfreezing'
+        print('> {} 3d model for eye {}'.format(mode, eye_id))
         return self.notify(notification)
     
     def new_annotation(self, label, custom_fields={}):
@@ -364,14 +366,14 @@ class PupilCore:
             A list of dictionaries.
 
         '''
-        print('Grabbing {} seconds of {}'.format(seconds, topic))
+        print('> Grabbing {} seconds of {}'.format(seconds, topic))
         subscriber = self.subscribe_to_topic(topic)
         data = []
         start_time = time()
         while (time() - start_time < seconds):
             target, message = self.recv_from_subscriber(subscriber)
             data.append(message)
-        print('PupilGrabber done grabbing {} seconds of {}'.format(
+        print('> PupilGrabber done grabbing {} seconds of {}'.format(
                 seconds, topic))
         return data
     
@@ -458,7 +460,7 @@ class PupilCore:
             infrared. The default is `'frame.world'`.        
         '''
         subscriber = self.subscribe_to_topic(topic)
-        print('Waiting for a light to stamp...')
+        print('> Waiting for a light to stamp...')
         start_time = time()
         previous_frame, _ = self.get_next_camera_frame(
             subscriber, topic)
@@ -470,7 +472,7 @@ class PupilCore:
                 return (True, timestamp)
             if timeout:
                 if (time() - start_time > timeout):
-                    print('light_stamper failed to detect a light...')
+                    print('> light_stamper failed to detect a light...')
                     return (False,)
             previous_frame = current_frame
                 
@@ -593,11 +595,11 @@ class PupilCore:
                      'min_duration': min_duration}
             }) 
         s = self.subscribe_to_topic(topic='fixation')
-        print('Waiting for a fixation...')
+        print('> Waiting for a fixation...')
         while True:
             topic, fixation = self.recv_from_subscriber(s)
             if self._fixation_in_trigger_region(fixation, trigger_region):
-                print('Valid fixation detected...')
+                print('> Valid fixation detected...')
                 return fixation
             
     def _fixation_in_trigger_region(self, fixation, 
@@ -619,7 +621,7 @@ class PupilCore:
         '''Send annotation with updated timestamp.
         
         '''
-        print('Light stamped on {} at {}'.format(
+        print('> Light stamped on {} at {}'.format(
             subscription, timestamp))
         annotation['timestamp'] = timestamp
         self.send_annotation(annotation)
