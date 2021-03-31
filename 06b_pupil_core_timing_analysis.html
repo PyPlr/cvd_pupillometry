@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pupil Core device timing analysis &#8212; PyPlr v1.0 documentation</title>
+    <title>Pupil Core device timing &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -283,9 +283,12 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Pupil-Core-device-timing-analysis">
-<h1>Pupil Core device timing analysis<a class="headerlink" href="#Pupil-Core-device-timing-analysis" title="Permalink to this headline">¶</a></h1>
-<p>This example how we analysed the timestamp data from the camera sync testing protocol.</p>
+<div class="section" id="Pupil-Core-device-timing">
+<h1>Pupil Core device timing<a class="headerlink" href="#Pupil-Core-device-timing" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> marks the onset of a light stimulus by sending an annotation containing the timestamp of the first frame where the light becomes visible to the world camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture’s ability to synchronise the clocks of the
+cameras on a Pupil Core headset. How well does it handle this task? When we discovered that the near-infrared from STLABs amber channel gets detected by both eye and world cameras, we were able to <a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">design a protocol</span></a> to test this ourselves using the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> method. The protocol basically involved putting the Pupil Core headset inside the integrating sphere and repeatedly flashing a bright orange light in a dark room. Prior to each flash, we
+instantiate a <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> for each of the cameras, which gives us the pupil timestamp from the frame where the light was detected for each camera. This allows us to get some insight into how well the data streams are synchronised.</p>
+<p>We run the testing protocol on Mac and Windows with 60 and 120 FPS, for <em>n</em> = 100 near-IR light flashes.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -482,17 +485,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Interpretation">
 <h2>Interpretation<a class="headerlink" href="#Interpretation" title="Permalink to this headline">¶</a></h2>
-<p>These data show the difference in pupil timestamp time at which the same light was detected for each camera.</p>
-<p><a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">link to protocol</span></a></p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
+<p>More information here…</p>
 </div>
 </div>
 
@@ -524,7 +517,7 @@ div.rendered_html tbody tr:hover {
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core device timing analysis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core device timing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
