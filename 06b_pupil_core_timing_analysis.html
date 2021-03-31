@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pupil Core device timing &#8212; PyPlr v1.0 documentation</title>
+    <title>Pupil Core device timing analysis &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -283,188 +283,216 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Pupil-Core-device-timing">
-<h1>Pupil Core device timing<a class="headerlink" href="#Pupil-Core-device-timing" title="Permalink to this headline">¶</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> stamps light stimuli with the timestamp associated with the first frame where a light becomes visible to the world camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture’s ability to synchronise the clocks of the cameras on a Pupil Core headset, but
-how well does it handle this task? When we discovered that the near-infrared from STLAB’s amber channel gets detected by both eye and world cameras, we realised that we could test it ourselves using the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> method. The protocol basically involves putting the Pupil Core headset inside the integrating sphere and repeatedly flashing a bright orange light in a dark room. Prior to each flash, we instantiate a <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> for each of the cameras. This gives us the pupil
-timestamp where the light was detected for each camera, allowing us to check how well the data streams are synchronised.</p>
-<div class="section" id="Testing-protocol">
-<h2>Testing protocol<a class="headerlink" href="#Testing-protocol" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
-
-<span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span><span class="p">,</span> <span class="n">pulse_protocol</span>
-<span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
-
-<span class="c1"># set up pupil</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
-
-<span class="c1"># setup stlab and make spectrum with near-IR</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
-<span class="n">spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4095</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">pulse_protocol</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;1s_near_IR_pulse&#39;</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="s1">&#39;1s_near_IR_pulse.dsf&#39;</span><span class="p">)</span>
-
-<span class="c1"># trigger params</span>
-<span class="n">threshold</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">timeout</span> <span class="o">=</span> <span class="mf">6.</span>
-
-<span class="c1"># make annotations for each camera</span>
-<span class="n">world_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_WORLD&#39;</span><span class="p">)</span>
-<span class="n">eye_0_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_EYE_0&#39;</span><span class="p">)</span>
-<span class="n">eye_1_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_EYE_1&#39;</span><span class="p">)</span>
-
-<span class="c1"># start recording and wait 10 s</span>
-<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R pupil_core_camera_sync_tests&#39;</span><span class="p">)</span>
-<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
-
-<span class="c1"># results</span>
-<span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;world&#39;</span><span class="p">:</span> <span class="p">[],</span>
-           <span class="s1">&#39;eye_0&#39;</span><span class="p">:</span> <span class="p">[],</span>
-           <span class="s1">&#39;eye_1&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-
-<span class="c1"># begin testing protocol</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-    <span class="c1"># start light_stampers</span>
-    <span class="n">lst_world</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
-        <span class="n">world_annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span>
-        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.world&#39;</span><span class="p">)</span>
-    <span class="n">lst_eye_0</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
-        <span class="n">eye_0_annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span>
-        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.eye.0&#39;</span><span class="p">)</span>
-    <span class="n">lst_eye_1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
-        <span class="n">eye_1_annotation</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span>
-        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.eye.1&#39;</span><span class="p">)</span>
-
-    <span class="c1"># wait 100 ms then flash light</span>
-    <span class="n">sleep</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
-
-    <span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
-
-    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_world</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;eye_0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_eye_0</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;eye_1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_eye_1</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-
-<span class="c1"># wait for 5 s and stop recording</span>
-<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
-<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-STLAB device setup complete...
-&#34;1s_near_IR_pulse.dsf&#34; saved in the current working directory.
-video file loaded...
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-playing video file...
-Light stamped on frame.eye.1 at 441592.275011
-Light stamped on frame.world at 441592.22962
-Light stamped on frame.eye.0 at 441592.284636
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-playing video file...
-Light stamped on frame.world at 441599.40408199996
-Light stamped on frame.eye.1 at 441599.463925
-Light stamped on frame.eye.0 at 441599.46389
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-Waiting for a light to stamp...
-playing video file...
-Light stamped on frame.world at 441606.587979
-Light stamped on frame.eye.1 at 441606.64714799996
-Light stamped on frame.eye.0 at 441606.651018
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&#39;OK&#39;
-</pre></div></div>
-</div>
-<p>Only three trials are printed above, but we actually performed the test for 50 trials. Looks like the world camera leads by about 60 ms, with eye cameras closely in sync with one another.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-
-<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-    <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]])</span>
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-<span class="n">diffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([(</span><span class="n">df</span><span class="o">.</span><span class="n">eye_0</span><span class="o">-</span><span class="n">df</span><span class="o">.</span><span class="n">world</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
-                       <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">eye_1</span><span class="o">-</span><span class="n">df</span><span class="o">.</span><span class="n">world</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
-                       <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">eye_0</span><span class="o">-</span><span class="n">df</span><span class="o">.</span><span class="n">eye_1</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">],</span>
-                      <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eye0 - world&#39;</span><span class="p">,</span>
-                             <span class="s1">&#39;eye1 - world&#39;</span><span class="p">,</span>
-                             <span class="s1">&#39;eye0 - eye1&#39;</span><span class="p">])</span>
-           <span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;camdiff&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;timestamp&#39;</span><span class="p">))</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;camdiff&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">diffs</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">)</span>
-<span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Comparison&#39;</span><span class="p">,</span>
-       <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Time difference (ms)&#39;</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;seaborn.axisgrid.FacetGrid at 0x28054ae1408&gt;
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/06b_pupil_core_timing_analysis_4_1.png" src="_images/06b_pupil_core_timing_analysis_4_1.png" />
-</div>
-</div>
+<div class="section" id="Pupil-Core-device-timing-analysis">
+<h1>Pupil Core device timing analysis<a class="headerlink" href="#Pupil-Core-device-timing-analysis" title="Permalink to this headline">¶</a></h1>
+<p>This example how we analysed the timestamp data from the camera sync testing protocol.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">diffs</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;win_sync_tests.csv&#39;</span><span class="p">)</span>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">op</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="section" id="Calculate-differences-from-annotation-timestamps">
+<h2>Calculate differences from annotation timestamps<a class="headerlink" href="#Calculate-differences-from-annotation-timestamps" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
 </div>
-<div class="section" id="MacOS">
-<h2>MacOS<a class="headerlink" href="#MacOS" title="Permalink to this headline">¶</a></h2>
-<p>Results</p>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">datadir</span> <span class="o">=</span> <span class="s1">&#39;/Users/jtm/OneDrive - Nexus365/data/pupil_core_camera_sync_tests&#39;</span>
+<span class="n">recordings</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datadir</span> <span class="o">+</span> <span class="s1">&#39;/**/**/**/annotations.csv&#39;</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">recordings</span><span class="p">:</span>
+    <span class="c1"># Load annotations and get camera timestamps for detected light flash</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+    <span class="n">eye_0</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">label</span><span class="o">==</span><span class="s1">&#39;light_on_eye_0&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">eye_1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">label</span><span class="o">==</span><span class="s1">&#39;light_on_eye_1&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">world</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">label</span><span class="o">==</span><span class="s1">&#39;light_on_world&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="c1"># Calculate timestamp differences and make DataFrame</span>
+    <span class="n">diffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[(</span><span class="n">eye_0</span><span class="o">-</span><span class="n">world</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
+                                <span class="p">(</span><span class="n">eye_1</span><span class="o">-</span><span class="n">world</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
+                                <span class="p">(</span><span class="n">eye_0</span><span class="o">-</span><span class="n">eye_1</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">],</span>
+                          <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eye0 - world&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;eye1 - world&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;eye0 - eye1&#39;</span><span class="p">])</span>
+               <span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Comparison&#39;</span><span class="p">,</span>
+                       <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;Timestamp difference (ms)&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Add categories for operating system and frames per second</span>
+    <span class="n">diffs</span><span class="p">[</span><span class="s1">&#39;OS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mac&#39;</span> <span class="k">if</span> <span class="s1">&#39;mac&#39;</span> <span class="ow">in</span> <span class="n">rec</span> <span class="k">else</span> <span class="s1">&#39;Windows&#39;</span>
+    <span class="n">diffs</span><span class="p">[</span><span class="s1">&#39;FPS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;120&#39;</span> <span class="k">if</span> <span class="s1">&#39;120_fps&#39;</span> <span class="ow">in</span> <span class="n">rec</span> <span class="k">else</span> <span class="s1">&#39;60&#39;</span>
+    <span class="n">diffs</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rec</span><span class="p">),</span> <span class="s1">&#39;annotation_timestamp_diffs.csv&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Append to master frame</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+<span class="n">data</span>
+</pre></div>
 </div>
-<div class="section" id="Windows">
-<h2>Windows<a class="headerlink" href="#Windows" title="Permalink to this headline">¶</a></h2>
-<p>Results</p>
 </div>
-<div class="section" id="Implications-for-latency-measures">
-<h2>Implications for latency measures<a class="headerlink" href="#Implications-for-latency-measures" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p>biological implausability on mac</p></li>
-<li><p>Repeatability and possibility of correction</p></li>
-<li><p>etc.</p></li>
-</ul>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Comparison</th>
+      <th>Timestamp difference (ms)</th>
+      <th>OS</th>
+      <th>FPS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>eye0 - world</td>
+      <td>58.807</td>
+      <td>Windows</td>
+      <td>120</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>eye0 - world</td>
+      <td>55.010</td>
+      <td>Windows</td>
+      <td>120</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>eye0 - world</td>
+      <td>58.925</td>
+      <td>Windows</td>
+      <td>120</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>eye0 - world</td>
+      <td>57.622</td>
+      <td>Windows</td>
+      <td>120</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>eye0 - world</td>
+      <td>58.371</td>
+      <td>Windows</td>
+      <td>120</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>295</th>
+      <td>eye0 - eye1</td>
+      <td>-3.959</td>
+      <td>Mac</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>296</th>
+      <td>eye0 - eye1</td>
+      <td>-3.968</td>
+      <td>Mac</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>eye0 - eye1</td>
+      <td>12.266</td>
+      <td>Mac</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>298</th>
+      <td>eye0 - eye1</td>
+      <td>-3.984</td>
+      <td>Mac</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>299</th>
+      <td>eye0 - eye1</td>
+      <td>-3.991</td>
+      <td>Mac</td>
+      <td>60</td>
+    </tr>
+  </tbody>
+</table>
+<p>1200 rows × 4 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Plot-the-timestamp-differences">
+<h2>Plot the timestamp differences<a class="headerlink" href="#Plot-the-timestamp-differences" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Comparison&#39;</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Timestamp difference (ms)&#39;</span><span class="p">,</span>
+                <span class="n">row</span><span class="o">=</span><span class="s1">&#39;OS&#39;</span><span class="p">,</span>
+                <span class="n">col</span><span class="o">=</span><span class="s1">&#39;FPS&#39;</span><span class="p">,</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">,</span>
+                <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eye0 - world&#39;</span><span class="p">,</span> <span class="s1">&#39;eye1 - world&#39;</span><span class="p">,</span> <span class="s1">&#39;eye0 - eye1&#39;</span><span class="p">],</span>
+                <span class="n">flierprops</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;markersize&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06b_pupil_core_timing_analysis_5_0.png" src="_images/06b_pupil_core_timing_analysis_5_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Interpretation">
+<h2>Interpretation<a class="headerlink" href="#Interpretation" title="Permalink to this headline">¶</a></h2>
+<p>These data show the difference in pupil timestamp time at which the same light was detected for each camera.</p>
+<p><a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">link to protocol</span></a></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -496,7 +524,7 @@ Light stamped on frame.eye.0 at 441606.651018
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core device timing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core device timing analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
