@@ -4,7 +4,7 @@ Created on Thu Mar 18 09:51:25 2021
 
 @author: engs2242
 """
-
+import sys
 import os
 import os.path as op
 from subprocess import Popen
@@ -46,3 +46,8 @@ def record_dir(subj_dir):
 
 def open_folder(folder):
     Popen(r'explorer /select,{}'.format(folder))
+    
+def beep_sound():
+    if sys.platform=='darwin':
+        print('\a')
+    

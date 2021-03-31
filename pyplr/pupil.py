@@ -157,7 +157,34 @@ class PupilCore:
         self.remote.send_string(topic, flags=zmq.SNDMORE)
         payload = msgpack.dumps(notification, use_bin_type=True)
         self.remote.send(payload)
-        return self.remote.recv_string()    
+        return self.remote.recv_string()  
+    
+    def annotation_capture_plugin(self, should):
+        '''Start or stop the Annotatiob Capture plugin.
+
+        Parameters
+        ----------
+        should : str
+            Either 'start' or 'stop'.
+
+        Raises
+        ------
+        ValueError
+            If `should` not `start` or `stop`.
+
+        Returns
+        -------
+        None.
+
+        '''
+        if should not in ['start', 'stop']:
+            raise ValueError('Must specify start or stop for should.')
+        subject = '{}_plugin'.format(should)
+        return self.notify({
+            'subject': subject,
+            'name': 'Annotation_Capture',
+            'args': {}
+            })
     
     #TODO: is this correct?
     def get_corrected_pupil_time(self):
