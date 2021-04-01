@@ -519,7 +519,7 @@
     "spectra, info = d.sample(leds=leds, intensity=intensities)\n",
     "```\n",
     "\n",
-    "We do this elsewhere with an OceanOptics VIS spectrometer in order to create a forward model for the STLAB-sphere rig."
+    "We do this [elsewhere](./04c_integrating_sphere.ipynb#Calibration) with an OceanOptics VIS spectrometer in order to create a forward model for the STLAB-sphere rig."
    ]
   },
   {

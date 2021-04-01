@@ -559,7 +559,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Of note, `CalibrationContext(...)` has a `.predict_spd(...)` method which we can use to predict the spectral output of STLAB from a list of led-intensity values. Here we compare the predicted output to the actual measured output for 40 random device settings."
+    "Of note, `CalibrationContext(...)` has a `.predict_spd(...)` method which we can use to predict the spectral output of STLAB from a list of led-intensity values. Here we compare the predicted output to the actual measured output for 20 random device settings."
    ]
   },
   {
@@ -648,7 +648,7 @@
     ">$t$ is the exposure duration in seconds\"\n",
     "\n",
     "\n",
-    "Using the minimum radiance limit for the retinal blue light hazard exposure limit, given as 100 $W \\cdot m^{-2} \\cdot sr^{-1}$ for exposures of greater than 10000s, we note that our source is below the retinal blue light hazard exposure limit. These findings were confirmed by processing the data with the NPL EyeLight software: \n",
+    "Using the minimum radiance limit for the retinal blue light hazard exposure limit, given as 100 $W \\cdot m^{-2} \\cdot sr^{-1}$ for exposures of greater than 10000 s, we note that our source is below the retinal blue light hazard exposure limit. These findings were confirmed by processing the data with the NPL EyeLight software: \n",
     "\n",
     "(Units are $W \\cdot m^2 \\cdot sr^{-1} \\cdot nm^{-1}$)\n",
     "\n",

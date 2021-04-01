@@ -736,7 +736,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <img alt="_images/04c_integrating_sphere_6_0.png" src="_images/04c_integrating_sphere_6_0.png" />
 </div>
 </div>
-<p>Of note, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output of STLAB from a list of led-intensity values. Here we compare the predicted output to the actual measured output for 40 random device settings.</p>
+<p>Of note, <code class="docutils literal notranslate"><span class="pre">CalibrationContext(...)</span></code> has a <code class="docutils literal notranslate"><span class="pre">.predict_spd(...)</span></code> method which we can use to predict the spectral output of STLAB from a list of led-intensity values. Here we compare the predicted output to the actual measured output for 20 random device settings.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -798,7 +798,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <p><span class="math notranslate nohighlight">\(\Delta\lambda\)</span> is the bandwidth in nm</p>
 <p><span class="math notranslate nohighlight">\(t\)</span> is the exposure duration in seconds”</p>
 </div></blockquote>
-<p>Using the minimum radiance limit for the retinal blue light hazard exposure limit, given as 100 <span class="math notranslate nohighlight">\(W \cdot m^{-2} \cdot sr^{-1}\)</span> for exposures of greater than 10000s, we note that our source is below the retinal blue light hazard exposure limit. These findings were confirmed by processing the data with the NPL EyeLight software:</p>
+<p>Using the minimum radiance limit for the retinal blue light hazard exposure limit, given as 100 <span class="math notranslate nohighlight">\(W \cdot m^{-2} \cdot sr^{-1}\)</span> for exposures of greater than 10000 s, we note that our source is below the retinal blue light hazard exposure limit. These findings were confirmed by processing the data with the NPL EyeLight software:</p>
 <p>(Units are <span class="math notranslate nohighlight">\(W \cdot m^2 \cdot sr^{-1} \cdot nm^{-1}\)</span>)</p>
 <ul class="simple">
 <li><p>Raw Radiance: 71.5</p></li>
