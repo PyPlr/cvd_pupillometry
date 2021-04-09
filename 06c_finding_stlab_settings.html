@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>a-opic irradiance matching with STLAB &#8212; PyPlr v1.0 documentation</title>
+    <title>Matching spectra for a-opic irradiance with STLAB &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -17,6 +17,8 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API documentation" href="07_api.html" />
+    <link rel="prev" title="Pupil Core device timing" href="06b_pupil_core_timing_analysis.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -281,51 +283,57 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="a-opic-irradiance-matching-with-STLAB">
-<h1><em>a</em>-opic irradiance matching with STLAB<a class="headerlink" href="#a-opic-irradiance-matching-with-STLAB" title="Permalink to this headline">¶</a></h1>
-<p>This example demonstrates how to find the STLAB settings that match a given spectrum for <span class="math notranslate nohighlight">\(a\)</span>-opic irradiance. In this particular case, what we are trying to match is the spectral output of the NeurOptics PLR-3000 device, which administers light stimuli with 4 white LEDs. The PLR-3000 settings were measured with an OceanOptics STS-VIS spectrometer placed where the eye would normally be, and calibrated using our standard pipeline.</p>
+<div class="section" id="Matching-spectra-for-a-opic-irradiance-with-STLAB">
+<h1>Matching spectra for <em>a</em>-opic irradiance with STLAB<a class="headerlink" href="#Matching-spectra-for-a-opic-irradiance-with-STLAB" title="Permalink to this headline">¶</a></h1>
+<p>When designing stimuli with STLAB, you may need to find the settings that most closely match a spectrum you measured elsewhere, which requires some linear algebra. In this example we are aiming to match the spectral output of a NeurOptics PLR-3000 automated pupillometer, which administers light stimuli with 4 white LEDs. We measured the spectral output of the PLR-3000 with an OceanOptics STS-VIS spectrometer at the usual eye position, and calibrated using our <a class="reference internal" href="04c_integrating_sphere.html#Calibration"><span class="std std-ref">standard
+pipeline</span></a>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">pyplr.CIE</span> <span class="kn">import</span> <span class="n">get_CIES026</span>
 
-<span class="c1"># Load PLR-3000 data</span>
+<span class="c1"># Load data</span>
 <span class="n">plr3000</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
     <span class="s1">&#39;../data/PLR-3000_oo_calibrated_spectra.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
+<span class="n">plr3000</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">plr3000</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
 
-<span class="c1"># Plot SPDs</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">plr3000</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
-    <span class="n">plr3000</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$\lambda$ [nm]&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;PLR-3000 settings&#39;</span><span class="p">)</span>
-    <span class="n">leg</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
-        <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">leg</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;uW&#39;</span><span class="p">)</span>
+<span class="c1"># Plot spectra</span>
+<span class="n">specs</span> <span class="o">=</span> <span class="p">(</span><span class="n">plr3000</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span>
+                      <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Wavelength&#39;</span><span class="p">,</span>
+                      <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;w/m2/nm&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span><span class="s1">&#39;Wavelength&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">specs</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Wavelength&#39;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;w/m2/nm&#39;</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;PLR-3000 spectral measurements&#39;</span><span class="p">)</span>
 
 <span class="c1"># Plot a-opic irradiances</span>
 <span class="n">sss</span> <span class="o">=</span> <span class="n">get_CIES026</span><span class="p">(</span><span class="n">asdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">sss</span> <span class="o">=</span> <span class="n">sss</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">plr_3k_ao</span> <span class="o">=</span> <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sss</span><span class="p">)</span>
+<span class="n">plr_3k_ao</span> <span class="o">=</span> <span class="n">plr3000</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sss</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
                  <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;uW&#39;</span><span class="p">],</span>
                        <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aopic&#39;</span><span class="p">],</span>
                        <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;irradiance&#39;</span><span class="p">))</span>
-<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">f2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;irradiance&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;aopic&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
-    <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center left&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$&#39;</span><span class="p">);</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;uW&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;irradiance&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;aopic&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;PLR-3000 $a$-opic irradiances&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -343,9 +351,9 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/06c_finding_stlab_settings_1_1.png" src="_images/06c_finding_stlab_settings_1_1.png" />
 </div>
 </div>
-<p>Start by making the calibration context</p>
+<p>In order to find the right STLAB settings, we need to make a <code class="docutils literal notranslate"><span class="pre">CalibrationContext</span></code> from our calibrated OceanOptics data.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -354,365 +362,20 @@ div.rendered_html tbody tr:hover {
 <span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span>
     <span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
-<span class="n">cc</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th></th>
-      <th>380</th>
-      <th>381</th>
-      <th>382</th>
-      <th>383</th>
-      <th>384</th>
-      <th>385</th>
-      <th>386</th>
-      <th>387</th>
-      <th>388</th>
-      <th>389</th>
-      <th>...</th>
-      <th>771</th>
-      <th>772</th>
-      <th>773</th>
-      <th>774</th>
-      <th>775</th>
-      <th>776</th>
-      <th>777</th>
-      <th>778</th>
-      <th>779</th>
-      <th>780</th>
-    </tr>
-    <tr>
-      <th>led</th>
-      <th>intensity</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="5" valign="top">0</th>
-      <th>0</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000013</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>65</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>130</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>195</th>
-      <td>0.000026</td>
-      <td>0.000020</td>
-      <td>0.000023</td>
-      <td>0.000012</td>
-      <td>0.000033</td>
-      <td>0.000040</td>
-      <td>0.000030</td>
-      <td>0.000032</td>
-      <td>0.000035</td>
-      <td>0.000028</td>
-      <td>...</td>
-      <td>0.000015</td>
-      <td>0.000000</td>
-      <td>0.000008</td>
-      <td>0.000011</td>
-      <td>0.000000</td>
-      <td>0.000013</td>
-      <td>0.000012</td>
-      <td>0.000000</td>
-      <td>0.000017</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>260</th>
-      <td>0.000147</td>
-      <td>0.000152</td>
-      <td>0.000158</td>
-      <td>0.000165</td>
-      <td>0.000155</td>
-      <td>0.000145</td>
-      <td>0.000154</td>
-      <td>0.000141</td>
-      <td>0.000171</td>
-      <td>0.000167</td>
-      <td>...</td>
-      <td>0.000083</td>
-      <td>0.000075</td>
-      <td>0.000087</td>
-      <td>0.000083</td>
-      <td>0.000072</td>
-      <td>0.000087</td>
-      <td>0.000085</td>
-      <td>0.000008</td>
-      <td>0.000101</td>
-      <td>0.000082</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th rowspan="5" valign="top">9</th>
-      <th>3835</th>
-      <td>0.003778</td>
-      <td>0.004093</td>
-      <td>0.003488</td>
-      <td>0.003937</td>
-      <td>0.003176</td>
-      <td>0.003136</td>
-      <td>0.003321</td>
-      <td>0.002896</td>
-      <td>0.003240</td>
-      <td>0.003787</td>
-      <td>...</td>
-      <td>0.002468</td>
-      <td>0.002702</td>
-      <td>0.002610</td>
-      <td>0.002494</td>
-      <td>0.002934</td>
-      <td>0.002626</td>
-      <td>0.002619</td>
-      <td>0.002212</td>
-      <td>0.002527</td>
-      <td>0.002909</td>
-    </tr>
-    <tr>
-      <th>3900</th>
-      <td>0.003541</td>
-      <td>0.003839</td>
-      <td>0.003389</td>
-      <td>0.003721</td>
-      <td>0.003089</td>
-      <td>0.003009</td>
-      <td>0.003012</td>
-      <td>0.002801</td>
-      <td>0.003189</td>
-      <td>0.003692</td>
-      <td>...</td>
-      <td>0.002366</td>
-      <td>0.002733</td>
-      <td>0.002390</td>
-      <td>0.002299</td>
-      <td>0.002797</td>
-      <td>0.002622</td>
-      <td>0.002441</td>
-      <td>0.002099</td>
-      <td>0.002625</td>
-      <td>0.002919</td>
-    </tr>
-    <tr>
-      <th>3965</th>
-      <td>0.003653</td>
-      <td>0.003971</td>
-      <td>0.003476</td>
-      <td>0.004007</td>
-      <td>0.003401</td>
-      <td>0.003161</td>
-      <td>0.003371</td>
-      <td>0.002836</td>
-      <td>0.003298</td>
-      <td>0.003639</td>
-      <td>...</td>
-      <td>0.002297</td>
-      <td>0.002765</td>
-      <td>0.002593</td>
-      <td>0.002545</td>
-      <td>0.002785</td>
-      <td>0.002709</td>
-      <td>0.002760</td>
-      <td>0.002129</td>
-      <td>0.002687</td>
-      <td>0.002693</td>
-    </tr>
-    <tr>
-      <th>4030</th>
-      <td>0.003891</td>
-      <td>0.003956</td>
-      <td>0.003668</td>
-      <td>0.003874</td>
-      <td>0.003149</td>
-      <td>0.003184</td>
-      <td>0.003271</td>
-      <td>0.002737</td>
-      <td>0.003217</td>
-      <td>0.003631</td>
-      <td>...</td>
-      <td>0.002531</td>
-      <td>0.002757</td>
-      <td>0.002546</td>
-      <td>0.002377</td>
-      <td>0.002724</td>
-      <td>0.002598</td>
-      <td>0.002409</td>
-      <td>0.002036</td>
-      <td>0.002534</td>
-      <td>0.002836</td>
-    </tr>
-    <tr>
-      <th>4095</th>
-      <td>0.003615</td>
-      <td>0.004133</td>
-      <td>0.003597</td>
-      <td>0.004069</td>
-      <td>0.003316</td>
-      <td>0.003332</td>
-      <td>0.003100</td>
-      <td>0.003010</td>
-      <td>0.003414</td>
-      <td>0.003781</td>
-      <td>...</td>
-      <td>0.002344</td>
-      <td>0.002647</td>
-      <td>0.002569</td>
-      <td>0.002451</td>
-      <td>0.002913</td>
-      <td>0.002743</td>
-      <td>0.002612</td>
-      <td>0.002170</td>
-      <td>0.002548</td>
-      <td>0.002757</td>
-    </tr>
-  </tbody>
-</table>
-<p>640 rows × 401 columns</p>
-</div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/06c_finding_stlab_settings_3_1.png" src="_images/06c_finding_stlab_settings_3_1.png" />
+<img alt="_images/06c_finding_stlab_settings_3_0.png" src="_images/06c_finding_stlab_settings_3_0.png" />
 </div>
 </div>
-<p>Search for STLAB settings that match PLR-3000 for <em>a</em>-opic irradiance</p>
+<p>Now we can start searching for the STLAB settings that match the PLR-3000 settings for <em>a</em>-opic irradiance. We will focus on the 180 uW setting to keep things simple. For all possible combinations in 10 choose 5 (one LED for each photoreceptor class), we use linear algebra to work out the input fraction of the chosen LEDs that is required for matching the spectrum. Only those solutions where the input fractions are between 0 and 1 are valid, because eventually we will need to convert these to
+12-bit integers for STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -720,199 +383,37 @@ div.rendered_html tbody tr:hover {
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="c1"># At least 5 LEDs are required here</span>
+<span class="c1"># The PLR-3000 setting we care about</span>
+<span class="n">uW_setting</span> <span class="o">=</span> <span class="mi">180</span>
+
+<span class="c1"># Photoreceptors classes we are aiming to match</span>
+<span class="n">opsins</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">,</span><span class="s1">&#39;Mel&#39;</span><span class="p">,</span> <span class="s1">&#39;Rods&#39;</span><span class="p">]</span>
+
+<span class="c1"># An LED for each photoreceptors</span>
 <span class="n">num_leds</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">use</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">,</span><span class="s1">&#39;M&#39;</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">,</span><span class="s1">&#39;Mel&#39;</span><span class="p">,</span> <span class="s1">&#39;Rods&#39;</span><span class="p">]</span>
+
+<span class="c1"># List to store valid settings</span>
 <span class="n">keep</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="c1"># Loop through all possible combinations in 10 choose 5</span>
 <span class="k">for</span> <span class="n">choose</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">num_leds</span><span class="p">):</span>
 
     <span class="c1"># Get the irradiances for each LED at maximum</span>
-    <span class="n">settings_to_irradiances</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">aopic</span><span class="o">.</span><span class="n">loc</span><span class="p">[[(</span><span class="n">led</span><span class="p">,</span> <span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">led</span> <span class="ow">in</span> <span class="n">choose</span><span class="p">],</span> <span class="n">use</span><span class="p">]</span>
+    <span class="n">settings_to_irradiances</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">aopic</span><span class="o">.</span><span class="n">loc</span><span class="p">[[(</span><span class="n">led</span><span class="p">,</span> <span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">led</span> <span class="ow">in</span> <span class="n">choose</span><span class="p">],</span> <span class="n">opsins</span><span class="p">]</span>
 
     <span class="c1"># Take the inverse</span>
     <span class="n">irradiances_to_settings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">settings_to_irradiances</span><span class="p">)</span>
 
     <span class="c1"># Calculate the required input fraction for the chosen LEDs</span>
-    <span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
-        <span class="n">plr_irradiances</span> <span class="o">=</span> <span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">,</span> <span class="n">use</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">settings</span> <span class="o">=</span> <span class="n">plr_irradiances</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">irradiances_to_settings</span><span class="p">)</span>
+    <span class="n">plr_irradiances</span> <span class="o">=</span> <span class="n">plr_3k_ao</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">uW_setting</span><span class="p">,</span> <span class="n">opsins</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">plr_irradiances</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">irradiances_to_settings</span><span class="p">)</span>
 
-        <span class="c1"># Keep the settings where all values are greater than 0 and less then 1</span>
-        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">keep</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mw</span><span class="p">,</span> <span class="n">choose</span><span class="p">,</span> <span class="n">settings</span><span class="p">))</span>
+    <span class="c1"># Keep the settings where all values are greater than 0 and less then 1</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">settings</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">keep</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">uW_setting</span><span class="p">,</span> <span class="n">choose</span><span class="p">,</span> <span class="n">settings</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; settings found&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-82 settings found
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">predicted</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>380</th>
-      <th>381</th>
-      <th>382</th>
-      <th>383</th>
-      <th>384</th>
-      <th>385</th>
-      <th>386</th>
-      <th>387</th>
-      <th>388</th>
-      <th>389</th>
-      <th>...</th>
-      <th>771</th>
-      <th>772</th>
-      <th>773</th>
-      <th>774</th>
-      <th>775</th>
-      <th>776</th>
-      <th>777</th>
-      <th>778</th>
-      <th>779</th>
-      <th>780</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.000123</td>
-      <td>0.0</td>
-      <td>0.0</td>
-    </tr>
-  </tbody>
-</table>
-<p>1 rows × 401 columns</p>
-</div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-<span class="n">predicted</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-<span class="n">plr_mws</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
-<span class="n">idx</span><span class="o">=</span><span class="p">[]</span>
-<span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_mws</span><span class="p">:</span>
-    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">keep</span> <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mw</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
-        <span class="n">leds</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4095</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
-        <span class="n">spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
-        <span class="k">for</span> <span class="n">led</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">leds</span><span class="p">,</span> <span class="n">intensities</span><span class="p">):</span>
-            <span class="n">spec</span><span class="p">[</span><span class="n">led</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">predict_spd</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
-        <span class="n">predicted</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
-        <span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
-        <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mw</span><span class="p">)</span>
-
-<span class="n">settings</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;mw&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-<span class="n">predicted</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">predicted</span><span class="p">[</span><span class="s1">&#39;mw&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-
-<span class="n">keeps</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">mw</span> <span class="ow">in</span> <span class="n">plr_mws</span><span class="p">:</span>
-    <span class="n">predmw</span> <span class="o">=</span> <span class="n">predicted</span><span class="p">[</span><span class="n">predicted</span><span class="o">.</span><span class="n">mw</span><span class="o">==</span><span class="n">mw</span><span class="p">]</span>
-    <span class="n">predmw</span> <span class="o">=</span> <span class="n">predmw</span><span class="p">[</span><span class="n">predmw</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
-    <span class="n">best</span> <span class="o">=</span> <span class="n">predmw</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
-    <span class="n">keeps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
-
-<span class="n">optimal_predicted</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keeps</span><span class="p">]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span>
-<span class="n">optimal_settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keeps</span><span class="p">]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span>
-<span class="n">optimal_settings</span>
-
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">AttributeError</span>                            Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-74-ba8297b38d05&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">     14</span>        <span class="ansi-red-intense-fg ansi-bold"># ax1.plot(w_m2_nm.columns, pred)</span>
-<span class="ansi-green-fg">     15</span>         predicted <span class="ansi-yellow-intense-fg ansi-bold">=</span> predicted<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>pred<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 16</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>settings <span class="ansi-yellow-intense-fg ansi-bold">=</span> settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>spec<span class="ansi-yellow-intense-fg ansi-bold">.</span>T<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     17</span>         idx<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>mw<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     18</span>
-
-<span class="ansi-red-intense-fg ansi-bold">AttributeError</span>: &#39;list&#39; object has no attribute &#39;T&#39;
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">16</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mw</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">optimal_settings</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
-    <span class="n">w_m2_nm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;plr_3000: </span><span class="si">{}</span><span class="s1"> uW&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mw</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">optimal_predicted</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;optimal_stlab: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">optimal_settings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()),</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w_m2_nm</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">predicted</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;mw&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mw</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">lw</span><span class="o">=.</span><span class="mi">3</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$\lambda$ [nm]&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&gt; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; settings found&#39;</span><span class="p">)</span>
+<span class="n">keep</span>
 </pre></div>
 </div>
 </div>
@@ -921,36 +422,156 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-34-6717db3c850b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">      1</span> fig<span class="ansi-yellow-intense-fg ansi-bold">,</span> axs <span class="ansi-yellow-intense-fg ansi-bold">=</span> plt<span class="ansi-yellow-intense-fg ansi-bold">.</span>subplots<span class="ansi-yellow-intense-fg ansi-bold">(</span>nrows<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">4</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> sharex<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-green-intense-fg ansi-bold">True</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> figsize<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-cyan-intense-fg ansi-bold">14</span><span class="ansi-yellow-intense-fg ansi-bold">,</span><span class="ansi-cyan-intense-fg ansi-bold">16</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 2</span><span class="ansi-yellow-intense-fg ansi-bold"> </span><span class="ansi-green-intense-fg ansi-bold">for</span> ax<span class="ansi-yellow-intense-fg ansi-bold">,</span> mw <span class="ansi-green-intense-fg ansi-bold">in</span> zip<span class="ansi-yellow-intense-fg ansi-bold">(</span>axs<span class="ansi-yellow-intense-fg ansi-bold">,</span> optimal_settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>index<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">      3</span>     w_m2_nm<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>plot<span class="ansi-yellow-intense-fg ansi-bold">(</span>label<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;plr_3000: {} uW&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>format<span class="ansi-yellow-intense-fg ansi-bold">(</span>mw<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> ax<span class="ansi-yellow-intense-fg ansi-bold">=</span>ax<span class="ansi-yellow-intense-fg ansi-bold">,</span> color<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;k&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> linestyle<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;--&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      4</span>     ax<span class="ansi-yellow-intense-fg ansi-bold">.</span>plot<span class="ansi-yellow-intense-fg ansi-bold">(</span>w_m2_nm<span class="ansi-yellow-intense-fg ansi-bold">.</span>columns<span class="ansi-yellow-intense-fg ansi-bold">,</span> optimal_predicted<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> label<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;optimal_stlab: &#39;</span> <span class="ansi-yellow-intense-fg ansi-bold">+</span> str<span class="ansi-yellow-intense-fg ansi-bold">(</span>optimal_settings<span class="ansi-yellow-intense-fg ansi-bold">.</span>loc<span class="ansi-yellow-intense-fg ansi-bold">[</span>mw<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>to_list<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> linestyle<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;--&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      5</span>     ax<span class="ansi-yellow-intense-fg ansi-bold">.</span>legend<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>: name &#39;optimal_settings&#39; is not defined
+&gt; 18 settings found
 </pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[(180,
+  (0, 1, 2, 6, 7),
+  array([0.00531917, 0.3216303 , 0.02017206, 0.19448565, 0.01638168])),
+ (180,
+  (0, 1, 2, 6, 8),
+  array([0.31467891, 0.06027982, 0.10188467, 0.20215462, 0.06109765])),
+ (180,
+  (0, 1, 2, 6, 9),
+  array([0.35743549, 0.02340809, 0.11354845, 0.20235183, 0.07317351])),
+ (180,
+  (0, 1, 3, 6, 7),
+  array([0.01693603, 0.31685753, 0.01834595, 0.19404771, 0.01661427])),
+ (180,
+  (0, 1, 3, 6, 8),
+  array([0.40047265, 0.01481659, 0.09831599, 0.20039123, 0.06574652])),
+ (180,
+  (0, 2, 3, 6, 9),
+  array([0.40061914, 0.06456956, 0.04767865, 0.20150394, 0.07587359])),
+ (180,
+  (0, 2, 4, 6, 7),
+  array([0.4194542 , 0.08726618, 0.0433025 , 0.17252957, 0.02816172])),
+ (180,
+  (0, 2, 4, 6, 8),
+  array([0.38998566, 0.11677266, 0.00512252, 0.20020968, 0.06629503])),
+ (180,
+  (0, 2, 4, 6, 9),
+  array([0.38657506, 0.11941011, 0.00189081, 0.20164011, 0.07547113])),
+ (180,
+  (0, 2, 5, 6, 7),
+  array([0.40014292, 0.1076887 , 0.05468808, 0.15675642, 0.03600865])),
+ (180,
+  (0, 2, 5, 6, 8),
+  array([0.38737199, 0.11949286, 0.00519347, 0.19944422, 0.06804926])),
+ (180,
+  (0, 2, 5, 6, 9),
+  array([0.38559339, 0.12042304, 0.00188553, 0.20137594, 0.07619617])),
+ (180,
+  (0, 3, 4, 6, 7),
+  array([0.44201062, 0.07563324, 0.04065339, 0.17206732, 0.02839995])),
+ (180,
+  (0, 3, 4, 6, 8),
+  array([0.41992092, 0.10149669, 0.00113411, 0.19990357, 0.0670476 ])),
+ (180,
+  (0, 3, 5, 6, 7),
+  array([0.42902253, 0.09201597, 0.05061775, 0.157368  , 0.03571445])),
+ (180,
+  (0, 3, 5, 6, 8),
+  array([0.4195042 , 0.10201082, 0.00112934, 0.19973557, 0.06743288])),
+ (180,
+  (0, 3, 6, 7, 9),
+  array([0.41844518, 0.10235254, 0.19982363, 0.00147449, 0.0723836 ])),
+ (180,
+  (0, 3, 6, 8, 9),
+  array([0.41898733, 0.10227936, 0.20038958, 0.04441927, 0.02576699]))]
+</pre></div></div>
+</div>
+<p>So there are 18 solutions to the problem using 5 LEDs. Next, we need to convert the input fractions to 12-bit integers for STLAB.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Lists to store settings and predicted spectra</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">predicted</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Remove the index</span>
+<span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">keep</span> <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+<span class="c1"># Loop over settings</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">:</span>
+    <span class="n">leds</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Convert to 12-bit integer and save LED settings</span>
+    <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4095</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span>
+    <span class="k">for</span> <span class="n">led</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">leds</span><span class="p">,</span> <span class="n">intensities</span><span class="p">):</span>
+        <span class="n">spec</span><span class="p">[</span><span class="n">led</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="c1"># Get predicted spectrum</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">predict_spd</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+    <span class="c1"># Add to lists</span>
+    <span class="n">settings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">predicted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+
+<span class="c1"># Make DFs</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<span class="n">predicted</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">predicted</span><span class="p">)</span>
+<span class="n">predicted</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># In theory it doesn&#39;t matter which one we use, but let&#39;s define</span>
+<span class="c1"># the &#39;best&#39; solution as the one with the least squared error</span>
+<span class="n">best</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+    <span class="n">plr3000</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">uW_setting</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
+
+<span class="n">optimal_predicted</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">best</span><span class="p">]</span>
+<span class="n">optimal_settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">best</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>Time to visualise the solutions.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">plr3000</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">uW_setting</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;plr_3000: </span><span class="si">{}</span><span class="s1"> uW&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">uW_setting</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plr3000</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+        <span class="n">optimal_predicted</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;optimal_stlab: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">optimal_settings</span><span class="o">.</span><span class="n">to_list</span><span class="p">()),</span>
+        <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">predicted</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lw</span><span class="o">=.</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength [nm]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;W/m$^2$/nm&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/06c_finding_stlab_settings_8_1.png" src="_images/06c_finding_stlab_settings_8_1.png" />
+<img alt="_images/06c_finding_stlab_settings_9_0.png" src="_images/06c_finding_stlab_settings_9_0.png" />
 </div>
 </div>
+<p>All that remains is to make a video file for use with STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[125]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[147]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">pulse_protocol</span><span class="p">,</span> <span class="n">video_file_to_dict</span>
-<span class="k">for</span> <span class="n">mw</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">optimal_settings</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
-    <span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
-                   <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                   <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;PLR-3000-</span><span class="si">{}</span><span class="s1">-mw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mw</span><span class="p">))</span>
+<span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span>
+               <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+               <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;PLR-3000-</span><span class="si">{}</span><span class="s1">-mw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uW_setting</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -959,18 +580,11 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
-&#34;PLR-3000-10-mw.dsf&#34; saved in the current working directory.
-[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
-&#34;PLR-3000-50-mw.dsf&#34; saved in the current working directory.
-[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
-&#34;PLR-3000-121-mw.dsf&#34; saved in the current working directory.
-[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]
 &#34;PLR-3000-180-mw.dsf&#34; saved in the current working directory.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[124]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[148]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -980,7 +594,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[124]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[148]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -992,13 +606,13 @@ div.rendered_html tbody tr:hover {
   &#39;transitionsCount&#39;: 4,
   &#39;fluxReference&#39;: 0,
   &#39;repeats&#39;: 1},
- &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-02-10 13:23:00.011513&#39;,
+ &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-04-08 15:20:32.923123&#39;,
   &#39;creator&#39;: &#39;jtm&#39;,
   &#39;protocol&#39;: &#39;pulse&#39;,
-  &#39;pulse_spec&#39;: &#39;[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0]&#39;,
+  &#39;pulse_spec&#39;: &#39;[1716, 0, 0, 419, 0, 0, 821, 0, 182, 106]&#39;,
   &#39;pulse_duration&#39;: &#39;1000&#39;},
- &#39;spectra&#39;: [[0, 1105, 143, 0, 0, 0, 740, 70, 0, 0],
-  [0, 1105, 143, 0, 0, 0, 740, 70, 0, 0],
+ &#39;spectra&#39;: [[1716, 0, 0, 419, 0, 0, 821, 0, 182, 106],
+  [1716, 0, 0, 419, 0, 0, 821, 0, 182, 106],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
  &#39;transitions&#39;: [{&#39;spectrum&#39;: 0, &#39;power&#39;: 100, &#39;time&#39;: 0, &#39;flags&#39;: 0},
@@ -1006,15 +620,6 @@ div.rendered_html tbody tr:hover {
   {&#39;spectrum&#39;: 2, &#39;power&#39;: 100, &#39;time&#39;: 1000, &#39;flags&#39;: 0},
   {&#39;spectrum&#39;: 3, &#39;power&#39;: 100, &#39;time&#39;: 1100, &#39;flags&#39;: 0}]}
 </pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
 </div>
 </div>
 
@@ -1039,12 +644,17 @@ div.rendered_html tbody tr:hover {
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
 <li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
-<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06b_pupil_core_timing_analysis.html">Pupil Core device timing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
@@ -1055,6 +665,10 @@ div.rendered_html tbody tr:hover {
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="06_example_analyses.html">Example analyses</a><ul>
+      <li>Previous: <a href="06b_pupil_core_timing_analysis.html" title="previous chapter">Pupil Core device timing</a></li>
+      <li>Next: <a href="07_api.html" title="next chapter">API documentation</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

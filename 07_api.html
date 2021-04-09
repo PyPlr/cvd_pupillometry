@@ -18,7 +18,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Developers" href="08_developers.html" />
-    <link rel="prev" title="Pupil Core device timing" href="06b_pupil_core_timing_analysis.html" />
+    <link rel="prev" title="Matching spectra for a-opic irradiance with STLAB" href="06c_finding_stlab_settings.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -97,6 +97,26 @@ application you are running. The default is True.</p></li>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.pupil.PupilCore.check_3d_model">
+<code class="sig-name descname">check_3d_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eyes</span><span class="o">=</span><span class="default_value">[0, 1]</span></em>, <em class="sig-param"><span class="n">alert</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.check_3d_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop and ask the overseer whether the 3D model should be refit.</p>
+<p>The model is well-fit when the blue and red ellipses overlap as much
+as possible for all gaze angles and when the size of the green ellipse
+is close to that of the eye ball. Open the debug windows if in doubt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eyes</strong> (<em>list of int</em><em>, </em><em>optional</em>) – Which eyes to refit. The default is [0,1].</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -207,7 +227,12 @@ whole camera scene in normalised coordinates.</p></li>
 <dl class="py method">
 <dt id="pyplr.pupil.PupilCore.freeze_3d_model">
 <code class="sig-name descname">freeze_3d_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eye_id</span></em>, <em class="sig-param"><span class="n">frozen</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.freeze_3d_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Freeze or unfreeze the 3D detector model.</p>
+<dd><p>Freeze or unfreeze the Pye3D pupil detector model.</p>
+<p>The Pye3D pupil detector updates continuously unless the model is
+frozen. The updates help to account for head slippage, but can cause
+artefacts in the pupil data. If there is unlikely to be any slippage
+(e.g.., the participant is using a chinrest) then it makes sense to
+freeze the 3D model before presenting stimuli.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2306,7 +2331,7 @@ and averaging across multiple PLRs should remove cause for concern.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="06b_pupil_core_timing_analysis.html" title="previous chapter">Pupil Core device timing</a></li>
+      <li>Previous: <a href="06c_finding_stlab_settings.html" title="previous chapter">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
       <li>Next: <a href="08_developers.html" title="next chapter">Developers</a></li>
   </ul></li>
 </ul>
