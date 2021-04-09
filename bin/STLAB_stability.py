@@ -5,11 +5,11 @@ Created on Mon Jun  8 16:47:20 2020
 @author: engs2242
 """
 
-import STLAB_apy as stlab
+from pyplr import stlab
 import pandas as pd
 from time import sleep, time
 
-device = stlab.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
+device = stlab.SpectraTuneLab(username='admin', identity=1, lighthub_ip='192.168.1.3', password='83e47941d9e930f6')
 
 leds = [0,1,2,3,4,5,6,7,8,9]
 intensity = [4095]

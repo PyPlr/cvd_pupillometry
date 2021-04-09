@@ -74,6 +74,7 @@ class PupilCore:
         self.pub_socket.connect(
             'tcp://{}:{}'.format(self.address, self.pub_port))
         
+        # TODO: just get reid of these
         # some useful defaults
         if pyplr_defaults:
             self.notify({
@@ -157,7 +158,34 @@ class PupilCore:
         self.remote.send_string(topic, flags=zmq.SNDMORE)
         payload = msgpack.dumps(notification, use_bin_type=True)
         self.remote.send(payload)
-        return self.remote.recv_string()    
+        return self.remote.recv_string()  
+    
+    def annotation_capture_plugin(self, should):
+        '''Start or stop the Annotatiob Capture plugin.
+
+        Parameters
+        ----------
+        should : str
+            Either 'start' or 'stop'.
+
+        Raises
+        ------
+        ValueError
+            If `should` not `start` or `stop`.
+
+        Returns
+        -------
+        None.
+
+        '''
+        if should not in ['start', 'stop']:
+            raise ValueError('Must specify start or stop for should.')
+        subject = '{}_plugin'.format(should)
+        return self.notify({
+            'subject': subject,
+            'name': 'Annotation_Capture',
+            'args': {}
+            })
     
     #TODO: is this correct?
     def get_corrected_pupil_time(self):
@@ -223,7 +251,13 @@ class PupilCore:
         return payload
     
     def freeze_3d_model(self, eye_id, frozen):
-        '''Freeze or unfreeze the 3D detector model.        
+        '''Freeze or unfreeze the Pye3D pupil detector model. 
+        
+        The Pye3D pupil detector updates continuously unless the model is 
+        frozen. The updates help to account for head slippage, but can cause 
+        artefacts in the pupil data. If there is unlikely to be any slippage 
+        (e.g.., the participant is using a chinrest) then it makes sense to 
+        freeze the 3D model before presenting stimuli.
 
         Parameters
         ----------
@@ -245,17 +279,55 @@ class PupilCore:
         '''
         if eye_id not in [0, 1]:
             raise ValueError('Must specify 0 or 1 for eye_id')
+            
         if not type(frozen) == bool:
             raise TypeError('Must specify True or False for frozen')
+            
         notification = {'topic': 'notify.pupil_detector.set_properties',
                         'subject': 'pupil_detector.set_properties',
                         'values': {'is_long_term_model_frozen': frozen},
                         'eye_id': eye_id,
                         'detector_plugin_class_name': 'Pye3DPlugin'}
         mode = 'Freezing' if frozen else 'Unfreezing'
-        print('> {} 3d model for eye {}'.format(mode, eye_id))
+        print(f'> {mode} 3d model for eye {eye_id}')
         return self.notify(notification)
     
+    def check_3d_model(self, eyes=[0,1], alert=False):
+        '''Stop and ask the overseer whether the 3D model should be refit.
+        
+        The model is well-fit when the blue and red ellipses overlap as much
+        as possible for all gaze angles and when the size of the green ellipse
+        is close to that of the eye ball. Open the debug windows if in doubt.
+        
+        Parameters
+        ----------
+        eyes : list of int, optional
+            Which eyes to refit. The default is [0,1].
+
+        Returns
+        -------
+        None.
+
+        '''
+        if alert:
+            print('\a')
+        while True:
+            response = input('> Refit the 3d model? [y/n]: ')
+            if not response in ['y','n']:
+                print("> Sorry, I didn't understand that.")
+                continue
+            else:
+                break
+        if response=='y':
+            for eye in eyes:
+                self.freeze_3d_model(eye_id=eye, frozen=False)
+            print('> Ask the participant to roll their eyes')
+            input('> Press "Enter" when ready to freeze the model: ')
+            for eye in eyes:
+                self.freeze_3d_model(eye_id=eye, frozen=True)
+        else:
+            pass        
+        
     def new_annotation(self, label, custom_fields={}):
         '''Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
         (a.k.a. message / event marker / whatever you want to call it). Send it

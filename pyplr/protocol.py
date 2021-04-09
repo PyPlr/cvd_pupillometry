@@ -4,13 +4,15 @@ Created on Thu Mar 18 09:51:25 2021
 
 @author: engs2242
 """
-
+import sys
+if sys.platform.startswith('win'):
+    from winsound import Beep
+    import tkinter as tk
+    from tkinter import simpledialog
+    
 import os
 import os.path as op
 from subprocess import Popen
-
-import tkinter as tk
-from tkinter import simpledialog
 
 def input_subject_id():
     subject_id = input('Please enter subject ID: ')
@@ -46,3 +48,11 @@ def record_dir(subj_dir):
 
 def open_folder(folder):
     Popen(r'explorer /select,{}'.format(folder))
+    
+def beep_sound():
+    if sys.platform=='darwin':
+        print('\a')
+    elif sys.platform.startswith('win'):
+        Beep(440, 200)
+        
+    
