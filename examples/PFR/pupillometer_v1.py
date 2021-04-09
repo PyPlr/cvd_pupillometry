@@ -8,11 +8,11 @@ Script for measuring the pupil flash response.
 import sys
 import os.path as op
 from time import sleep
-import winsound
+#import winsound
 
 import numpy as np
 
-from pyplr.protocol import (input_subject_id_gui, 
+from pyplr.protocol import (input_subject_id, 
                             subject_dir, 
                             record_dir)
                             
@@ -30,21 +30,21 @@ def main(subject_id=None,
          record=True, 
          control=False):
     
-    # set up subject and recording
+    # Set up subject and recording
     if subject_id is None:
-        subject_id = input_subject_id_gui()
+        subject_id = input_subject_id()
     subj_dir = subject_dir(subject_id)
     rec_dir = record_dir(subj_dir)
         
-    print(subject_id, subj_dir, rec_dir)
     # set up pupil
     p = PupilCore()
     
     # setup stlab
-    d = SpectraTuneLab(password='83e47941d9e930f6')
+    d = SpectraTuneLab(password='83e47941d9e930f6', 
+                       lighthub_ip='192.168.1.2')
     d.load_video_file(stimulus)
 
-    # # set up pupil trigger
+    # set up pupil trigger
     annotation = p.new_annotation('LIGHT_ON')
     
     if control:
@@ -55,7 +55,7 @@ def main(subject_id=None,
         sleep(1.)
     
     # freeze model
-    p.freeze_3d_model(eye_id=1, frozen=True)   
+    #p.freeze_3d_model(eye_id=1, frozen=True)   
     sleep(1)
     
     # start LightStamper and PupilGrabber
@@ -83,14 +83,15 @@ def main(subject_id=None,
         sys.exit(0)
     
     # finished
-    winsound.Beep(400, 200)
-    p.freeze_3d_model(eye_id=1, frozen=False)
+    #winsound.Beep(400, 200)
+    print('\a')
+    #p.freeze_3d_model(eye_id=1, frozen=False)
 
     # retrieve and process pupil data
     data = unpack_data_pandas(pgr_future.result())
     data = butterworth_series(
         data, 
-        filt_order=3, 
+        filt_order=2, 
         cutoff_freq=4/(sample_rate/2), 
         fields=['diameter_3d'])
     
@@ -116,7 +117,7 @@ def main(subject_id=None,
              
 if __name__ == '__main__':    
     try:
-        main()
+        main(subject_id='sub001')
     except KeyboardInterrupt:
         print('Killed by user')
         sys.exit(0)

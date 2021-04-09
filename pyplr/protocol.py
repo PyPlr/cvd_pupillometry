@@ -15,8 +15,7 @@ import os.path as op
 from subprocess import Popen
 
 def input_subject_id():
-    subject_id = input('Please enter subject ID: ')
-    return subject_id
+    return input('Please enter subject ID: ')
 
 def input_subject_id_gui():
     ROOT = tk.Tk()
@@ -33,7 +32,7 @@ def subject_dir(subject_id):
 def new_record_id(subject_dir):
     recording_id = 0
     for base, dirs, files in os.walk(subject_dir):
-        if str(recording_id).zfill(3) == op.basename(base):
+        if 'rec' + str(recording_id).zfill(3) == op.basename(base):
             recording_id += 1
     return 'rec' + str(recording_id).zfill(3)
 
