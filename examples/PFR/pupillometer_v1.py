@@ -22,11 +22,11 @@ from pyplr.utils import unpack_data_pandas
 from pyplr.preproc import butterworth_series
 from pyplr.plr import PLR
 
-def main(subject_id='000', 
+def main(subject_id=None, 
          baseline=1., 
          duration=8.,
-         sample_rate=120,
          stimulus='./stimuli/PLR-3000-180-mw.dsf',
+         sample_rate=120,
          record=True, 
          control=False):
     
@@ -36,6 +36,7 @@ def main(subject_id='000',
     subj_dir = subject_dir(subject_id)
     rec_dir = record_dir(subj_dir)
         
+    print(subject_id, subj_dir, rec_dir)
     # set up pupil
     p = PupilCore()
     
@@ -52,11 +53,19 @@ def main(subject_id='000',
     if record:
         p.command('R {}'.format(rec_dir))
         sleep(1.)
-        
+    
+    # freeze model
+    p.freeze_3d_model(eye_id=1, frozen=True)   
+    sleep(1)
+    
     # start LightStamper and PupilGrabber
-    lst_future = p.light_stamper(annotation, threshold=15, timeout=6.)
-    pgr_future = p.pupil_grabber(topic='pupil.1.3d', 
-                                 seconds=duration+baseline+2)
+    lst_future = p.light_stamper(
+        annotation, 
+        threshold=15, 
+        timeout=6.)
+    pgr_future = p.pupil_grabber(
+        topic='pupil.1.3d', 
+        seconds=duration+baseline+2)
     
     # baseline
     sleep(baseline)
@@ -75,6 +84,7 @@ def main(subject_id='000',
     
     # finished
     winsound.Beep(400, 200)
+    p.freeze_3d_model(eye_id=1, frozen=False)
 
     # retrieve and process pupil data
     data = unpack_data_pandas(pgr_future.result())

@@ -49,13 +49,12 @@ for i, stim in enumerate(stims):
     vf = d.load_video_file(stim)
     annotation = {**p.new_annotation('LIGHT_ON'), **vf['metadata']}
     
+    # check the model fitting
+    p.check_3d_model(eyes=[0,1], alert=True)
+    sleep(2)
+
     # notification of stimulus in 5 - 10 s
     winsound.Beep(alert_frequency, alert_duration)
-    
-    # freeze model
-    p.freeze_3d_model(eye_id=0, frozen=True)
-    sleep(.01)
-    p.freeze_3d_model(eye_id=1, frozen=True)
 
     # baseline of 5 - 10 s
     sleep(random.randrange(5000, 10001, 1) / 1000)
@@ -75,9 +74,6 @@ for i, stim in enumerate(stims):
     winsound.Beep(rest_frequency, rest_duration)
     
     if (i+1) < len(stims):
-        p.freeze_3d_model(eye_id=0, frozen=False)
-        sleep(.01)
-        p.freeze_3d_model(eye_id=1, frozen=False)
         sleep(60.)
 
 # finish recording
