@@ -285,10 +285,10 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Matching-spectra-for-a-opic-irradiance-with-STLAB">
 <h1>Matching spectra for <em>a</em>-opic irradiance with STLAB<a class="headerlink" href="#Matching-spectra-for-a-opic-irradiance-with-STLAB" title="Permalink to this headline">¶</a></h1>
-<p>When designing stimuli with STLAB, you may need to find the settings that most closely match a spectrum you measured elsewhere, which requires some linear algebra. In this example we are aiming to match the spectral output of a NeurOptics PLR-3000 automated pupillometer, which administers light stimuli with 4 white LEDs. We measured the spectral output of the PLR-3000 with an OceanOptics STS-VIS spectrometer at the usual eye position, and calibrated using our <a class="reference internal" href="04c_integrating_sphere.html#Calibration"><span class="std std-ref">standard
+<p>When designing stimuli with STLAB, you may need to find the settings that most closely match a spectrum you measured elsewhere, which requires some linear algebra. In this example we are aiming to match the spectral output of a NeurOptics PLR-3000 automated pupillometer, which administers light stimuli with 4 white LEDs. We measured the spectral output of the PLR-3000 with an OceanOptics STS-VIS spectrometer at the usual eye position and calibrated using our <a class="reference internal" href="04c_integrating_sphere.html#Calibration"><span class="std std-ref">standard
 pipeline</span></a>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -353,7 +353,7 @@ pipeline</span></a>.</p>
 </div>
 <p>In order to find the right STLAB settings, we need to make a <code class="docutils literal notranslate"><span class="pre">CalibrationContext</span></code> from our calibrated OceanOptics data.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -375,7 +375,7 @@ pipeline</span></a>.</p>
 <p>Now we can start searching for the STLAB settings that match the PLR-3000 settings for <em>a</em>-opic irradiance. We will focus on the 180 uW setting to keep things simple. For all possible combinations in 10 choose 5 (one LED for each photoreceptor class), we use linear algebra to work out the input fraction of the chosen LEDs that is required for matching the spectrum. Only those solutions where the input fractions are between 0 and 1 are valid, because eventually we will need to convert these to
 12-bit integers for STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -427,7 +427,7 @@ pipeline</span></a>.</p>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -490,7 +490,7 @@ pipeline</span></a>.</p>
 </div>
 <p>So there are 18 solutions to the problem using 5 LEDs. Next, we need to convert the input fractions to 12-bit integers for STLAB.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -535,7 +535,7 @@ pipeline</span></a>.</p>
 </div>
 <p>Time to visualise the solutions.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -564,12 +564,12 @@ pipeline</span></a>.</p>
 </div>
 <p>All that remains is to make a video file for use with STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[147]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">pulse_protocol</span><span class="p">,</span> <span class="n">video_file_to_dict</span>
-<span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span>
+<span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">optimal_settings</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
                <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
                <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;PLR-3000-</span><span class="si">{}</span><span class="s1">-mw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uW_setting</span><span class="p">))</span>
 </pre></div>
@@ -584,7 +584,7 @@ pipeline</span></a>.</p>
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[148]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -594,7 +594,7 @@ pipeline</span></a>.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[148]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -606,13 +606,13 @@ pipeline</span></a>.</p>
   &#39;transitionsCount&#39;: 4,
   &#39;fluxReference&#39;: 0,
   &#39;repeats&#39;: 1},
- &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-04-08 15:20:32.923123&#39;,
+ &#39;metadata&#39;: {&#39;creation_time&#39;: &#39;2021-04-09 12:22:51.745403&#39;,
   &#39;creator&#39;: &#39;jtm&#39;,
   &#39;protocol&#39;: &#39;pulse&#39;,
-  &#39;pulse_spec&#39;: &#39;[1716, 0, 0, 419, 0, 0, 821, 0, 182, 106]&#39;,
+  &#39;pulse_spec&#39;: &#39;[22, 1317, 83, 0, 0, 0, 796, 67, 0, 0]&#39;,
   &#39;pulse_duration&#39;: &#39;1000&#39;},
- &#39;spectra&#39;: [[1716, 0, 0, 419, 0, 0, 821, 0, 182, 106],
-  [1716, 0, 0, 419, 0, 0, 821, 0, 182, 106],
+ &#39;spectra&#39;: [[22, 1317, 83, 0, 0, 0, 796, 67, 0, 0],
+  [22, 1317, 83, 0, 0, 0, 796, 67, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
  &#39;transitions&#39;: [{&#39;spectrum&#39;: 0, &#39;power&#39;: 100, &#39;time&#39;: 0, &#39;flags&#39;: 0},
