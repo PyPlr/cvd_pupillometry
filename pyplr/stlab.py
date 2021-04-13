@@ -20,7 +20,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyplr.CIE import get_CIES026, get_CIE_CMF
+from pyplr.CIE import get_CIES026, get_CIE_CMF, get_CIE_1924_photopic_vl
+
 
 class SpectraTuneLab:
     '''Wrapper for LEDMOTIVE Spectra Tune Lab RESTFUL_API. 
@@ -966,14 +967,13 @@ def spectra_to_melanopic_irradiance(spectra, binwidth):
     return mi
 
 def spectra_to_luminance(spectra, grouper=['led','intensity']):
-    from CIE import get_CIE_1924_photopic_vl
     
     # get luminancephotopic luminance curve
     vl = get_CIE_1924_photopic_vl(asdf=True)
     vl = vl[::5]
     
     # aggregate to luminance
-    lum = spectra.groupby(by=grouper)['flux'].agg(lambda x: x.dot(vl.values))
+    lum = spectra.groupby(by=grouper).agg(lambda x: x.dot(vl.values))
     return lum    
 
  

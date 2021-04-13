@@ -18,8 +18,7 @@ import msgpack
 import zmq
 
 class PupilCore:
-    '''
-    A class to facilitate working with Pupil Core via the Network API.
+    '''Class to facilitate working with Pupil Core via the Network API.
     
     Example
     -------
