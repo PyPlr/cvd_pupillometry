@@ -94,9 +94,7 @@ class PLR:
         acc = self.acceleration_profile()
         lidx = np.argmin(acc[self.onset_idx:self.onset_idx + self.sample_rate])
         lidx += self.onset_idx
-        return lidx
-    
-        
+        return lidx  
     
     def latency_to_constriction_a(self):
         '''Return the time in miliseconds between stimulus onset and the first 
@@ -188,6 +186,15 @@ class PLR:
         ttmc = self.time_to_max_constriction()
         return  ttmc - lat
     
+    def average_redilation_velocity(self):
+        '''Return the average redilation velocity
+
+        '''
+        vel  = self.velocity_profile()
+        pidx = self.peak_constriction_idx()
+        return np.mean(abs(vel[pidx:])) 
+
+        
     def max_redilation_velocity(self):
         '''Return the maximum redilation velocity.
         
@@ -245,6 +252,7 @@ class PLR:
             'VelConAve': self.average_constriction_velocity(),
             'AccConMax': self.max_constriction_acceleration(),
             'ConTime': self.constriction_time(),
+            'VelRedAve': self.average_redilation_velocity(),
             'VelRedMax': self.max_redilation_velocity(),
             'AccRedMax': self.max_redilation_acceleration()
             }
