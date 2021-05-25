@@ -286,10 +286,10 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Pupil-Core-device-timing">
 <h1>Pupil Core device timing<a class="headerlink" href="#Pupil-Core-device-timing" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> marks the onset of a light stimulus by sending an annotation containing the timestamp of the first frame where the light becomes visible to the World camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture’s ability to synchronise the clocks of the
-cameras on a Pupil Core headset. How well does it handle this task? When we discovered that the near-infrared from STLABs amber channel gets detected by both Eye and World cameras, we were able to <a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">design a protocol</span></a> to test this ourselves using the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> method. The protocol basically involved putting the Pupil Core headset inside the integrating sphere and repeatedly flashing a bright orange light in a dark room. Prior to each flash, we
-instantiate a <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> for each of the cameras, which gives us the pupil timestamp from the frame where the light was detected for each camera. This allows us to get some insight into how well the data streams are synchronised.</p>
-<p>We ran the testing protocol on Mac and Windows (Pupil Capture v3.2-20) for <em>n</em> = 100 near-IR light flashes. For each run of the protocol, Eye camera resolution was kept at (192, 192) with Absolute Exposure Time of 25, and the World camera had (640, 480) and 60. Auto Exposure Mode was set to ‘manual mode’ for all cameras, and Auto Exposure Priority was disabled for the World camera. Whilst all of these camera settings may have the potential to impact the precision of the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>,
-Frame rate is the most obvious. So we performed separate trials on Mac and Windows with a Frame rate of 60 and 120.</p>
+cameras on a Pupil Core headset. How well does it handle this task? We were able to test camera clock synchronisation by putting the Pupil Core headset inside our integrating sphere and repeatedly flashing a bright orange light containing enough near infrared to afford detection by the Eye cameras as well as the World camera. Prior to each flash, concurrent <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s were instantiated, giving us the timestamp of the frame where the luminance change was detected independently
+for each camera. This protocol allowed us to get some insight into how well the data streams are synchronised.</p>
+<p>We ran <a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">the testing protocol</span></a> on Mac and Windows (Pupil Capture v3.2-20) for <em>n</em> = 100 near-IR light flashes. For each run of the protocol, Eye camera resolution was kept at (192, 192) with Absolute Exposure Time of 25, and the World camera had (640, 480) and 60. Auto Exposure Mode was set to ‘manual mode’ for all cameras, and Auto Exposure Priority was disabled for the World camera. Whilst all of these camera settings may have the potential to impact the
+precision of the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>, Frame rate is the most obvious. So we performed separate trials on Mac and Windows with a Frame rate of 60 and 120.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -302,7 +302,6 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -313,7 +312,7 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">datadir</span> <span class="o">=</span> <span class="s1">&#39;./data/pupil_core_camera_sync_tests&#39;</span>
+<span></span><span class="n">datadir</span> <span class="o">=</span> <span class="s1">&#39;../data/pupil_core_camera_sync_tests&#39;</span>
 <span class="n">recordings</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">datadir</span> <span class="o">+</span> <span class="s1">&#39;/**/**/**/annotations.csv&#39;</span><span class="p">)</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
@@ -335,7 +334,7 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
                        <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;Timestamp difference (ms)&#39;</span><span class="p">))</span>
 
     <span class="c1"># Add categories for operating system and frames per second</span>
-    <span class="n">diffs</span><span class="p">[</span><span class="s1">&#39;OS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mac&#39;</span> <span class="k">if</span> <span class="s1">&#39;mac&#39;</span> <span class="ow">in</span> <span class="n">rec</span> <span class="k">else</span> <span class="s1">&#39;Windows&#39;</span>
+    <span class="n">diffs</span><span class="p">[</span><span class="s1">&#39;OS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;macOS&#39;</span> <span class="k">if</span> <span class="s1">&#39;mac&#39;</span> <span class="ow">in</span> <span class="n">rec</span> <span class="k">else</span> <span class="s1">&#39;Windows&#39;</span>
     <span class="n">diffs</span><span class="p">[</span><span class="s1">&#39;FPS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;120&#39;</span> <span class="k">if</span> <span class="s1">&#39;120_fps&#39;</span> <span class="ow">in</span> <span class="n">rec</span> <span class="k">else</span> <span class="s1">&#39;60&#39;</span>
     <span class="n">diffs</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rec</span><span class="p">),</span> <span class="s1">&#39;annotation_timestamp_diffs.csv&#39;</span><span class="p">))</span>
 
@@ -421,35 +420,35 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
       <th>295</th>
       <td>eye0 - eye1</td>
       <td>-3.959</td>
-      <td>Mac</td>
+      <td>macOS</td>
       <td>60</td>
     </tr>
     <tr>
       <th>296</th>
       <td>eye0 - eye1</td>
       <td>-3.968</td>
-      <td>Mac</td>
+      <td>macOS</td>
       <td>60</td>
     </tr>
     <tr>
       <th>297</th>
       <td>eye0 - eye1</td>
       <td>12.266</td>
-      <td>Mac</td>
+      <td>macOS</td>
       <td>60</td>
     </tr>
     <tr>
       <th>298</th>
       <td>eye0 - eye1</td>
       <td>-3.984</td>
-      <td>Mac</td>
+      <td>macOS</td>
       <td>60</td>
     </tr>
     <tr>
       <th>299</th>
       <td>eye0 - eye1</td>
       <td>-3.991</td>
-      <td>Mac</td>
+      <td>macOS</td>
       <td>60</td>
     </tr>
   </tbody>
@@ -461,7 +460,7 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
 <div class="section" id="Plot-the-timestamp-differences">
 <h2>Plot the timestamp differences<a class="headerlink" href="#Plot-the-timestamp-differences" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -486,13 +485,13 @@ Frame rate is the most obvious. So we performed separate trials on Mac and Windo
 </div>
 <div class="section" id="Interpretation">
 <h2>Interpretation<a class="headerlink" href="#Interpretation" title="Permalink to this headline">¶</a></h2>
-<p>These data show the time difference between when the same light flash was detected by concurrent <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s running for both Eye cameras and the World camera. On Mac and Windows, the Eye cameras appear to be well-synchronised with a margin of error that is to be expected given the frame rate. On Windows, the light flashes were consistently stamped on the World camera around 60 ms before they were stamped on the Eye cameras for both 60 and 120 FPS. The same pattern was observed,
-though to a lesser degree, with Mac. The timestamps were best synchronised on Mac OS with cameras running at 120 FPS, where the World camera lead by 15 ms on average.</p>
+<p>These data show the time difference between when the same light flash was detected by independant <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s running concurrently for both Eye cameras and the World camera. On Mac and Windows, the Eye cameras appear to be well-synchronised with a margin of error that is to be expected given the frame rate. On Windows, the light flashes were consistently stamped on the World camera around 60 ms before they were stamped on the Eye cameras for both 60 and 120 FPS. The same pattern
+was observed, though to a lesser degree, with Mac. The timestamps were best synchronised on Mac OS with cameras running at 120 FPS, where the World camera lead by 15 ms on average.</p>
 </div>
 <div class="section" id="Implications">
 <h2>Implications<a class="headerlink" href="#Implications" title="Permalink to this headline">¶</a></h2>
-<p>It is difficult to interpret these data without a detailed understanding of the inner workings of the Pupil software. But in practical terms, as far as the PLR is concerned, our data suggest that any time-critical measures using a World camera <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> timestamp as a reference point will be consistently <em>overestimated</em> by 15 to 60 ms, depending on the operating system and camera settings being used. But, given the high level of repeatability, a reasoanble case can be made for
-correcting the timestamps using the average difference on an OS-camera-settings basis.</p>
+<p>It is difficult to interpret these data without a detailed understanding of the inner workings of the Pupil software. But in practical terms, as far as the PLR is concerned, our data suggest that any time-critical measures using a World camera <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> timestamp as a reference point will be consistently <em>overestimated</em> by 15 to 60 ms, depending on the operating system and camera settings being used. But, given that these timestamp discrepenacies are highly repeatable and
+potentially correctable, they do not preclude researchers from obtaining time-critical measures of the PLR.</p>
 <p>It is worth noting that the ‘ground truth’ for measures of constriction latency and pupil size is inaccessible, and that values depend strongly on hardware, settings, and measurement principles. Our data show at least that with Pupil Core we can achieve a level of precision that rivals that of automated pupillometers.</p>
 </div>
 </div>

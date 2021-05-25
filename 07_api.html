@@ -546,9 +546,8 @@ dictionary with key: <code class="docutils literal notranslate"><span class="pre
 <span class="target" id="module-pyplr.stlab"></span><div class="section" id="pyplr-stlab">
 <h2>pyplr.stlab<a class="headerlink" href="#pyplr-stlab" title="Permalink to this headline">¶</a></h2>
 <p>A python wrapper for Ledmotive’s Spectra Tune Lab light engine and RESTful API.
-Also contains other useful functions for working with STLAB. See the “LIGHT HUB
-RESTful API” manual for further functions and more info. Note that a license is
-required to develop against the RESTful API.</p>
+See the “LIGHT HUB RESTful API” manual for further functions and more info.
+Note that a license is required to develop against the RESTful API.</p>
 <dl class="py class">
 <dt id="pyplr.stlab.SpectraTuneLab">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">SpectraTuneLab</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">password</span></em>, <em class="sig-param"><span class="n">username</span><span class="o">=</span><span class="default_value">'admin'</span></em>, <em class="sig-param"><span class="n">identity</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">lighthub_ip</span><span class="o">=</span><span class="default_value">'192.168.7.2'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab" title="Permalink to this definition">¶</a></dt>
@@ -1167,13 +1166,6 @@ Capture. The default is {}.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="pyplr.stlab.explore_spectra">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">explore_spectra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em>, <em class="sig-param"><span class="n">binwidth</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.explore_spectra" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function takes a DataFrame of spectra and plots them, along with other
-useful info.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt id="pyplr.stlab.make_video_file">
 <code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">make_video_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">fname</span><span class="o">=</span><span class="default_value">'our_video_file'</span></em>, <em class="sig-param"><span class="n">repeats</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">metadata</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.make_video_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes a DataFrame with columns ‘time’, ‘LED-1’…’LED-10’
@@ -1202,38 +1194,6 @@ with the STLAB.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.stlab.spec_to_xyz">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spec_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em>, <em class="sig-param"><span class="n">cmf</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spec_to_xyz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a spectrum to an xyz point.</p>
-<p>The spectrum must be on the same grid of points as the colour-matching
-function, cmf: 380-780 nm in 5 nm steps.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.stlab.spectra_to_peak_wavelengths">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spectra_to_peak_wavelengths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spectra_to_peak_wavelengths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the peak wavelengths for a given set of spectra.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="pyplr.stlab.spectra_to_xyz">
-<code class="sig-prename descclassname">pyplr.stlab.</code><code class="sig-name descname">spectra_to_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em>, <em class="sig-param"><span class="n">binwidth</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.spectra_to_xyz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the CIE 1931 xy chromaticity coordinates for a collection of
-spectra. The DataFrame must have columns (or multi index) with names</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spectra</strong> (<em>DataFrame</em>) – As output by stlab.sample</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>xyz</strong> – The xyz values for each spectrum.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1270,6 +1230,19 @@ spectra. The DataFrame must have columns (or multi index) with names</p>
 <dd><p>Sample the dark spectrum with a range of integration times.</p>
 <p>Do this for a range of temperatures to map the relationship between
 temperature and integration time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integration_times</strong> (<em>list</em><em>, </em><em>optional</em>) – List of integers representing integration times in microseconds.
+The default is [1000].</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>data</strong> (<cite>pandas.DataFrame</cite>) – Dark counts.</p></li>
+<li><p><strong>info</strong> (<cite>pandas.DataFrame</cite>) – Companion info.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1305,24 +1278,52 @@ The default is <code class="docutils literal notranslate"><span class="pre">{}</
 </dd></dl>
 
 <dl class="py function">
-<dt id="pyplr.oceanops.predict_dark_counts">
-<code class="sig-prename descclassname">pyplr.oceanops.</code><code class="sig-name descname">predict_dark_counts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra_info</span></em>, <em class="sig-param"><span class="n">darkcal</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.predict_dark_counts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predict dark counts from temperature and integration times.</p>
-<p>These must be subtracted from measured pixel counts during the
-unit-calibration process.</p>
+<dt id="pyplr.oceanops.calibrated_radiance">
+<code class="sig-prename descclassname">pyplr.oceanops.</code><code class="sig-name descname">calibrated_radiance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra</span></em>, <em class="sig-param"><span class="n">spectra_info</span></em>, <em class="sig-param"><span class="n">dark_counts</span></em>, <em class="sig-param"><span class="n">cal_per_wl</span></em>, <em class="sig-param"><span class="n">sensor_area</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.calibrated_radiance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert raw OceanOptics data into calibrated radiance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spectra_info</strong> (<em>pd.DataFrame</em>) – The info dataframe containing the ‘board_temp’ and ‘integration_time’
-variables.</p></li>
-<li><p><strong>calfile</strong> (<em>string</em>) – Path to the calibration file. This is currenly generated in MATLAB.</p></li>
+<li><p><strong>spectra</strong> (<cite>pandas.DataFrame</cite>) – Spectra to be calibrated, as returned by
+<cite>OceanOptics.measurement(…)</cite>. Column index must be spectrometer
+wavelength bins.</p></li>
+<li><p><strong>spectra_info</strong> (<cite>pandas.DataFrame</cite>) – Spectra companion info, as returned by <cite>OceanOptics.measurement(…)</cite>.</p></li>
+<li><p><strong>dark_counts</strong> (<cite>pandas.DataFrame</cite>) – Predicted dark counts for each pixel. See
+<cite>OceanOptics.predict_dark_counts(…)</cite></p></li>
+<li><p><strong>cal_per_wl</strong> (<cite>pandas.DataFrame</cite>) – Spectrometer calibration file.</p></li>
+<li><p><strong>sensor_area</strong> (<em>float</em>) – Sensor area in cm2. Spectrometer constant.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The predicted dark spectra.</p>
+<dd class="field-even"><p><strong>w_per_m2_per_nm</strong> – Calibrated radiance data in watts per meter squared units.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
+<dd class="field-odd"><p><cite>pandas.DataFrame</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pyplr.oceanops.predict_dark_counts">
+<code class="sig-prename descclassname">pyplr.oceanops.</code><code class="sig-name descname">predict_dark_counts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectra_info</span></em>, <em class="sig-param"><span class="n">darkcal</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.predict_dark_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict dark counts from temperature and integration times.</p>
+<p>These get subtracted from measured pixel counts in
+<cite>OceanOptics.calibrated_radiance(…)</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectra_info</strong> (<em>pd.DataFrame</em>) – Spectra companion info containing the ‘board_temp’ and
+‘integration_time’ variables.</p></li>
+<li><p><strong>darkcal</strong> (<cite>pandas.DataFrame</cite>) – Parameters accounting for the relationship between PCB temperature and
+integration time and their effect on raw pixel counts. Currently
+generated in MATLAB.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The predicted dark counts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1417,6 +1418,21 @@ every spectrum in <cite>self.lkp</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="pyplr.calibrate.CalibrationContext.fit_curves">
+<code class="sig-name descname">fit_curves</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.calibrate.CalibrationContext.fit_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit curves to the unweighted irradiance of spectral measurements
+and save the parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Figure.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>fig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="pyplr.calibrate.CalibrationContext.match">
 <code class="sig-name descname">match</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">match_led</span></em>, <em class="sig-param"><span class="n">match_led_intensity</span></em>, <em class="sig-param"><span class="n">target_led</span></em>, <em class="sig-param"><span class="n">match_type</span><span class="o">=</span><span class="default_value">'irrad'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.calibrate.CalibrationContext.match" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate intensity setting for <cite>target_led</cite> so that
@@ -1450,6 +1466,26 @@ to <cite>match_type</cite>.</p>
 <li><p><strong>match_intensity</strong> (<em>int</em>) – The required intensity for <cite>match_led</cite>.</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.calibrate.CalibrationContext.optimise">
+<code class="sig-name descname">optimise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">led</span></em>, <em class="sig-param"><span class="n">intensities</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.calibrate.CalibrationContext.optimise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimise a stimulus profile by applying the curve parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>led</strong> (<em>int</em>) – LED being optimised.</p></li>
+<li><p><strong>intensities</strong> (<em>np.array</em>) – Array of intensity values to optimise for specified LED.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Optimised intensity values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2103,6 +2139,12 @@ and averaging across multiple PLRs should remove cause for concern.</p>
 <dt id="pyplr.plr.PLR.average_constriction_velocity">
 <code class="sig-name descname">average_constriction_velocity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.plr.PLR.average_constriction_velocity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the average constriction velocity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.plr.PLR.average_redilation_velocity">
+<code class="sig-name descname">average_redilation_velocity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.plr.PLR.average_redilation_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the average redilation velocity</p>
 </dd></dl>
 
 <dl class="py method">
