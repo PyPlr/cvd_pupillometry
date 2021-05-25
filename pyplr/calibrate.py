@@ -350,7 +350,7 @@ class CalibrationContext:
 
         '''
         vl = get_CIE_1924_photopic_vl(asdf=True, binwidth=self.binwidth)
-        lux = self.lkp.dot(vl.values)*683
+        lux = self.lkp.dot(vl.values) * 683
         lux.columns = ['lux']
         return lux
     
@@ -369,7 +369,7 @@ class CalibrationContext:
         ir = self.irradiance.loc[:, idxs, :]
         
         # plot
-        fig, axs = plt.subplots(2, 5, figsize=(20,8), sharex=True, sharey=True)
+        fig, axs = plt.subplots(2, 5, figsize=(16,6), sharex=True, sharey=True)
         axs = [item for sublist in axs for item in sublist]
         colors = get_led_colors()
         
@@ -394,7 +394,7 @@ class CalibrationContext:
             axs[idx].legend()
             
         for ax in [axs[0],axs[5]]:
-            ax.set_ylabel('Output fraction (lux)')
+            ax.set_ylabel('Output fraction (irradiance)')
         for ax in axs[5:]:
             ax.set_xlabel('Input fraction')   
             
