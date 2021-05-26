@@ -1,15 +1,15 @@
 Acknowledgements
 ================
 
-Thanks to:
+We thank:
 
-- Thibault Lestang and OxRSE for helpful input at various stages of development.
+- Thibault Lestang and the Oxford Research Software Engineering (OxRSE) Group for helpful input at various stages of software development.
 
-- Chris Gibbs, Duncan Constable, Chris Hatcher, and David Isley for building the rig.
+- Chris Gibbs, Duncan Constable, Chris Hatcher, and David Ilsley for building the stimulation rig.
 
-- Grahame Faulkner for expert advice on safety.
+- David Sliney and Grahame Faulkner for advice on safety.
 
-- The Pupil Labs team for support on Discord.
+- Pablo Prietz and the Pupil Labs community for support on Discord.
 
 .. rubric:: Tables and indices
 ------------------------------
