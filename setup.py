@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://github.com/PyPlr/cvd_pupillometry',
     project_urls={'Documentation': 'https://pyplr.github.io/cvd_pupillometry/'},
-    install_requires=['scipy','matplotlib','msgpack','pyzmq','requests','numpy','seaborn','seabreeze','spectres','numexpr','tables','pandas'],
+    install_requires=['scipy','matplotlib','msgpack','pyzmq','requests','numpy','seaborn','seabreeze','numexpr','tables','pandas'],
     packages=setuptools.find_packages(),
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

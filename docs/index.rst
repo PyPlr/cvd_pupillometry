@@ -20,7 +20,7 @@ Welcome to *PyPlr*'s documentation!
    08_developers
    09_acknowledgements
    10_funding
-   11_gloassary
+   11_citation
 
 Tables and indices
 ------------------

@@ -49,13 +49,7 @@ We recommend installing *PyPlr* in a virtual environment. This can be done using
 
     $ conda create -n pyplr python=3.7.7
     $ conda activate pyplr
-    $ conda install --file requirements.txt
-
-The *spectres* package may need to be installed separately using *pip*:
-
-.. code-block:: bash
-
-    $ pip install spectres
+    $ python setup.py install
 
 Notes/Potential Issues
 ----------------------
