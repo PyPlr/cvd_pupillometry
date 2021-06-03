@@ -7,7 +7,7 @@ PyPlr
 
 [![PyPI version](https://badge.fury.io/py/pyplr.svg)](https://badge.fury.io/py/pyplr)
 
-![](img/orange_eye.png)
+![](logo/orange_eye.png)
 
 *PyPlr* is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking platform. Features include:
 
