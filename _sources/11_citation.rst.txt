@@ -6,25 +6,24 @@ If you use *PyPlr* in a scientific publication we would appreciate citations to 
 .. code-block:: bibtex
 
     @software{PyPlr2021,
-      author       = {Joel Martin and Manuel Spitschan},
-      title        = {PyPlr/cvd\_pupillometry: PyPlr initial release},
-      month        = {may},
-      year         = {2021},
-      publisher    = {Zenodo},
-      version      = {v0.6.0-alpha},
-      doi          = {10.5281/zenodo.4785288},
-      url          = {https://doi.org/10.5281/zenodo.4785288}
+      author         = {Martin, Joel T and Spitschan, Manuel},
+      title          = {PyPlr/cvd\_pupillometry: PyPlr initial release},
+      month          = {may},
+      year           = {2021},
+      publisher      = {Zenodo},
+      version        = {v0.6.0-alpha},
+      doi            = {10.5281/zenodo.4785288},
+      url            = {https://doi.org/10.5281/zenodo.4785288}
     }
 
     @article{Martin2021,
-        author = {Martin, Joel T and Pinto, Joana and Bulte, Daniel P and Spitschan, Manuel},
-        title = {PyPlr: A versatile, integrated system of hardware and software for researching the human pupillary light reflex},
+        author       = {Martin, Joel T and Pinto, Joana and Bulte, Daniel P and Spitschan, Manuel},
+        title        = {PyPlr: A versatile, integrated system of hardware and software for researching the human pupillary light reflex},
         elocation-id = {2021.06.02.446731},
-        year = {2021},
-        doi = {10.1101/2021.06.02.446731},
-        publisher = {Cold Spring Harbor Laboratory},
-        URL = {https://www.biorxiv.org/content/early/2021/06/02/2021.06.02.446731},
-        eprint = {https://www.biorxiv.org/content/early/2021/06/02/2021.06.02.446731.full.pdf},
-        journal = {bioRxiv}
+        year         = {2021},
+        doi          = {10.1101/2021.06.02.446731},
+        publisher    = {Cold Spring Harbor Laboratory},
+        URL          = {https://www.biorxiv.org/content/early/2021/06/02/2021.06.02.446731},
+        eprint       = {https://www.biorxiv.org/content/early/2021/06/02/2021.06.02.446731.full.pdf},
+        journal      = {bioRxiv}
     }
-

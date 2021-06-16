@@ -29,9 +29,6 @@ API documentation
 .. automodule:: pyplr.plr
    :members:
 
-.. automodule:: pyplr.graphing
-   :members:
-
 .. rubric:: Tables and indices
 ------------------------------
 
