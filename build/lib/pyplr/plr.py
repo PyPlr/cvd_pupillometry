@@ -94,9 +94,7 @@ class PLR:
         acc = self.acceleration_profile()
         lidx = np.argmin(acc[self.onset_idx:self.onset_idx + self.sample_rate])
         lidx += self.onset_idx
-        return lidx
-    
-        
+        return lidx  
     
     def latency_to_constriction_a(self):
         '''Return the time in miliseconds between stimulus onset and the first 
@@ -188,6 +186,15 @@ class PLR:
         ttmc = self.time_to_max_constriction()
         return  ttmc - lat
     
+    def average_redilation_velocity(self):
+        '''Return the average redilation velocity
+
+        '''
+        vel  = self.velocity_profile()
+        pidx = self.peak_constriction_idx()
+        return np.mean(abs(vel[pidx:])) 
+
+        
     def max_redilation_velocity(self):
         '''Return the maximum redilation velocity.
         
@@ -245,13 +252,14 @@ class PLR:
             'VelConAve': self.average_constriction_velocity(),
             'AccConMax': self.max_constriction_acceleration(),
             'ConTime': self.constriction_time(),
+            'VelRedAve': self.average_redilation_velocity(),
             'VelRedMax': self.max_redilation_velocity(),
             'AccRedMax': self.max_redilation_acceleration()
             }
         return pd.DataFrame.from_dict(
             params, orient='index', columns=['value'])
     
-    def plot(self, vel_acc=True, print_params=True):
+    def plot(self, vel=True, acc=True, print_params=True):
         '''Plot a PLR with option to add descriptive parameters and velocity / 
         acceleration profiles. 
         
@@ -281,12 +289,14 @@ class PLR:
         ax.set_ylabel('Pupil Size')
         ax.set_xlabel('Time (s)')
         
-        if vel_acc:
+        if vel or acc:
             ax2 = ax.twinx()
-            vel = self.velocity_profile()
-            acc = self.acceleration_profile()
-            ax2.plot(time, vel, color='g', lw=2.5)
-            ax2.plot(time, acc, color='r', lw=1)
+            if vel:
+                vel = self.velocity_profile()
+                ax2.plot(time, vel, color='g', lw=2.5)
+            if acc:
+                acc = self.acceleration_profile()
+                ax2.plot(time, acc, color='r', lw=1)
             ax2.set_ylabel('Velocity / Acceleration')
         
         if print_params:
@@ -297,9 +307,12 @@ class PLR:
                 
         return fig
 
-##########################################
-# FUNCTIONS FOR CALCULATING PIPR METRICS #
-##########################################
+# TODO: is this worth it? 
+class PIPR(PLR):
+    def __init__(self, plr, sample_rate, onset_idx, stim_duration, other_plr=None):
+        super().__init__(plr, sample_rate, onset_idx, stim_duration)
+        self.other_plr = other_plr
+        
 
 # def pipr_amplitude(plr, sample_rate, window):
 #     return plr[window[0]:window[1]].mean()

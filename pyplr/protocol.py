@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Mar 18 09:51:25 2021
+'''
+pyplr.plr
+=========
 
-@author: engs2242
-"""
+Tools for designing pupillometry protocols.
+
+@author: jtm
+
+'''
+
 import sys
 if sys.platform.startswith('win'):
     from winsound import Beep

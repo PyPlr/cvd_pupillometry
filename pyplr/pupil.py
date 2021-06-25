@@ -468,13 +468,11 @@ class PupilCore:
         Example
         -------
         >>> annotation = new_annotation(label='LIGHT_ON')
-        >>> threshold = 15
-        >>> timeout = 10.
         >>> p = PupilCore()
         >>> p.command('R')
         >>> sleep(2.)
-        >>> lst_future = pupil.lightstamper(annotation, threshold, timeout)
-        >>> sleep(timeout)
+        >>> lst_future = p.light_stamper(annotation, threshold=15, timeout=10)
+        >>> sleep(10)
         >>> # light stimulus here
         >>> p.command('r')
         >>> data = lst_future.result()

@@ -4,7 +4,7 @@
 pyplr.calibrate
 ===============
 
-Module to assist with calibrating the sphere.
+Module to assist with calibrating the sphere. 
 
 @author: jtm
 
@@ -16,6 +16,8 @@ from time import sleep
 from random import shuffle
 
 import numpy as np
+from scipy.optimize import curve_fit
+from scipy.stats import beta
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -31,7 +33,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
     
     '''
     
-    def __init__(self, username, identity, password, 
+    def __init__(self, password, username='admin', identity=1, 
                  lighthub_ip='192.168.7.2', external=None):
         '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
         more info.
@@ -49,7 +51,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         None.
 
         '''
-        super().__init__(username, identity, password, lighthub_ip)
+        super().__init__(password, username, identity, lighthub_ip)
         self.external = external
         self._ready_cache()
 
@@ -264,7 +266,8 @@ class CalibrationContext:
         self.lkp = self.create_lookup_table()
         self.aopic = self.create_alphaopic_irradiances_table()
         self.lux = self.create_lux_table()
-        self.irradiance = self.lkp.sum(axis=1) 
+        self.irradiance = self.lkp.sum(axis=1)
+        self.curveparams = {}
     
     def plot_calibrated_spectra(self):
         '''Plot the calibrated spectra.
@@ -347,10 +350,81 @@ class CalibrationContext:
 
         '''
         vl = get_CIE_1924_photopic_vl(asdf=True, binwidth=self.binwidth)
-        lux = self.lkp.dot(vl.values)*683
+        lux = self.lkp.dot(vl.values) * 683
         lux.columns = ['lux']
         return lux
+    
+    def fit_curves(self):
+        '''Fit curves to the unweighted irradiance of spectral measurements
+        and save the parameters.
         
+        Returns
+        -------
+        fig
+            Figure.
+
+        '''
+        # intensity levels from original data and corresponding irradiances
+        idxs = self.data.index.get_level_values(1).unique().to_numpy()
+        ir = self.irradiance.loc[:, idxs, :]
+        
+        # plot
+        fig, axs = plt.subplots(2, 5, figsize=(16,6), sharex=True, sharey=True)
+        axs = [item for sublist in axs for item in sublist]
+        colors = get_led_colors()
+        
+        for idx, df in ir.groupby(level=0):
+            xdata = idxs / 4095
+            ydata = df.values
+            ydata = ydata / np.max(ydata)
+            
+            # Curve fitting function
+            def func(x, a, b):
+                return beta.cdf(x, a, b)
+        
+            axs[idx].scatter(xdata, ydata, color=colors[idx], s=2)
+            
+            # Fit
+            popt, pcov = curve_fit(beta.cdf, xdata, ydata, p0=[2.0, 1.0])
+            self.curveparams[idx] = popt
+            ypred = func(xdata, *popt)
+            axs[idx].plot(xdata, ypred, color=colors[idx], 
+                          label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+            axs[idx].set_title('Channel {}'.format(idx))
+            axs[idx].legend()
+            
+        for ax in [axs[0],axs[5]]:
+            ax.set_ylabel('Output fraction (irradiance)')
+        for ax in axs[5:]:
+            ax.set_xlabel('Input fraction')   
+            
+        plt.tight_layout()
+        
+        return fig
+    
+    def optimise(self, led, intensities):
+        '''Optimise a stimulus profile by applying the curve parameters. 
+
+        Parameters
+        ----------
+        led : int
+            LED being optimised.
+        intensities : np.array
+            Array of intensity values to optimise for specified LED.
+
+        Returns
+        -------
+        np.array
+            Optimised intensity values.
+
+        '''
+        if not self.curveparams:
+            print('No parameters yet. Run .optimise(...) first...')
+        params = self.curveparams[led]
+        intensities = intensities / 4095
+        return (beta.ppf(intensities, params[0], params[1]) * 4095).astype(
+            'int')
+    
     def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
         '''Using `self.lkp`, predict the spectral power distribution for a 
         given list of led intensities.
@@ -448,7 +522,5 @@ class CalibrationContext:
                        .min())
         
         return error, match_intensity
-    
-def scooby():
-    return 'Scooby dooby doooooo!'
+
          

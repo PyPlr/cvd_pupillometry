@@ -1,4 +1,5 @@
-README.rst
+LICENSE.txt
+README.md
 pyproject.toml
 setup.py
 pyplr/CIE.py
@@ -11,7 +12,7 @@ pyplr/plr.py
 pyplr/preproc.py
 pyplr/protocol.py
 pyplr/pupil.py
-pyplr/pupil_old.py
+pyplr/spectools.py
 pyplr/stlab.py
 pyplr/utils.py
 pyplr.egg-info/PKG-INFO

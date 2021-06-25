@@ -5,7 +5,7 @@
 
 Welcome to *PyPlr*'s documentation!
 ===================================
-
+   
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -21,6 +21,7 @@ Welcome to *PyPlr*'s documentation!
    09_acknowledgements
    10_funding
    11_citation
+   
 
 Tables and indices
 ------------------

@@ -12,7 +12,7 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
-import spectres
+from scipy.interpolate import interp1d
 from seabreeze.spectrometers import Spectrometer
 
 class OceanOptics(Spectrometer):
@@ -152,7 +152,20 @@ class OceanOptics(Spectrometer):
         
         Do this for a range of temperatures to map the relationship between 
         temperature and integration time.
-    
+        
+        Parameters
+        ----------
+        integration_times : list, optional
+            List of integers representing integration times in microseconds. 
+            The default is [1000].
+
+        Returns
+        -------
+        data : `pandas.DataFrame`
+            Dark counts.
+        info : `pandas.DataFrame`
+            Companion info.
+
         '''
         data = []
         info = []
@@ -171,21 +184,23 @@ class OceanOptics(Spectrometer):
 def predict_dark_counts(spectra_info, darkcal):
     '''Predict dark counts from temperature and integration times.
     
-    These must be subtracted from measured pixel counts during the 
-    unit-calibration process. 
+    These get subtracted from measured pixel counts in 
+    `OceanOptics.calibrated_radiance(...)`
 
     Parameters
     ----------
     spectra_info : pd.DataFrame
-        The info dataframe containing the 'board_temp' and 'integration_time'
-        variables.
-    calfile : string
-        Path to the calibration file. This is currenly generated in MATLAB. 
+        Spectra companion info containing the 'board_temp' and 
+        'integration_time' variables.
+    darkcal : `pandas.DataFrame`
+        Parameters accounting for the relationship between PCB temperature and 
+        integration time and their effect on raw pixel counts. Currently 
+        generated in MATLAB. 
 
     Returns
     -------
-    pd.DataFrame
-        The predicted dark spectra.
+    pandas.DataFrame
+        The predicted dark counts.
 
     '''
     dark_counts = []
@@ -224,32 +239,70 @@ def predict_dark_counts(spectra_info, darkcal):
 
 def calibrated_radiance(spectra, 
                         spectra_info, 
-                        dark_spectra, 
+                        dark_counts, 
                         cal_per_wl, 
                         sensor_area):
+    '''Convert raw OceanOptics data into calibrated radiance.
     
+    Parameters
+    ----------
+    spectra : `pandas.DataFrame`
+        Spectra to be calibrated, as returned by 
+        `OceanOptics.measurement(...)`. Column index must be spectrometer
+        wavelength bins. 
+    spectra_info : `pandas.DataFrame`
+        Spectra companion info, as returned by `OceanOptics.measurement(...)`.
+    dark_counts : `pandas.DataFrame`
+        Predicted dark counts for each pixel. See 
+        `OceanOptics.predict_dark_counts(...)`
+    cal_per_wl : `pandas.DataFrame`
+        Spectrometer calibration file.
+    sensor_area : float
+        Sensor area in cm2. Spectrometer constant. 
+
+    Returns
+    -------
+    w_per_m2_per_nm : `pandas.DataFrame`
+        Calibrated radiance data in watts per meter squared units.
+
+    '''
     # we have no saturated spectra due to adaptive measurement
-    
     # convert integration time from us to s
     spectra_info['integration_time'] = (spectra_info['integration_time']
                                         / (1000*1000))
+    # float index for spectra columns
+    spectra.columns = pd.Float64Index(spectra.columns)
     
+    # borrow wavelength indices
     cal_per_wl.index = spectra.columns
-    dark_spectra.columns = spectra.columns
-    uj_per_pixel = (spectra - dark_spectra) * cal_per_wl.T.values[0]
-    wls = uj_per_pixel.columns.to_numpy(dtype='float')
+    dark_counts.columns = spectra.columns
+    
+    # microjoules per pixel
+    uj_per_pixel = (spectra - dark_counts) * cal_per_wl.T.values[0]
+    
+    # get the wavelengths and calculate the nm/pixel binwidth
+    wls = uj_per_pixel.columns
     nm_per_pixel = np.hstack(
         [(wls[1]-wls[0]), (wls[2:]-wls[:-2])/2, (wls[-1]-wls[-2])])
+    
+    # calculate microwatts per cm2 per nanometer
     uj_per_nm = uj_per_pixel / nm_per_pixel
-    uj_per_cm2_per_nm = uj_per_nm / sensor_area.loc[0, 0]
+    uj_per_cm2_per_nm = uj_per_nm / sensor_area
     uw_per_cm2_per_nm = uj_per_cm2_per_nm.div(
         spectra_info['integration_time'], axis='rows')
     
-    # Resample
-    wls = np.arange(380, 781)
-    uw_per_cm2_per_nm = spectres.spectres(wls, spectra.columns.to_numpy(
-            dtype='float'), uw_per_cm2_per_nm.to_numpy())
+    # Resample to visible spectrum in 1 nm bins
+    uw_per_cm2_per_nm = uw_per_cm2_per_nm.to_numpy()
+    f = interp1d(wls, uw_per_cm2_per_nm, fill_value='extrapolate')
+    new_wls = np.arange(380, 781, 1)
+    uw_per_cm2_per_nm = f(new_wls)
+    
+    # old way used spectres
+    # uw_per_cm2_per_nm = spectres.spectres(new_wls, spectra.columns.to_numpy(
+    #         dtype='float'), uw_per_cm2_per_nm.to_numpy())
+    
     uw_per_cm2_per_nm = np.where(uw_per_cm2_per_nm < 0, 0, uw_per_cm2_per_nm)
     w_per_m2_per_nm = pd.DataFrame(uw_per_cm2_per_nm * 0.01)
-    w_per_m2_per_nm.columns = pd.Int64Index(wls)
+    w_per_m2_per_nm.columns = pd.Int64Index(new_wls)
+    
     return w_per_m2_per_nm

@@ -30,8 +30,7 @@ release = 'v1.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions =["sphinx.ext.autodoc", "sphinxcontrib.napoleon", "nbsphinx"
-]
+extensions = ["sphinx.ext.autodoc", "sphinxcontrib.napoleon", "nbsphinx"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,7 +47,7 @@ smart_quotes = False
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
-html_logo = '../img/orange_eye.png'
+html_logo = '../logo/orange_eye.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".

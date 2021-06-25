@@ -1,23 +1,13 @@
 Metadata-Version: 2.1
 Name: pyplr
-Version: 0.0.5
+Version: 0.0.6
 Summary: Software for researching the pupillary light reflex
 Home-page: https://github.com/PyPlr/cvd_pupillometry
 Author: Joel T. Martin
 Author-email: joel.t.martin36@gmail.com
 License: UNKNOWN
 Project-URL: Documentation, https://pyplr.github.io/cvd_pupillometry/
-Description: PyPlr
-        =====
-        
-        ![](img/orangeeye.png)
-        
-        *PyPlr* is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking ecosystem. 
-        
-        The code is here: https://github.com/PyPlr/cvd_pupillometry
-        
-        The documentation is here: https://pyplr.github.io/cvd_pupillometry/index.html
-        
+Project-URL: bioRxiv preprint, https://www.biorxiv.org/content/10.1101/2021.06.02.446731v1
 Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Topic :: Scientific/Engineering :: Information Analysis
@@ -25,3 +15,27 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Intended Audience :: Science/Research
 Classifier: Programming Language :: Python :: 3.7
 Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+PyPlr
+=====
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](code_of_conduct.md) 
+
+[![DOI](https://zenodo.org/badge/249983560.svg)](https://zenodo.org/badge/latestdoi/249983560)
+
+[![PyPI version](https://badge.fury.io/py/pyplr.svg)](https://badge.fury.io/py/pyplr)
+
+![](logo/orange_eye.png)
+
+*PyPlr* is a Python library for researching the pupillary light reflex with the Pupil Core eye tracking platform. Features include:
+
+- User-friendly and feature-rich interfaces to Pupil Core, Spectra Tune Lab (STLAB: LEDMOTIVE Technologies, LLC, Barcelona, Spain) light engine and Ocean Optics (Ocean Insight Inc., Oxford, UK) spectrometers
+- Flexible support for alternative stimulus delivery and measurement systems
+- Scripting tools to facilitate stimulus design, optimisation and delivery, communication with respect to timing, and extraction, cleaning, and analysis of pupil data
+
+The code is here: https://github.com/PyPlr/cvd_pupillometry
+
+The documentation is here: https://pyplr.github.io/cvd_pupillometry/index.html
+
+

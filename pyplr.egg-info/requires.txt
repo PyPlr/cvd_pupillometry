@@ -6,7 +6,6 @@ requests
 numpy
 seaborn
 seabreeze
-spectres
 numexpr
 tables
 pandas
