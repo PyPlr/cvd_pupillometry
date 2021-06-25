@@ -12,28 +12,23 @@ import serial
 
 class Spectraval:
     
-    def _init_(self, port='/dev/cu.usbserial-DJ5F3W9U', 
+    def _init_(self, 
+               port='/dev/cu.usbserial-DJ5F3W9U', 
                baudrate=921600, 
                bytesize=8, 
                stopbits=1, 
                parity='N', 
                timeout=240):
-        
-        self.port = port
-        self.baudrate = baudrate
-        self.bytesize = bytesize
-        self.stopbits = stopbits
-        self.parity = parity
-        self.timeout = timeout
+
         
         # open serial connection
-        self.ser =  serial.Serial(
-            port=self.port,
-            baudrate=self.baudrate, 
-            bytesize=self.bytesize, 
-            stopbits=self.stopbits, 
-            parity=self.parity,
-            timeout=self.timeout)
+        self.ser = serial.Serial(
+            port = port,
+            baudrate = baudrate, 
+            bytesize = bytesize, 
+            stopbits = stopbits, 
+            parity = parity,
+            timeout = timeout)
         
     def measurement(self, integration_time=None, setting={}):
         '''Obtain a measurement with JETI Spectraval.
@@ -62,12 +57,13 @@ class Spectraval:
     
         '''
         
-        # code goes here. Something like this...
+        # Perform reference measurement
         self.ser.write(b'*MEAS:REFE 0 1 0\r')
         ack = self.ser.read(1)
         while ack != 7:
             ack = self.ser.read(1)
-
+            
+        # Calculate spectral radiance
         self.ser.write(b'*CALC:SPRAD\r')
         data = self.ser.read(1606)
         data = np.array(data[2:], dtype=np.uint8)
