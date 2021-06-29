@@ -448,6 +448,27 @@ class CalibrationContext:
             return pd.DataFrame(spectrum, index=self.wls).T
         else:
             return spectrum
+
+    def predict_aopic(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
+        '''Using `self.aopic`, predict the a-opic irradiances for a given list
+        of led intensities.
+        
+        Parameters
+        ----------
+        intensities : list
+            List of intensity values for each led. The default is 
+            ``[0,0,0,0,0,0,0,0,0,0]``.
+        
+        Returns
+        -------
+        aopic : np.array
+            Predicted a-opic irradiances for given intensities.
+            
+        '''
+        spectrum = self.predict_spd(intensities)
+        sss = get_CIES026(asdf=True, binwidth=self.binwidth)
+        sss = sss.fillna(0)
+        return spectrum.dot(sss)
         
     def match(self, match_led, match_led_intensity, 
               target_led, match_type='irrad'):
