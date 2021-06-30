@@ -13,31 +13,44 @@ Module to assist with performing silent substitution for STLAB.
 import numpy as np
 
 
-def smlri_calculator(x, d):
-    """
-    x is 20 values, between 0 and 1
-    Takes 20 values, corresponding to the values for the primaries in two scenarios. Scenario 1: low-mel, scenario: high-mel.
-    x[0:9] -> low-mel
-    x[10:19] -> high-mel
-    """
-    settings1 = x[0:9]
-    settings2 = x[10:19]
+def smlri_calculator(low_mel, high_mel, aopic):
+    '''
+    
+
+    Parameters
+    ----------
+    low_mel : array like
+        Intensity settings for the low-melanopsin condition.
+    high_mel : array like
+        Intensity settings for the high-melanopsin condition.
+    aopic : pd.DataFrame
+        Data from cc.aopic
+
+    Returns
+    -------
+    smlr1 : TYPE
+        DESCRIPTION.
+    smlr2 : TYPE
+        DESCRIPTION.
+
+    '''
+
     smlr1 = 0
     smlr2 = 0
-    for ii in range(0, 9):
-        idx1 = int(np.round(settings1[ii] * 4095))
-        idx2 = int(np.round(settings2[ii] * 4095))
-        smlr1 = smlr1 + d.loc[(ii, idx1)]
-        smlr2 = smlr2 + d.loc[(ii, idx2)]
+    for led in range(10):
+        idx1 = int(np.round(low_mel[led] * 4095))
+        idx2 = int(np.round(high_mel[led] * 4095))
+        smlr1 = smlr1 + aopic.loc[(led, idx1)]
+        smlr2 = smlr2 + aopic.loc[(led, idx2)]
     return smlr1, smlr2
 
-def melanopsin_contrast_calculator(x, d):
-    smlr1, smlr2 = smlri_calculator(x, d)
+def melanopsin_contrast_calculator(low_mel, high_mel, aopic):
+    smlr1, smlr2 = smlri_calculator(low_mel, high_mel, aopic)
     contrast = 1-pow((smlr2.Mel-smlr1.Mel)/smlr1.Mel, 2)
     return contrast
 
-def cone_contrast_calculator(x, d):
-    smlr1, smlr2 = smlri_calculator(x, d)
+def cone_contrast_calculator(low_mel, high_mel, aopic):
+    smlr1, smlr2 = smlri_calculator(low_mel, high_mel, aopic)
     contrast = (np.array([(smlr2.S-smlr1.S)/smlr1.S, 
                          (smlr2.M-smlr1.M)/smlr1.M, 
                          (smlr2.L-smlr1.L)/smlr1.L]))
