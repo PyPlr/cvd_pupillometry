@@ -13,6 +13,9 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
+/pyplr.egg.info/
+/build/
+/dist/
 /examples/
 /cvr_pfr_sim/
 /img/

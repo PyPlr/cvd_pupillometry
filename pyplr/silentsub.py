@@ -12,6 +12,14 @@ Module to assist with performing silent substitution for STLAB.
 
 import numpy as np
 
+#from pyplr.calibrate import CalibrationContext
+
+# class SilentSubstitutionContext(CalibrationContext):
+    
+#     def _init_(self):
+#         super().__init__(self, data, binwidth)    
+    
+    
 
 def smlri_calculator(low_mel, high_mel, aopic):
     '''
