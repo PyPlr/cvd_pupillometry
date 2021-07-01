@@ -1,7 +1,7 @@
 PyPlr
 =====
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](code_of_conduct.md) 
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](./CODE_OF_CONDUCT.md) 
 
 [![DOI](https://zenodo.org/badge/249983560.svg)](https://zenodo.org/badge/latestdoi/249983560)
 
