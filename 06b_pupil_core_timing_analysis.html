@@ -288,7 +288,7 @@ div.rendered_html tbody tr:hover {
 <p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> marks the onset of a light stimulus by sending an annotation containing the timestamp of the first frame where the light becomes visible to the World camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture’s ability to synchronise the clocks of the
 cameras on a Pupil Core headset. How well does it handle this task? We were able to test camera clock synchronisation by putting the Pupil Core headset inside our integrating sphere and repeatedly flashing a bright orange light containing enough near infrared to afford detection by the Eye cameras as well as the World camera. Prior to each flash, concurrent <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s were instantiated, giving us the timestamp of the frame where the luminance change was detected independently
 for each camera. This protocol allowed us to get some insight into how well the data streams are synchronised.</p>
-<p>We ran <a class="reference internal" href="05e_pupil_core_camera_sync.html"><span class="doc">the testing protocol</span></a> on Mac and Windows (Pupil Capture v3.2-20) for <em>n</em> = 100 near-IR light flashes. For each run of the protocol, Eye camera resolution was kept at (192, 192) with Absolute Exposure Time of 25, and the World camera had (640, 480) and 60. Auto Exposure Mode was set to ‘manual mode’ for all cameras, and Auto Exposure Priority was disabled for the World camera. Whilst all of these camera settings may have the potential to impact the
+<p>We ran <a class="reference external" href="05e_pupil_core_camera_sync.ipynb">the testing protocol</a> on Mac and Windows (Pupil Capture v3.2-20) for <em>n</em> = 100 near-IR light flashes. For each run of the protocol, Eye camera resolution was kept at (192, 192) with Absolute Exposure Time of 25, and the World camera had (640, 480) and 60. Auto Exposure Mode was set to ‘manual mode’ for all cameras, and Auto Exposure Priority was disabled for the World camera. Whilst all of these camera settings may have the potential to impact the
 precision of the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>, Frame rate is the most obvious. So we performed separate trials on Mac and Windows with a Frame rate of 60 and 120.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -510,6 +510,15 @@ potentially correctable, they do not preclude researchers from obtaining time-cr
 
 
 
+<p class="blurb">A Python software for researching the pupillary light reflex.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=PyPlr&repo=cvd_pupillometry&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
 
@@ -535,6 +544,15 @@ potentially correctable, they do not preclude researchers from obtaining time-cr
 <li class="toctree-l1"><a class="reference internal" href="11_citation.html">Citation</a></li>
 </ul>
 
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/pyplr/">PyPi</a></li>
+    
+    <li class="toctree-l1"><a href="https://www.biorxiv.org/content/10.1101/2021.06.02.446731v1">bioRxiv preprint</a></li>
+    
+</ul>
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>

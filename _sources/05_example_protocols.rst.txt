@@ -9,7 +9,9 @@ Example protocols
    05b_plr_psychopy
    05c_plr_stlab
    05d_pipr_stlab
-   05e_pupil_core_camera_sync
+   05f_pupil_core_camera_sync
+.. 
+  _05e_silent_substitution_STLAB 
 
 .. rubric:: Tables and indices
 ------------------------------

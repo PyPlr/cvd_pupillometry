@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Developers notes &#8212; PyPlr v1.0 documentation</title>
+    <title>Silent substitution with STLAB &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -281,16 +281,9 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Developers-notes">
-<h1>Developers notes<a class="headerlink" href="#Developers-notes" title="Permalink to this headline">¶</a></h1>
-<p>The following pages are helpful:</p>
-<ul class="simple">
-<li><p>See here for github pages workflow: <a class="reference external" href="https://daler.github.io/sphinxdoc-test/includeme.html">https://daler.github.io/sphinxdoc-test/includeme.html</a></p></li>
-<li><p>TL;DR: run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">make</span> <span class="pre">html</span></code> in PyPlr/docs, then go to PyPlr-sphinxdocs/html, check you are on the gh-pages branch (<code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">branch</span></code>), and run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-a</span> <span class="pre">-m</span> <span class="pre">&quot;rebuilt</span> <span class="pre">docs&quot;</span></code> followed by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span> <span class="pre">origin</span> <span class="pre">gh-pages</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code> makes recent changes instantly available to sys.path. When finished developing, <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span> <span class="pre">--uninstall</span></code> removes from easy-install.pth and deletes the .egg-link. This avoids having to say <code class="docutils literal notranslate"><span class="pre">sys.path.insert(0,</span> <span class="pre">'../')</span></code> in notebooks.</p></li>
-<li><p>See here for how to package python projects: <a class="reference external" href="https://packaging.python.org/tutorials/packaging-projects/">https://packaging.python.org/tutorials/packaging-projects/</a></p></li>
-<li><p>Current workflow for new release is <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">sdist</span></code> followed by <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">twine</span> <span class="pre">upload</span> <span class="pre">dist/*</span></code></p></li>
-</ul>
+<div class="section" id="Silent-substitution-with-STLAB">
+<h1>Silent substitution with STLAB<a class="headerlink" href="#Silent-substitution-with-STLAB" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="05d_pipr_stlab.html"><span class="doc">PIPR</span></a> protocol serves as a unique index of melanopsin function in the human retina. Silent</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -391,7 +384,7 @@ div.rendered_html tbody tr:hover {
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/dev_notes.ipynb.txt"
+      <a href="_sources/05e_silent_substitution_STLAB.ipynb.txt"
           rel="nofollow">Page source</a>
     </div>
 

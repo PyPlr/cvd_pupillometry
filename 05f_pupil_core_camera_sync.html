@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple PLR &#8212; PyPlr v1.0 documentation</title>
+    <title>Pupil Core camera synchronisation &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -17,8 +17,8 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="PsychoPy PLR" href="05b_plr_psychopy.html" />
-    <link rel="prev" title="Example protocols" href="05_example_protocols.html" />
+    <link rel="next" title="Example analyses" href="06_example_analyses.html" />
+    <link rel="prev" title="PIPR with STLAB" href="05d_pipr_stlab.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -283,54 +283,96 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Simple-PLR">
-<h1>Simple PLR<a class="headerlink" href="#Simple-PLR" title="Permalink to this headline">¶</a></h1>
-<p>This example demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> methods to measure and plot a simple PLR relative to the onset of any light source detectable by the Pupil Core World Camera, which in this case was a light switched on and off in a dark room.</p>
+<div class="section" id="Pupil-Core-camera-synchronisation">
+<h1>Pupil Core camera synchronisation<a class="headerlink" href="#Pupil-Core-camera-synchronisation" title="Permalink to this headline">¶</a></h1>
+<p>We used this protocol to investigate how well Pupil Capture synchronises the clocks of the Eye and World cameras on a Pupil Core headset. See <a class="reference internal" href="06b_pupil_core_timing_analysis.html"><span class="doc">here</span></a> for a detailed explanation and analysis showing how this is dependant on operating system and camera settings.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 
+<span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span><span class="p">,</span> <span class="n">pulse_protocol</span>
 <span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
-<span class="kn">from</span> <span class="nn">pyplr.utils</span> <span class="kn">import</span> <span class="n">unpack_data_pandas</span>
 
-<span class="c1"># Connect to Pupil Core</span>
+<span class="c1"># Set up pupil</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 
-<span class="c1"># Start a new recording called &quot;my_recording&quot;</span>
-<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R my_recording&#39;</span><span class="p">)</span>
+<span class="c1"># Annotations / notifications can crash Capture if they are sent too</span>
+<span class="c1"># close together so we will wait and send them at the end of the script</span>
+<span class="n">p</span><span class="o">.</span><span class="n">annotation_capture_plugin</span><span class="p">(</span><span class="n">should</span><span class="o">=</span><span class="s1">&#39;stop&#39;</span><span class="p">)</span>
+<span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">02</span><span class="p">)</span>
 
-<span class="c1"># Wait a few seconds</span>
-<span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Setup stlab and make spectrum with near-IR</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;****************&#39;</span><span class="p">)</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4095</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">pulse_protocol</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;1s_near_IR_pulse&#39;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="s1">&#39;1s_near_IR_pulse.dsf&#39;</span><span class="p">)</span>
 
-<span class="c1"># Make an annotation for when the light comes on</span>
-<span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">)</span>
+<span class="c1"># light_stamper params</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">timeout</span> <span class="o">=</span> <span class="mf">6.</span>
 
-<span class="c1"># Start the .light_stamper(...) and .pupil_grabber(...)</span>
-<span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span><span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">pgr_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">pupil_grabber</span><span class="p">(</span><span class="n">topic</span><span class="o">=</span><span class="s1">&#39;pupil.1.3d&#39;</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="c1"># Make annotations for each camera</span>
+<span class="n">world_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_WORLD&#39;</span><span class="p">)</span>
+<span class="n">eye_0_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_EYE_0&#39;</span><span class="p">)</span>
+<span class="n">eye_1_annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON_EYE_1&#39;</span><span class="p">)</span>
 
-<span class="c1">##################################</span>
-<span class="c1"># Administer light stimulus here #</span>
-<span class="c1">##################################</span>
+<span class="c1"># Dict for the light_stamper timestamps</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;world&#39;</span><span class="p">:</span> <span class="p">[],</span>
+           <span class="s1">&#39;eye_0&#39;</span><span class="p">:</span> <span class="p">[],</span>
+           <span class="s1">&#39;eye_1&#39;</span><span class="p">:</span> <span class="p">[]}</span>
 
-<span class="c1"># Wait for the futures</span>
-<span class="k">while</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">running</span><span class="p">()</span> <span class="ow">or</span> <span class="n">pgr_future</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Waiting for futures...&#39;</span><span class="p">)</span>
-    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Start recording and wait a while</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R pupil_core_camera_sync_tests&#39;</span><span class="p">)</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
 
-<span class="c1"># End recording</span>
+<span class="c1"># Begin testing protocol</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="c1"># Start light_stampers</span>
+    <span class="n">lst_world</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
+        <span class="n">world_annotation</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">,</span>
+        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.world&#39;</span><span class="p">)</span>
+    <span class="n">lst_eye_0</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
+        <span class="n">eye_0_annotation</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">,</span>
+        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.eye.0&#39;</span><span class="p">)</span>
+    <span class="n">lst_eye_1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
+        <span class="n">eye_1_annotation</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">,</span>
+        <span class="n">topic</span><span class="o">=</span><span class="s1">&#39;frame.eye.1&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Wait 100 ms then flash light</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="c1"># Add timestamps to results dictionary</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_world</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;eye_0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_eye_0</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;eye_1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lst_eye_1</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+
+<span class="c1"># Start Annotation Capture plugin</span>
+<span class="n">p</span><span class="o">.</span><span class="n">annotation_capture_plugin</span><span class="p">(</span><span class="n">should</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">)</span>
+<span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">02</span><span class="p">)</span>
+
+<span class="c1"># Send the annotations with 20 ms spacing</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]]:</span>
+        <span class="n">annotation</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;light_on_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+        <span class="n">annotation</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ts</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">send_annotation</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
+
+<span class="c1"># Wait for 5 s and stop recording</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
-<span class="c1"># Get the timestamp and pupil data</span>
-<span class="n">timestamp</span> <span class="o">=</span> <span class="n">lst_future</span><span class="o">.</span><span class="n">result</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">unpack_data_pandas</span><span class="p">(</span><span class="n">pgr_future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-
-<span class="c1"># Plot the PLR</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -339,37 +381,40 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+STLAB device setup complete...
+&#34;1s_near_IR_pulse.dsf&#34; saved in the current working directory.
+video file loaded...
 &gt; Waiting for a light to stamp...
-&gt; Grabbing 10 seconds of pupil.1.3d
-Waiting for futures...
-Waiting for futures...
-&gt; Light stamped on frame.world at 451747.552097
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-Waiting for futures...
-&gt; PupilGrabber done grabbing 10 seconds of pupil.1.3d
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.lines.Line2D at 0x118240b90&gt;
+&gt; Waiting for a light to stamp...
+&gt; Waiting for a light to stamp...
+playing video file...
+&gt; Light stamped on frame.eye.0 at 346194.799512
+&gt; Light stamped on frame.world at 346194.774064
+&gt; Light stamped on frame.eye.1 at 346194.805085
+&gt; Waiting for a light to stamp...
+&gt; Waiting for a light to stamp...
+&gt; Waiting for a light to stamp...
+playing video file...
+&gt; Light stamped on frame.eye.0 at 346201.864576
+&gt; Light stamped on frame.eye.1 at 346201.870149
+&gt; Light stamped on frame.world at 346201.846864
+&gt; Waiting for a light to stamp...
+&gt; Waiting for a light to stamp...
+&gt; Waiting for a light to stamp...
+playing video file...
+&gt; Light stamped on frame.world at 346208.919664
+&gt; Light stamped on frame.eye.0 at 346208.945881
+&gt; Light stamped on frame.eye.1 at 346208.951454
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="_images/05a_plr_simple_1_2.png" src="_images/05a_plr_simple_1_2.png" />
-</div>
+<div class="highlight"><pre>
+&#39;OK&#39;
+</pre></div></div>
 </div>
 </div>
 
@@ -408,11 +453,11 @@ Waiting for futures...
 <li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="05_example_protocols.html">Example protocols</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Simple PLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="05a_plr_simple.html">Simple PLR</a></li>
 <li class="toctree-l2"><a class="reference internal" href="05b_plr_psychopy.html">PsychoPy PLR</a></li>
 <li class="toctree-l2"><a class="reference internal" href="05c_plr_stlab.html">Automated pupillometer with STLAB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="05d_pipr_stlab.html">PIPR with STLAB</a></li>
-<li class="toctree-l2"><a class="reference internal" href="05f_pupil_core_camera_sync.html">Pupil Core camera synchronisation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core camera synchronisation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
@@ -437,8 +482,8 @@ Waiting for futures...
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="05_example_protocols.html">Example protocols</a><ul>
-      <li>Previous: <a href="05_example_protocols.html" title="previous chapter">Example protocols</a></li>
-      <li>Next: <a href="05b_plr_psychopy.html" title="next chapter">PsychoPy PLR</a></li>
+      <li>Previous: <a href="05d_pipr_stlab.html" title="previous chapter">PIPR with STLAB</a></li>
+      <li>Next: <a href="06_example_analyses.html" title="next chapter">Example analyses</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -473,7 +518,7 @@ Waiting for futures...
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/05a_plr_simple.ipynb.txt"
+      <a href="_sources/05f_pupil_core_camera_sync.ipynb.txt"
           rel="nofollow">Page source</a>
     </div>
 
