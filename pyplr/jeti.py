@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 18 12:23:06 2021
+'''
+pyplr.jeti
+==========
+
+A (currently) bare bones serial interface for JETI Spectraval. 
 
 @author: jtm
-"""
+'''
 
 import numpy as np
-
 import serial
 
 class Spectraval:

@@ -9,6 +9,10 @@ API documentation
    :members:
    :special-members:
 
+.. automodule:: pyplr.jeti
+   :members:
+   :special-members:
+   
 .. automodule:: pyplr.oceanops
    :members:
    :special-members:

@@ -1,11 +1,7 @@
 PyPlr
 =====
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](./CODE_OF_CONDUCT.md) 
-
-[![DOI](https://zenodo.org/badge/249983560.svg)](https://zenodo.org/badge/latestdoi/249983560)
-
-[![PyPI version](https://badge.fury.io/py/pyplr.svg)](https://badge.fury.io/py/pyplr)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](https://github.com/PyPlr/cvd_pupillometry/CODE_OF_CONDUCT.md) [![DOI](https://zenodo.org/badge/249983560.svg)](https://zenodo.org/badge/latestdoi/249983560) [![PyPI version](https://badge.fury.io/py/pyplr.svg)](https://badge.fury.io/py/pyplr)
 
 ![](logo/orange_eye.png)
 
