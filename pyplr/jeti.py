@@ -10,6 +10,7 @@ A (currently) bare bones serial interface for JETI Spectraval.
 '''
 
 import numpy as np
+import matplotlib.pyplot as plt
 import serial
 
 class Spectraval:
@@ -51,7 +52,7 @@ class Spectraval:
     
         Returns
         -------
-        spectrum : np.array
+        spectrum : `np.array`
             JETI Spectraval spectral measurement
         info : dict
             Whatever other info we want from the spectrometer (e.g. PCB
@@ -65,30 +66,32 @@ class Spectraval:
         while ack != b'\x07':
             ack = self.ser.read(1)
             
-        # Calculate spectral radiance
+        # Calculate spectral radiance and retrieve byte array
+        # as 32-bit float. Note that the first two bytes are
+        # not part of the spectrum.
         self.ser.write(b'*CALC:SPRAD\r')
         data = self.ser.read(1606)
-        data = np.array(data[2:], dtype=np.uint8)
-        spectrum = np.array([x.view('<f')[0] for x in data])
+        spec = np.from_buffer(data[2:], dtype=np.float32)
+        
+        #don't need this anymore as the above is quicker
+        #data = np.array(data[2:], dtype=np.uint8)
+        #spectrum = np.array([x.view('<f')[0] for x in data])
 
-        #more coe here for whatever else we want
+        #more code here for any device related info
         info = {**setting}
         
         return spectrum, info
     
-    
-    
-# import csv
- 
-# with open("Projects/JETI/values.csv") as f:
-#     r = csv.reader(f)
- 
-#     for line in r:
-#         n = [int(float(i)) for i in line]
-#         print(n)
+#test
 
-# import numpy as np
-# d = np.genfromtxt('Projects/JETI/values.csv', delimiter=',', dtype=np.uint8)
-# spec = np.array([x.view('<f')[0] for x in d])
-
+#device = Spectraval()
+#
+#specs = []
+#for i in rage(10):
+#    spectrum, _ = device.measurement()
+#    specs.append(spectrum)
+#
+#fig, ax = plt.subplots()
+#for s in specs:
+#   ax.plot(s)          
 
