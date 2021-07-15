@@ -8,7 +8,8 @@ Example analyses
    06a_pipr_analysis_pipeline
    06b_pupil_core_timing_analysis
    06c_finding_stlab_settings
-   
+   06d_silent_substitution_STLAB
+
 .. rubric:: Tables and indices
 ------------------------------
 

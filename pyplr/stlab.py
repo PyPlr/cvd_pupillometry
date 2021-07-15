@@ -820,9 +820,9 @@ def background_pulse_protocol(background_spec,
 
     '''
     metadata['protocol'] = 'background_pulse'
-    metadata['background_spec'] = int(background_spec)
+    metadata['background_spec'] = background_spec
     metadata['pre_pulse_duration'] = int(pre_pulse_duration)
-    metadata['pulse_spec'] = int(pulse_spec)
+    metadata['pulse_spec'] = pulse_spec
     metadata['pulse_duration'] = int(pulse_duration)
     metadata['post_pulse_duration'] = int(post_pulse_duration)
     onset  = pre_pulse_duration

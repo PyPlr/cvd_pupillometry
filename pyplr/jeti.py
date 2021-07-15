@@ -22,7 +22,6 @@ class Spectraval:
                stopbits=1, 
                parity='N', 
                timeout=240):
-
         
         # open serial connection
         self.ser = serial.Serial(
@@ -80,18 +79,18 @@ class Spectraval:
         #more code here for any device related info
         info = {**setting}
         
-        return spectrum, info
+        return spec, info
     
 #test
 
-#device = Spectraval()
-#
-#specs = []
-#for i in rage(10):
-#    spectrum, _ = device.measurement()
-#    specs.append(spectrum)
-#
-#fig, ax = plt.subplots()
-#for s in specs:
+# device = Spectraval()
+
+# specs = []
+# for i in range(10):
+#     spectrum, _ = device.measurement()
+#     specs.append(spectrum)
+
+# fig, ax = plt.subplots()
+# for s in specs:
 #   ax.plot(s)          
 

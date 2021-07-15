@@ -9,7 +9,7 @@ from time import sleep
 
 from pyplr.stlab import SpectraTuneLab
 
-d = SpectraTuneLab(password='')
+d = SpectraTuneLab(password='83f238534046a26f', lighthub_ip='192.168.1.2')
 
 for led in range(10):
     spec = [0]*10
