@@ -17,6 +17,8 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API documentation" href="07_api.html" />
+    <link rel="prev" title="Matching spectra for a-opic irradiance with STLAB" href="06c_finding_stlab_settings.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -371,8 +373,7 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 </pre></div>
 </div>
 </div>
-<p>To perform the optimisation, we will use <code class="docutils literal notranslate"><span class="pre">`scipy.optimize.minimize</span></code> &lt;<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize</a>&gt;`__ with the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html">SLSQP</a> solver. SLSQP uses <a class="reference external" href="https://en.wikipedia.org/wiki/Sequential_quadratic_programming">sequential quadratic programming</a>, which is an iterative method that is ideally suited to solving constrained nonlinear optimsation
-problems like ours.</p>
+<p>To perform the optimisation, we will use <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize">scipy.optimize.minimize</a> with the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html">SLSQP</a> solver. SLSQP uses <a class="reference external" href="https://en.wikipedia.org/wiki/Sequential_quadratic_programming">sequential quadratic programming</a>, an iterative method that is ideally suited to solving constrained nonlinear optimsation problems like ours.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -698,12 +699,18 @@ The stimulus settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="02_purpose.html">Purpose</a></li>
 <li class="toctree-l1"><a class="reference internal" href="03_installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
-<li class="toctree-l1"><a class="reference internal" href="06_example_analyses.html">Example analyses</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06b_pupil_core_timing_analysis.html">Pupil Core device timing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06c_finding_stlab_settings.html">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Silent substitution with STLAB</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="08_developers.html">Developers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="09_acknowledgements.html">Acknowledgements</a></li>
@@ -724,6 +731,10 @@ The stimulus settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="06_example_analyses.html">Example analyses</a><ul>
+      <li>Previous: <a href="06c_finding_stlab_settings.html" title="previous chapter">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+      <li>Next: <a href="07_api.html" title="next chapter">API documentation</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
