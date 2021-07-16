@@ -119,7 +119,6 @@ class SilentSubstitution:
     def predict_aopic(self, weights):
         pass
         
-        
     def plot_spectra(self, weights):
         pass
     

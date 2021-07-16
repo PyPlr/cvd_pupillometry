@@ -15,7 +15,7 @@ import serial
 
 class Spectraval:
     
-    def _init_(self, 
+    def __init__(self, 
                port='/dev/cu.usbserial-DJ5F3W9U', 
                baudrate=921600, 
                bytesize=8, 
@@ -70,7 +70,7 @@ class Spectraval:
         # not part of the spectrum.
         self.ser.write(b'*CALC:SPRAD\r')
         data = self.ser.read(1606)
-        spec = np.from_buffer(data[2:], dtype=np.float32)
+        spec = np.frombuffer(data[2:], dtype=np.float32)
         
         #don't need this anymore as the above is quicker
         #data = np.array(data[2:], dtype=np.uint8)
@@ -83,14 +83,14 @@ class Spectraval:
     
 #test
 
-# device = Spectraval()
+if __name__ == '__main__':
+    device = Spectraval()
+    specs = []
+    for i in range(10):
+        spectrum, _ = device.measurement()
+        specs.append(spectrum)
 
-# specs = []
-# for i in range(10):
-#     spectrum, _ = device.measurement()
-#     specs.append(spectrum)
-
-# fig, ax = plt.subplots()
-# for s in specs:
-#   ax.plot(s)          
+    fig, ax = plt.subplots()
+    for s in specs:
+        ax.plot(s)          
 
