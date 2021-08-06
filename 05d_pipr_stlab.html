@@ -430,40 +430,84 @@ dtype: int64
 <div class="section" id="Running-the-protocol">
 <h2>Running the protocol<a class="headerlink" href="#Running-the-protocol" title="Permalink to this headline">¶</a></h2>
 <p>Now we are ready to run the protocol. For optimal results, do this after a 20-minute period of dark adatation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
-<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">shuffle</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="nn">random</span>
 
 <span class="kn">from</span> <span class="nn">pyplr.pupil</span> <span class="kn">import</span> <span class="n">PupilCore</span>
 <span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">SpectraTuneLab</span>
+<span class="kn">from</span> <span class="nn">pyplr.protocol</span> <span class="kn">import</span> <span class="n">input_subject_id</span><span class="p">,</span> <span class="n">subject_dir</span>
 
-<span class="c1"># Make list of stims</span>
-<span class="n">stims</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;1s_blue.dsf&#39;</span><span class="p">,</span> <span class="s1">&#39;1s_red.dsf&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
-<span class="n">shuffle</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span>
+<span class="c1"># Timing function for experimenter feedback</span>
+<span class="k">def</span> <span class="nf">timer</span><span class="p">(</span><span class="n">increment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Waiting...&#39;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">seconds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{</span><span class="n">seconds</span><span class="si">}</span><span class="s1"> seconds left...&#39;</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="n">increment</span><span class="p">)</span>
+        <span class="n">seconds</span> <span class="o">-=</span> <span class="n">increment</span>
+
+<span class="c1"># Specify measurement period and wait between trials (60 s each)</span>
+<span class="n">PIPR_MEASUREMENT_PERIOD</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">INTERTRIAL_INTERVAL</span> <span class="o">=</span> <span class="mi">60</span>
+
+<span class="c1"># List of stims, x3 red and blue, random order of presentation</span>
+<span class="n">stims</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./stimuli/1s_blue.dsf&#39;</span><span class="p">,</span> <span class="s1">&#39;./stimuli/1s_red.dsf&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span>
+
+<span class="c1"># Set up subject and recording</span>
+<span class="n">subject_id</span> <span class="o">=</span> <span class="n">input_subject_id</span><span class="p">()</span>
+<span class="n">subj_dir</span> <span class="o">=</span> <span class="n">subject_dir</span><span class="p">(</span><span class="n">subject_id</span><span class="p">)</span>
 
 <span class="c1"># Connect to Pupil Core</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
 
 <span class="c1"># Connect to stlab</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;83e47941d9e930f6&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">SpectraTuneLab</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s1">&#39;****************)&#39;</span><span class="p">)</span>
 
 <span class="c1"># Start recording</span>
-<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;R </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj_dir</span><span class="p">))</span>
 
 <span class="c1"># Wait a few seconds</span>
-<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">timer</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Trial incrementor variable</span>
+<span class="n">trial_num</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c1"># Loop over the list of stims</span>
-<span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stims</span><span class="p">:</span>
+<span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+    <span class="c1"># Update trial number</span>
+    <span class="n">trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Pop next stim from the list of stims</span>
+    <span class="n">stim</span> <span class="o">=</span> <span class="n">stims</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Print status update for trial</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{:*^60s}</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">60</span><span class="p">,</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="s1">&#39;Trial number: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_num</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Stimulus--&gt; </span><span class="si">{}</span><span class="se">\n</span><span class="s1">List of stims--&gt; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">stims</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span>
 
     <span class="c1"># Load video file and create trigger with metadata</span>
     <span class="n">vf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">load_video_file</span><span class="p">(</span><span class="n">stim</span><span class="p">)</span>
     <span class="n">annotation</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">p</span><span class="o">.</span><span class="n">new_annotation</span><span class="p">(</span><span class="s1">&#39;LIGHT_ON&#39;</span><span class="p">),</span> <span class="o">**</span><span class="n">vf</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]}</span>
+    <span class="n">annotation</span><span class="p">[</span><span class="s1">&#39;repeat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repeat</span>
+    <span class="n">annotation</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial_num</span>
 
-    <span class="c1"># Baseline</span>
-    <span class="n">sleep</span><span class="p">(</span><span class="mf">10.</span><span class="p">)</span>
+    <span class="c1"># Check the eye models. If there is a problem, say &#39;yes&#39; to</span>
+    <span class="c1"># refit the model, then ask participants to roll their eyes.</span>
+    <span class="c1"># When a suitable fit is achieved, press &#39;Enter&#39; to freeze</span>
+    <span class="c1"># the 3D models. This will stop the 3D models from updating</span>
+    <span class="c1"># automatically, which can cause issues with the pupil data.</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">check_3d_model</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="c1"># Set up and start the LightStamper thread</span>
+    <span class="c1"># Notification of stimulus in 5 - 10 s. On mac, should make a beep sound</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\a</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># 10 s prestimulus baseline</span>
+    <span class="n">timer</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;10 s prestimulus baseline...&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Set up and start the light_stamper thread</span>
     <span class="n">lst_future</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">light_stamper</span><span class="p">(</span>
         <span class="n">threshold</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
@@ -472,10 +516,34 @@ dtype: int64
 
     <span class="c1"># Play the video file</span>
     <span class="n">d</span><span class="o">.</span><span class="n">play_video_file</span><span class="p">()</span>
-    <span class="n">sleep</span><span class="p">(</span><span class="mf">60.</span><span class="p">)</span>
+    <span class="n">timer</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">PIPR_MEASUREMENT_PERIOD</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Collecting data for PIPR. </span><span class="se">\</span>
+<span class="s1">        The participant should be looking straight ahead and hopefully </span><span class="se">\</span>
+<span class="s1">        not blinking too much...&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Notification that data collection period for the current trial has finished</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\a</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Finished data collection period for current trial&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Ask whether to repeat last trial. For example, say yes if their eyes were</span>
+    <span class="c1"># closed during stimulus presentation or if they were closed for long periods</span>
+    <span class="c1"># during the post stimulus data collection period</span>
+    <span class="n">repeat</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Do you want to repeat the last trial [y/n]? &#39;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">repeat</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span> <span class="ow">and</span> <span class="n">repeat</span> <span class="o">!=</span> <span class="s1">&#39;n&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;I do not understand that...&#39;</span><span class="p">)</span>
+        <span class="n">repeat</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Do you want to repeat the last trial [y/n]? &#39;</span><span class="p">)</span>
+
+    <span class="c1"># If &#39;y&#39; to repeat, then put the stimulus back in the list and reshuffle</span>
+    <span class="k">if</span> <span class="n">repeat</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+        <span class="n">stims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stim</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span>
+
+    <span class="c1"># Wait between trials, but only if there is actually another trial in</span>
+    <span class="c1"># the trial list</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stims</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">timer</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">INTERTRIAL_INTERVAL</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Wait between trials...&#39;</span><span class="p">)</span>
 
 <span class="c1"># Finish recording</span>
-<span class="n">sleep</span><span class="p">(</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">timer</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Finishing recording...&#39;</span><span class="p">)</span>
 <span class="n">p</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
