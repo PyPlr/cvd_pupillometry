@@ -36,8 +36,9 @@ from scipy.optimize import basinhopping, Bounds
 import pandas as pd
 
 class SilentSubstitution:
-    def __init__(self, np, spds, precision, ignore, silence, isolate):
-        self.np = np   
+    def __init__(self, nprimaries, background=None, spds, precision, ignore, silence, isolate):
+        self.nprimaries = nprimaries
+        self.background = background
         self.spds = spds
         self.precision = precision
         self.ignore = ignore
@@ -45,13 +46,31 @@ class SilentSubstitution:
         self.isolate = isolate
         self.solutions = []
         self.aopic = None
+    
+    def _illuminance_constraint_function(self, requested_illuminance, weights):
+        vl = get_CIE_1924_photopic_vl(asdf=True, binwidth=self.binwidth)
+        settings = self.weights_to_settings(weights)
+        spd = self.redict_spd(settings)
+        illuminance = spd.dot
+        return requested_illuminance - illuminance
+    
+    def create_bacgkround_spd(self, requested_illuminance, requested_colour):
 
+        x0 = np.random.rand(1, self.nprimaries * 1)[0]
+        bounds = Bounds(np.ones((self.nprimaries * 2))*0, 
+                        np.ones((self.nprimaries * 2))*1)
+        constraints = {'type': 'eq',
+                       'fun': lambda x: self._illuminance_constraint_function(x)}
+        minimizer_kwargs = {'method': 'SLSQP',
+                            'constraints': constraints,
+                            'bounds': bounds}        
+        
     def smlri_calculator(self, weights):
-        bg_settings = weights[0:self.np] 
-        stim_settings = weights[self.np:self.np*2]
+        bg_settings = weights[0:self.nprimaries] 
+        stim_settings = weights[self.nprimaries:self.nprimaries*2]
         smlr1 = 0
         smlr2 = 0
-        for primary in range(self.np):
+        for primary in range(self.nprimaries):
             x = self.aopic.loc[primary].index/self.precision
             y = self.aopic.loc[primary]
             f = interp1d(x, y, axis=0, fill_value='extrapolate')
@@ -60,6 +79,7 @@ class SilentSubstitution:
         return (pd.Series(smlr1, index=self.aopic.columns), 
                 pd.Series(smlr2, index=self.aopic.columns))
 
+    # type of optimisation argument for this func?
     def _objective_function(self, weights):
         bg_settings, stim_settings = self.smlri_calculator(weights)
         contrast = ((stim_settings[self.isolate]-bg_settings[self.isolate]) 
@@ -75,18 +95,18 @@ class SilentSubstitution:
         return contrast
     
     def weights_to_settings(self, weights):
-        return ([int(val*self.precision) for val in weights[0:self.np]], 
-                [int(val*self.precision) for val in weights[self.np:self.np*2]])
+        return ([int(val*self.precision) for val in weights[0:self.nprimaries]], 
+                [int(val*self.precision) for val in weights[self.nprimaries:self.nprimaries*2]])
     
     def _callback(self, x, f, accepted):
         print('{self.isolate} contrast at minimum: {f}, accepted: {accepted}')
         pass
     
     def find_solutions(self):
-        x0 = np.random.rand(1, self.np * 2)[0]
+        x0 = np.random.rand(1, self.nprimaries * 2)[0]
         # define constraints and bounds
-        bounds = Bounds(np.ones((self.np * 2))*0, 
-                        np.ones((self.np * 2))*1)
+        bounds = Bounds(np.ones((self.nprimaries * 2))*0, 
+                        np.ones((self.nprimaries * 2))*1)
         # Equality constraint means that the constraint function result is to
         # be zero whereas inequality means that it is to be non-negative.
         constraints = {'type': 'eq',

@@ -29,6 +29,9 @@ class PupilCore:
     
     '''
     
+    # TODO: use this
+    eyemap = {'left': 0, 'right': 1}
+    
     def __init__(self, address='127.0.0.1', request_port='50020', 
                  pyplr_defaults=False):
         '''Initialize the connection with Pupil Core.

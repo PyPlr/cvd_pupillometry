@@ -17,6 +17,7 @@ if sys.platform.startswith('win'):
     
 import os
 import os.path as op
+from time import sleep
 from subprocess import Popen
 
 def input_subject_id():
@@ -59,4 +60,9 @@ def beep_sound():
     elif sys.platform.startswith('win'):
         Beep(440, 200)
         
-    
+def timer(increment=1, seconds=0, message='Waiting...'):
+    print(message)
+    while seconds > 0:
+        print(f'\t{seconds} seconds left...')
+        sleep(increment)
+        seconds -= increment

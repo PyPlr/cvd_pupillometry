@@ -60,7 +60,7 @@ class Spectraval:
         '''
         
         # Perform reference measurement
-        self.ser.write(b'*MEAS:REFE 0 1 0\r')
+        self.ser.write(b'*MEAS:REFER 0 1 0\r')
         ack = self.ser.read(1)
         while ack != b'\x07':
             ack = self.ser.read(1)
