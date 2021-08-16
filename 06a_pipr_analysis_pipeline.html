@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PIPR analysis pipeline &#8212; PyPlr v1.0 documentation</title>
+    <title>PIPR preprocessing pipeline &#8212; PyPlr v1.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -35,9 +35,478 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="PIPR-analysis-pipeline">
-<h1>PIPR analysis pipeline<a class="headerlink" href="#PIPR-analysis-pipeline" title="Permalink to this headline">¶</a></h1>
-<p>This pipeline is currently under construction…</p>
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="PIPR-preprocessing-pipeline">
+<h1>PIPR preprocessing pipeline<a class="headerlink" href="#PIPR-preprocessing-pipeline" title="Permalink to this headline">¶</a></h1>
+<p>What follows is an example pipeline for preprocessing PIPR data with tools from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> and <code class="docutils literal notranslate"><span class="pre">pyplr.preproc</span></code>. The data were collected from three subjects using <a class="reference internal" href="05d_pipr_stlab.html"><span class="doc">this protocol</span></a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">op</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pyplr</span> <span class="kn">import</span> <span class="n">graphing</span><span class="p">,</span> <span class="n">utils</span><span class="p">,</span> <span class="n">preproc</span>
+<span class="kn">from</span> <span class="nn">pyplr.plr</span> <span class="kn">import</span> <span class="n">PLR</span>
+
+<span class="c1"># Some useful constants</span>
+<span class="n">SAMPLE_RATE</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">DURATION</span> <span class="o">=</span> <span class="mi">7800</span>
+<span class="n">ONSET_IDX</span> <span class="o">=</span> <span class="mi">600</span>
+
+<span class="c1"># Columns to load</span>
+<span class="n">use_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;method&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pupil_timestamp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;eye_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diameter_3d&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
+
+<span class="c1"># Pupil Labs recording directories / exports</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;001&#39;</span><span class="p">:</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;/Users/jtm/Projects/PyPlr/examples/PIPR/data/sub001&#39;</span><span class="p">,</span> <span class="s1">&#39;000&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;002&#39;</span><span class="p">:</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;/Users/jtm/Projects/PyPlr/examples/PIPR/data/sub002&#39;</span><span class="p">,</span> <span class="s1">&#39;001&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;003&#39;</span><span class="p">:</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;/Users/jtm/Projects/PyPlr/examples/PIPR/data/sub003&#39;</span><span class="p">,</span> <span class="s1">&#39;000&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1"># Empty DataFrame to store processed PIPR data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+<span class="c1"># Loop over subjects</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">subjects</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="c1"># Get a handle on a subject</span>
+    <span class="n">rec</span> <span class="o">=</span> <span class="n">subjects</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">export</span> <span class="o">=</span> <span class="n">subjects</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">new_subject</span><span class="p">(</span>
+        <span class="n">rec</span><span class="p">,</span> <span class="n">export</span><span class="o">=</span><span class="n">export</span><span class="p">,</span> <span class="n">out_dir_nm</span><span class="o">=</span><span class="s1">&#39;pyplr_analysis&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Load pupil data</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_pupil</span><span class="p">(</span>
+        <span class="n">s</span><span class="p">[</span><span class="s1">&#39;data_dir&#39;</span><span class="p">],</span> <span class="n">eye_id</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
+
+    <span class="c1"># Pupil columns to analyse</span>
+    <span class="n">pupil_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;diameter_3d&#39;</span><span class="p">,</span> <span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Make figure for processing</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">graphing</span><span class="o">.</span><span class="n">pupil_preprocessing</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="c1"># Plot the raw data</span>
+    <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Raw&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;center right&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span> <span class="s1">&#39;pixels&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Mask first derivative threshold</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">mask_pupil_first_derivative</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mask_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+    <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Masked 1st deriv (3*SD)&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Mask confidence threshold</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">mask_pupil_confidence</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">mask_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+    <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Masked confidence (&lt;0.99)&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Interpolate</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">interpolate_pupil</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">,</span> <span class="n">interp_cols</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">)</span>
+    <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Linear interpolation&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Smooth with Butterworth filter</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">butterworth_series</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">pupil_cols</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="n">SAMPLE_RATE</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">samples</span><span class="p">[</span><span class="n">pupil_cols</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;3rd order Butterworth filter with 4 Hz cut-off&#39;</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Load events</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;data_dir&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Extract the event ranges</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">,</span>
+        <span class="n">events</span><span class="p">,</span>
+        <span class="n">offset</span><span class="o">=-</span><span class="n">ONSET_IDX</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="n">DURATION</span><span class="p">,</span>
+        <span class="n">borrow_attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Calculate baselines</span>
+    <span class="n">baselines</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ONSET_IDX</span><span class="p">),</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># New columns for percent signal change</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">percent_signal_change</span><span class="p">(</span>
+        <span class="n">ranges</span><span class="p">,</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">pupil_cols</span><span class="p">)</span>
+
+    <span class="c1"># Add to DataFrame</span>
+    <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span>
+
+    <span class="c1"># Convert samples index-level to time (s)</span>
+    <span class="n">new_onset</span> <span class="o">=</span> <span class="p">(</span><span class="n">ranges</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;onset&#39;</span><span class="p">)</span>
+                       <span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+                 <span class="o">-</span> <span class="n">ONSET_IDX</span><span class="p">)</span> <span class="o">/</span> <span class="n">SAMPLE_RATE</span>
+    <span class="n">ranges</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">set_levels</span><span class="p">(</span>
+        <span class="n">levels</span><span class="o">=</span><span class="n">new_onset</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;onset&#39;</span><span class="p">)</span>
+    <span class="n">ranges</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;out_dir&#39;</span><span class="p">],</span> <span class="s1">&#39;ranges.csv&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Plot PIPRs</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">ranges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ranges</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="s1">&#39;diameter_pc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="s1">&#39;.1&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Now show the means</span>
+    <span class="n">avgs</span> <span class="o">=</span> <span class="p">(</span><span class="n">ranges</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                  <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;color&#39;</span><span class="p">,</span><span class="s1">&#39;onset&#39;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                  <span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">avgs</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;onset&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diameter_pc&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span>
+                 <span class="n">palette</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;blue&#39;</span><span class="p">:</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;red&#39;</span><span class="p">:</span><span class="s1">&#39;r&#39;</span><span class="p">},</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Tweak figures</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Pupil diameter </span><span class="se">\n</span><span class="s1">(</span><span class="si">%-c</span><span class="s1">hange from baseline)&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Subject = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]))</span>
+
+    <span class="c1"># Save</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;../img/PIPR_</span><span class="si">{}</span><span class="s1">.svg&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]))</span>
+
+<span class="c1"># Save Processed PIPR data</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;processed_PIPR.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+************************************************************
+************************** sub001 **************************
+************************************************************
+Loaded 94406 samples
+Loaded 6 events
+Extracted ranges for 6 events
+************************************************************
+************************** sub002 **************************
+************************************************************
+Loaded 95307 samples
+Loaded 6 events
+Extracted ranges for 6 events
+************************************************************
+************************** sub003 **************************
+************************************************************
+Loaded 117246 samples
+Loaded 6 events
+Extracted ranges for 6 events
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_1.png" src="_images/06a_pipr_analysis_pipeline_1_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_2.png" src="_images/06a_pipr_analysis_pipeline_1_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_3.png" src="_images/06a_pipr_analysis_pipeline_1_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_4.png" src="_images/06a_pipr_analysis_pipeline_1_4.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_5.png" src="_images/06a_pipr_analysis_pipeline_1_5.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/06a_pipr_analysis_pipeline_1_6.png" src="_images/06a_pipr_analysis_pipeline_1_6.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -76,9 +545,10 @@
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">PIPR analysis pipeline</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">PIPR preprocessing pipeline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06b_pupil_core_timing_analysis.html">Pupil Core device timing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06c_finding_stlab_settings.html">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06d_silent_substitution_STLAB.html">Silent substitution with STLAB</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>

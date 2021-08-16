@@ -285,9 +285,9 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Silent-substitution-with-STLAB">
 <h1>Silent substitution with STLAB<a class="headerlink" href="#Silent-substitution-with-STLAB" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fneur.2018.00941/full">Silent substitution</a> is an elegant technique that uses pairs of lights to stimulate a specific class of retinal photoreceptor whilst maintaining a constant level of activation in others. The challenge with this technique is finding the settings for a stimulation device that will produce light stimuli which satisfy the spectral requirements and constraints. Suppose we are interested in how the melanopsin-containing ipRGCs
-contribute to pupil control and that we want to administer a light stimulus which targets melanopsin without changing the activation of the cone photoreceptors, so as to be sure that the resulting pupil modulation is driven purely by ipRGC activity. For simplicities sake we can assume the rods are saturated. To accomplish our goal we need to find the settings for a background spectrum and a modulation spectrum where both spectra have identical S-, M-, and L-opic irradiance, but where the
-modulation spectrum has higher melanopic irradiance. Fundamentally, this is a constrained numerical optimisation problem that can be expressed formally as:</p>
+<p><a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fneur.2018.00941/full">Silent substitution</a> is an elegant technique that uses pairs of lights to stimulate a specific class of retinal photoreceptor whilst maintaining a constant level of activation in others. The challenge with this technique is finding the settings for a stimulation device to produce light stimuli that satisfy the spectral requirements and constraints. Suppose we are interested in how the melanopsin-containing ipRGCs contribute
+to pupil control and that we want to administer a light stimulus that targets melanopsin without changing the activation of the cone photoreceptors, so as to be sure that the resulting pupil modulation is driven purely by ipRGC activity. For simplicity’s sake we can assume the rods are saturated. To accomplish our goal we need to find the settings for a background spectrum and a modulation spectrum where both spectra have identical S-, M-, and L-opic irradiance, but where the modulation spectrum
+has higher melanopic irradiance. Fundamentally, this is a constrained numerical optimisation problem that can be expressed formally as:</p>
 <p><span class="math">\begin{equation}
 \begin{array}{rrclcl}
 & \underset{x}{\text{minimize}}
@@ -299,7 +299,7 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 <p>where <span class="math notranslate nohighlight">\(f(x)\)</span> is the objective function which aims to minimise negative (i.e., maximise) melanopsin contrast, and <span class="math notranslate nohighlight">\(g(x)\)</span> is a function that calculates cone contrast, where <span class="math notranslate nohighlight">\(g^{L}\)</span> and <span class="math notranslate nohighlight">\(g^{U}\)</span> should be zero. In both cases, <span class="math notranslate nohighlight">\(x\)</span> is a vector containing the weights for the LED settings. What follows is a basic example of how to find a solution to this problem for STLAB, which has 10 LED channels.</p>
 <p>First, we create a calibration context which gives us access to the forward model of STLAB.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -307,7 +307,8 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 <span class="kn">from</span> <span class="nn">pyplr.calibrate</span> <span class="kn">import</span> <span class="n">CalibrationContext</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;notebook&#39;</span><span class="p">)</span>
 
-<span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cc</span> <span class="o">=</span> <span class="n">CalibrationContext</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="s1">&#39;../data/S2_corrected_oo_spectra.csv&#39;</span><span class="p">,</span> <span class="n">binwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">plot_calibrated_spectra</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -324,7 +325,7 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 \frac{I_{modulation} − I_{background}}{I_{background}}
 \end{equation}</span></p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -335,9 +336,9 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
         <span class="bp">self</span><span class="o">.</span><span class="n">aopic</span> <span class="o">=</span> <span class="n">aopic</span>
 
     <span class="k">def</span> <span class="nf">smlri_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculates a-opic irradiance for the given weights. The first 10 values</span>
-<span class="sd">        in weights define the background spectrum and the second 10 values define</span>
-<span class="sd">        the modulation&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;Calculates a-opic irradiance for the given weights.</span>
+<span class="sd">        The first 10 values in weights define the background</span>
+<span class="sd">        spectrum and the second 10 values define the modulation&#39;&#39;&#39;</span>
         <span class="n">background</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
         <span class="n">modulation</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span>
         <span class="n">bg_smlri</span> <span class="o">=</span> <span class="mi">0</span>
@@ -352,15 +353,15 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
                 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mod_smlri</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aopic</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculates negative melanopsin contrast for background and modulation spectra.</span>
-<span class="sd">        We want to minimise this.&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;Calculates negative melanopsin contrast for background</span>
+<span class="sd">        and modulation spectra. We want to minimise this.&#39;&#39;&#39;</span>
         <span class="n">bg_smlri</span><span class="p">,</span> <span class="n">mod_smlri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smlri_calculator</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="p">(</span><span class="n">mod_smlri</span><span class="o">.</span><span class="n">Mel</span><span class="o">-</span><span class="n">bg_smlri</span><span class="o">.</span><span class="n">Mel</span><span class="p">)</span> <span class="o">/</span> <span class="n">bg_smlri</span><span class="o">.</span><span class="n">Mel</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">contrast</span>
 
     <span class="k">def</span> <span class="nf">cone_contrast_constraint_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculates S-, M-, and L-opic contrast for background and modulation spectra.</span>
-<span class="sd">        We want to this to be zero&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;Calculates S-, M-, and L-opic contrast for background</span>
+<span class="sd">        and modulation spectra. We want to this to be zero&#39;&#39;&#39;</span>
         <span class="n">bg_smlri</span><span class="p">,</span> <span class="n">mod_smlri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smlri_calculator</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">mod_smlri</span><span class="o">.</span><span class="n">S</span><span class="o">-</span><span class="n">bg_smlri</span><span class="o">.</span><span class="n">S</span><span class="p">)</span> <span class="o">/</span> <span class="n">bg_smlri</span><span class="o">.</span><span class="n">S</span><span class="p">,</span>
                              <span class="p">(</span><span class="n">mod_smlri</span><span class="o">.</span><span class="n">M</span><span class="o">-</span><span class="n">bg_smlri</span><span class="o">.</span><span class="n">M</span><span class="p">)</span> <span class="o">/</span> <span class="n">bg_smlri</span><span class="o">.</span><span class="n">M</span><span class="p">,</span>
@@ -369,13 +370,14 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 
     <span class="k">def</span> <span class="nf">weights_to_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Turns weights to 12-bit STLAB settings.&#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="o">*</span><span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]],</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="o">*</span><span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="o">*</span><span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]],</span>
+                <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="o">*</span><span class="mi">4095</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]])</span>
 </pre></div>
 </div>
 </div>
 <p>To perform the optimisation, we will use <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize">scipy.optimize.minimize</a> with the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html">SLSQP</a> solver. SLSQP uses <a class="reference external" href="https://en.wikipedia.org/wiki/Sequential_quadratic_programming">sequential quadratic programming</a>, an iterative method that is ideally suited to solving constrained nonlinear optimsation problems like ours.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -395,11 +397,15 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 <span class="c1"># Create an instance of our optimisation problem</span>
 <span class="n">op</span> <span class="o">=</span> <span class="n">OptimisationProblem</span><span class="p">(</span><span class="n">aopic</span><span class="p">)</span>
 
-<span class="c1"># Define and equality constraint for the cones (i.e., contrast must be zero)</span>
-<span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">cone_contrast_constraint_function</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+<span class="c1"># Define and equality constraint for the cones</span>
+<span class="c1"># (i.e., contrast must be zero)</span>
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">cone_contrast_constraint_function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="p">}</span>
 
-<span class="c1"># The bounds should be between 0-1, otherwise we are outside the gamut of the device</span>
+<span class="c1"># The bounds should be between 0-1, otherwise we are outside the</span>
+<span class="c1"># gamut of the device</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span><span class="o">*</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Do the optimsation</span>
@@ -415,8 +421,10 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
 <span class="c1"># Print contrast for results</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Melanopsin contrast is: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cone contrast is: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">cone_contrast_constraint_function</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Melanopsin contrast is: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cone contrast is: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">cone_contrast_constraint_function</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)))</span>
 
 
 </pre></div>
@@ -428,30 +436,30 @@ modulation spectrum has higher melanopic irradiance. Fundamentally, this is a co
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Optimisation result:
-     fun: -1.1111771534868478
-     jac: array([-7.79665112e-02,  1.71499446e-01,  1.14758393e+00,  1.29568529e+00,
-        6.82250887e-01,  7.03057125e-01,  1.84825000e+00,  1.91547394e-01,
-        2.48943716e-02,  4.11719084e-04, -1.26432329e-01, -5.02872795e-01,
-       -1.36201774e+00, -1.26807743e+00, -2.46354938e-02, -8.24884623e-02,
-       -1.37574032e-01, -2.10087806e-01,  1.55347586e-03,  2.08782554e-02])
+     fun: -1.1262980001283986
+     jac: array([ 1.68524863e+00,  3.15193579e-01,  1.72366345e+00,  1.94611071e+00,
+        1.02473636e+00,  2.61568606e-01,  1.12671651e+00,  2.99931169e-01,
+        1.14196539e-03,  6.18398190e-04, -1.88550070e-01, -7.49940321e-01,
+       -1.89080393e+00, -1.62490889e-01, -1.57686652e+00, -1.23016015e-01,
+       -2.05165818e-01, -2.35104889e-01, -2.52726525e-02, -5.31006455e-02])
  message: &#39;Optimization terminated successfully&#39;
-    nfev: 2984
-     nit: 123
-    njev: 123
+    nfev: 2114
+     nit: 94
+    njev: 94
   status: 0
  success: True
-       x: array([9.85601915e-01, 3.33325089e-01, 5.79323970e-14, 1.88735816e-14,
-       6.71441682e-13, 4.75881530e-02, 7.20304047e-01, 4.76809998e-02,
-       6.85369159e-02, 6.34529952e-13, 8.50045379e-13, 5.91736966e-14,
-       3.65076208e-01, 8.43729940e-01, 1.00000000e+00, 7.08661862e-13,
-       4.07337333e-13, 2.38067042e-01, 9.20809368e-01, 9.84126207e-01])
-Melanopsin contrast is: -1.1111771534868478
-Cone contrast is: [9.84795884e-09 9.30639890e-09 2.07974515e-08]
+       x: array([2.72832879e-01, 5.55555807e-01, 6.44788109e-14, 7.33560916e-14,
+       3.21556559e-12, 4.75574157e-14, 3.11704172e-01, 3.48394141e-01,
+       7.47335280e-13, 1.86972226e-15, 3.24115162e-13, 5.59009258e-04,
+       2.52874586e-01, 7.16086550e-01, 4.24668885e-01, 2.25413334e-13,
+       4.38771435e-13, 2.51358975e-01, 9.80844739e-01, 1.00000000e+00])
+Melanopsin contrast is: -1.1262980001283986
+Cone contrast is: [2.77454853e-11 2.81393038e-12 4.59119978e-11]
 </pre></div></div>
 </div>
-<p>Success. The optimisation has found a result where cones are silent and melanopsin contrast is 111%. Let’s plot the spectra and <em>a</em>-opic irradiances to see what the solution looks like.</p>
+<p>Success. The optimisation has found a result where cones are silent and melanopsin contrast is 112%. We can~ plot the spectra and <em>a</em>-opic irradiances to see what the solution looks like.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -484,7 +492,8 @@ Cone contrast is: [9.84795884e-09 9.30639890e-09 2.07974515e-08]
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
 
 <span class="c1"># Plot the predicted a-opic irradiances</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ao</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ao</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span>
+                  <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;W/m$^2$&#39;</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
 
@@ -496,8 +505,8 @@ Cone contrast is: [9.84795884e-09 9.30639890e-09 2.07974515e-08]
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The background settings are: [4036, 1364, 0, 0, 0, 194, 2949, 195, 280, 0]
-The modulation settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
+The background settings are: [1117, 2275, 0, 0, 0, 0, 1276, 1426, 0, 0]
+The modulation settings are: [0, 2, 1035, 2932, 1739, 0, 0, 1029, 4016, 4094]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -517,7 +526,7 @@ The modulation settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
 <p>This is a good start, but it is unlikely to be the exact solution we are looking for, as SciPy’s SLSQP solver is a ‘local’ minimzer. This means that it will attempt to locate the nearest minimum to its starting point, which in our case was completely random. Suppose for example that we wanted our melanopic pulse to be at least 400% contrast. For this we would need to search for a better solution using <a class="reference external" href="https://en.wikipedia.org/wiki/Global_optimization">‘global’ optimisation</a>. One approach is
 to use SciPy’s <a class="reference external" href="https://en.wikipedia.org/wiki/Basin-hopping">basinhopping</a> algorithm in conjunction with the SLSQP solver. This will conduct a series of local minimisations, each time starting at a different coordinates in the problem space. We can save all of the acceptable intermediate solutions and call off the search when we find a solution that has at least 400% melanopic contast.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -534,12 +543,14 @@ to use SciPy’s <a class="reference external" href="https://en.wikipedia.org/wi
 <span class="c1"># Create an instance of our optimisation problem</span>
 <span class="n">op</span> <span class="o">=</span> <span class="n">OptimisationProblem</span><span class="p">(</span><span class="n">aopic</span><span class="p">)</span>
 
-<span class="c1"># Define bounds of 0-1, which makes sure the settings are within the gamut of STLAB</span>
+<span class="c1"># Define bounds of 0-1, which makes sure the settings are</span>
+<span class="c1"># within the gamut of STLAB</span>
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span><span class="o">*</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Define constraints and local minimizer</span>
 <span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span>
                <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">op</span><span class="o">.</span><span class="n">cone_contrast_constraint_function</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
+
 <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span>
                     <span class="s1">&#39;constraints&#39;</span><span class="p">:</span> <span class="n">constraints</span><span class="p">,</span>
                     <span class="s1">&#39;bounds&#39;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">,</span>
@@ -549,8 +560,8 @@ to use SciPy’s <a class="reference external" href="https://en.wikipedia.org/wi
 <span class="c1"># List to store valid solutions</span>
 <span class="n">minima</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="c1"># Callback function to give info on all minima found and call off the search</span>
-<span class="c1"># when we hit a target melanopic contrast</span>
+<span class="c1"># Callback function to give info on all minima found and</span>
+<span class="c1"># call off the search when we hit a target melanopic contrast</span>
 <span class="k">def</span> <span class="nf">print_fun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">accepted</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Melanopsin contrast at minimum: </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">, accepted </span><span class="si">{</span><span class="n">accepted</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
@@ -573,19 +584,39 @@ to use SciPy’s <a class="reference external" href="https://en.wikipedia.org/wi
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Melanopsin contrast at minimum: -0.9601677025732747, accepted True
-Melanopsin contrast at minimum: -1.0998763269931218, accepted True
-Melanopsin contrast at minimum: -1.3808011866403724, accepted True
-Melanopsin contrast at minimum: -1.1142768046530183, accepted True
-Melanopsin contrast at minimum: -1.2046768134767794, accepted True
-Melanopsin contrast at minimum: -1.3392995621403112, accepted True
-Melanopsin contrast at minimum: -1.6541107541618572, accepted True
-Melanopsin contrast at minimum: -4.287293801731514, accepted True
+Melanopsin contrast at minimum: -1.157205714211695, accepted True
+Melanopsin contrast at minimum: -1.0333207541135296, accepted True
+Melanopsin contrast at minimum: -1.1463763700733014, accepted True
+Melanopsin contrast at minimum: -1.349362878365679, accepted True
+Melanopsin contrast at minimum: -1.3000577322404925, accepted True
+Melanopsin contrast at minimum: -1.6298963642832545, accepted True
+Melanopsin contrast at minimum: -1.5531614465469152, accepted True
+Melanopsin contrast at minimum: -1.6402950219928798, accepted True
+Melanopsin contrast at minimum: -1.5055464302170414, accepted False
+Melanopsin contrast at minimum: -2.5376813025601095, accepted True
+Melanopsin contrast at minimum: -0.7473887793354929, accepted True
+Melanopsin contrast at minimum: -1.7741800855251268, accepted True
+Melanopsin contrast at minimum: -2.113277220497712, accepted True
+Melanopsin contrast at minimum: -2.195097542530537, accepted True
+Melanopsin contrast at minimum: -1.9454096886092744, accepted True
+Melanopsin contrast at minimum: -0.9940588526698512, accepted False
+Melanopsin contrast at minimum: -1.2108668262395486, accepted False
+Melanopsin contrast at minimum: -1.4431648236090764, accepted True
+Melanopsin contrast at minimum: -2.7305255211845596, accepted True
+Melanopsin contrast at minimum: -2.1530870262550197, accepted True
+Melanopsin contrast at minimum: -1.298445243730765, accepted False
+Melanopsin contrast at minimum: -2.584598260615528, accepted True
+Melanopsin contrast at minimum: -1.5602820185175494, accepted False
+Melanopsin contrast at minimum: -1.1159782989449083, accepted True
+Melanopsin contrast at minimum: -1.394129653899704, accepted True
+Melanopsin contrast at minimum: -2.591339028312339, accepted True
+Melanopsin contrast at minimum: -2.404574155601363, accepted True
+Melanopsin contrast at minimum: -4.6240830130736335, accepted True
 </pre></div></div>
 </div>
-<p>Good. We have found a solution that gives 428% melanopic contrast. As before, we can plot the spectra and <em>a</em>-opic irradiances to see they look.</p>
+<p>Good. We have found a solution that gives 462% melanopic contrast. As before, we can plot the spectra and <em>a</em>-opic irradiances to see how they look.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -616,7 +647,8 @@ Melanopsin contrast at minimum: -4.287293801731514, accepted True
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
 
 <span class="c1"># Plot the predicted a-opic irradiances</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ao</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ao</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">,</span>
+                  <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Condition&#39;</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;W/m$^2$&#39;</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
 
@@ -639,13 +671,13 @@ Melanopsin contrast at minimum: -4.287293801731514, accepted True
 </div>
 <p>After conducting some spectral validations to check that STLAB reproduces these stimuli faithfully, all that remains is to make video files for the presentation. Here we make a video file that will present a 2 second melanopic pulse half way through a minute of the background spectrum.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyplr.stlab</span> <span class="kn">import</span> <span class="n">background_pulse_protocol</span>
 
-<span class="c1"># print the settings and make video files</span>
+<span class="c1"># Print the settings and make video files</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The background settings are: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">background_settings</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The stimulus settings are: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">modulation_settings</span><span class="p">))</span>
 <span class="n">background_pulse_protocol</span><span class="p">(</span><span class="n">background_spec</span><span class="o">=</span><span class="n">background_settings</span><span class="p">,</span>
@@ -662,8 +694,8 @@ Melanopsin contrast at minimum: -4.287293801731514, accepted True
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The background settings are: [4036, 1364, 0, 0, 0, 194, 2949, 195, 280, 0]
-The stimulus settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
+The background settings are: [454, 0, 0, 0, 0, 0, 0, 1393, 0, 0]
+The stimulus settings are: [0, 0, 0, 236, 1061, 0, 0, 0, 3834, 4094]
 &#34;melanopsin_pulse.dsf&#34; saved in the current working directory.
 </pre></div></div>
 </div>
@@ -705,7 +737,7 @@ The stimulus settings are: [0, 0, 1494, 3455, 4094, 0, 0, 974, 3770, 4029]
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR preprocessing pipeline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06b_pupil_core_timing_analysis.html">Pupil Core device timing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06c_finding_stlab_settings.html">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Silent substitution with STLAB</a></li>

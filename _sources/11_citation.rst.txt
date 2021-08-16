@@ -7,13 +7,13 @@ If you use *PyPlr* in a scientific publication we would appreciate citations to 
 
     @software{PyPlr2021,
       author         = {Martin, Joel T and Spitschan, Manuel},
-      title          = {PyPlr/cvd\_pupillometry: PyPlr initial release},
-      month          = {may},
+      title          = {PyPlr (version 1.0.0)},
+      month          = {August},
       year           = {2021},
       publisher      = {Zenodo},
-      version        = {v0.6.0-alpha},
-      doi            = {10.5281/zenodo.4785288},
-      url            = {https://doi.org/10.5281/zenodo.4785288}
+      version        = {v1.0.0},
+      doi            = {10.5281/zenodo.5167654},
+      url            = {https://doi.org/10.5281/zenodo.5167654}
     }
 
     @article{Martin2021,

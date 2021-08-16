@@ -37,20 +37,23 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p><em>PyPlr</em> and its dependencies are easy to install. For Mac OS X or Linux, simply run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/PyPlr/cvd_pupillometry.git PyPlr
-$ <span class="nb">cd</span> PyPlr
-$ pip install -r requirements.txt
-$ python setup.py install
-</pre></div>
-</div>
-<p><em>PyPlr</em> is also registered on <a class="reference external" href="https://pypi.org/">PyPI</a> and the latest release can be installed with <em>pip</em> (this will also install the dependencies automatically):</p>
+<p><em>PyPlr</em> is registered on <a class="reference external" href="https://pypi.org/">PyPI</a>, which means the latest version can be installed easily via the <em>pip</em> packaging tool (this will also install the dependencies automatically):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install pyplr
 </pre></div>
 </div>
 <p>(<a class="reference external" href="https://pypi.org/project/pyplr/">link to the PyPI project page</a>).</p>
 <p>The latest development version can also be installed from GitHub with <em>pip</em>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/PyPlr/cvd_pupillometry.git
+</pre></div>
+</div>
+<p>Alternatively, you can clone from from git and install with <a class="reference external" href="https://setuptools.readthedocs.io/en/latest/index.html">setuptools</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/PyPlr/cvd_pupillometry.git PyPlr
+$ <span class="nb">cd</span> PyPlr
+$ python setup.py install
+</pre></div>
+</div>
+<p>If you want to make changes to the code and have those changes instantly available on <cite>sys.path</cite> you can use setuptools’ <a class="reference external" href="https://setuptools.readthedocs.io/en/latest/userguide/development_mode.html">develop mode</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python setup.py develop
 </pre></div>
 </div>
 <div class="section" id="requirements">

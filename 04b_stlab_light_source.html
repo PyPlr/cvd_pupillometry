@@ -285,9 +285,9 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Spectra-Tune-Lab-light-source">
 <h1>Spectra Tune Lab light source<a class="headerlink" href="#Spectra-Tune-Lab-light-source" title="Permalink to this headline">¶</a></h1>
-<p><img alt="drawing" class="no-scaled-link" src="_images/STLAB.png" style="width: 500px;" /></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> method of the <code class="docutils literal notranslate"><span class="pre">PupilCore</span></code> interface makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with
-most languages via its <em>REST API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
+<p><img alt="drawing" class="no-scaled-link" src="_images/STLAB.png" style="width: 300px;" /></p>
+<p><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> method makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with most languages
+via its <em>REST API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
 <div class="section" id="PyPlr’s-stlab.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> module<a class="headerlink" href="#PyPlr’s-stlab.py-module" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> provides full native support for STLAB by encapsulating its <em>REST API</em> in a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab()</span></code> device class and streamlining various routines with helper functions. STLAB connects via ethernet to a small computer called the <em>Light Hub</em> (a BeagleBone running Linux), which in turn connects via USB to the controlling computer. When all hardware is correctly assembled and the appropriate software installed, establishing a connection to the device is easy (note that a password is
@@ -688,7 +688,7 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Wavelength (nm)&quot;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Flux (mW)&quot;</span><span class="p">)</span>
 
-<span class="c1"># Plotting the *CIE xy* chromaticity coordinates.</span>
+<span class="c1"># Plot the *CIE xy* chromaticity coordinates.</span>
 <span class="n">plot_chromaticity_diagram_CIE1931</span><span class="p">(</span>
     <span class="n">standalone</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_spectral_locus</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -778,8 +778,8 @@ dtype: float64
 <img alt="_images/04b_stlab_light_source_11_1.png" src="_images/04b_stlab_light_source_11_1.png" />
 </div>
 </div>
-<p>Clearly there is variability. It probably depends on the machine, hardware, other processes, etc., but in our general testing we have seen even bigger delays, with commands sometimes taking up to 5 seconds to execute. Given that we will want to administer light stimuli of a precise duration, the uncertainty here is problematic. Thankfully the STLAB has an <em>asynchronous</em> mode of operation which allows for real-time spectral streaming, with a spectral switching time of less than 10 milliseconds
-(i.e., 1 spectrum every 10 milliseconds). We leverage this mode in order to get the desired control over the temporal characteristics of our light stimuli.</p>
+<p>Clearly there is variability. It probably depends on the machine, hardware, other processes, etc., but in our general testing we have seen even bigger delays, with commands sometimes taking up to 5 seconds to execute. Given that we will want to administer light stimuli of a precise duration, the uncertainty here is problematic. Thankfully, STLAB has an <em>asynchronous</em> mode of operation which allows for real-time spectral streaming with a spectral switching time of less than 10 milliseconds (i.e.,
+1 spectrum every 10 milliseconds). We leverage this mode in order to get the desired control over the temporal characteristics of our light stimuli.</p>
 </div>
 <div class="section" id="Playing-video-files">
 <h2>Playing video files<a class="headerlink" href="#Playing-video-files" title="Permalink to this headline">¶</a></h2>

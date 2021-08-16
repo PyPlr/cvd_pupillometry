@@ -351,13 +351,13 @@ dtype: int64
 <span class="n">red_led</span> <span class="o">=</span> <span class="mi">9</span>
 <span class="n">target_lux</span> <span class="o">=</span> <span class="mi">800</span>
 
-<span class="c1"># find the required intensity setting of the blue led for 800 lux</span>
+<span class="c1"># Find the required intensity setting of the blue led for 800 lux</span>
 <span class="n">blue_intensity</span> <span class="o">=</span> <span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">lux</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">blue_led</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">target_lux</span><span class="p">)</span>
                                       <span class="o">.</span><span class="n">abs</span><span class="p">()</span>
                                       <span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
                                       <span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<span class="c1"># find the intensity setting of the red led for 800 lux</span>
+<span class="c1"># Find the intensity setting of the red led for 800 lux</span>
 <span class="n">red_intensity</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">match_led</span><span class="o">=</span><span class="n">blue_led</span><span class="p">,</span>
                          <span class="n">match_led_intensity</span><span class="o">=</span><span class="n">blue_intensity</span><span class="p">,</span>
                          <span class="n">target_led</span><span class="o">=</span><span class="n">red_led</span><span class="p">,</span>
@@ -406,6 +406,7 @@ dtype: int64
 <span class="n">blue_spec</span><span class="p">[</span><span class="n">blue_led</span><span class="p">]</span> <span class="o">=</span> <span class="n">blue_intensity</span>
 <span class="n">red_spec</span><span class="p">[</span><span class="n">red_led</span><span class="p">]</span> <span class="o">=</span> <span class="n">red_intensity</span>
 
+<span class="c1"># Make 1 second pulses</span>
 <span class="n">stlab</span><span class="o">.</span><span class="n">pulse_protocol</span><span class="p">(</span><span class="n">pulse_spec</span><span class="o">=</span><span class="n">blue_spec</span><span class="p">,</span>
                      <span class="n">pulse_duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
                      <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;1s_blue&#39;</span><span class="p">,</span>
