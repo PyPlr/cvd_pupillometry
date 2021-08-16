@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pyplr', # Replace with your own username
-    version='0.0.6',
+    version='1.0.0',
     author='Joel T. Martin',
     author_email='joel.t.martin36@gmail.com',
     description='Software for researching the pupillary light reflex',
@@ -19,7 +19,7 @@ setuptools.setup(
     install_requires=['scipy','matplotlib','msgpack','pyzmq','requests','numpy','seaborn','seabreeze','numexpr','tables','pandas'],
     packages=setuptools.find_packages(),
       classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 5 - Production/Stable',
           'Topic :: Scientific/Engineering :: Information Analysis',
           'License :: OSI Approved :: MIT License',
           'Intended Audience :: Science/Research',

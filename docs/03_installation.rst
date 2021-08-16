@@ -1,16 +1,7 @@
 Installation
 ============
 
-*PyPlr* and its dependencies are easy to install. For Mac OS X or Linux, simply run: 
-
-.. code-block:: bash
-
-    $ git clone https://github.com/PyPlr/cvd_pupillometry.git PyPlr
-    $ cd PyPlr
-    $ pip install -r requirements.txt
-    $ python setup.py install
-
-*PyPlr* is also registered on `PyPI <https://pypi.org/>`_ and the latest release can be installed with *pip* (this will also install the dependencies automatically):
+*PyPlr* is registered on `PyPI <https://pypi.org/>`_, which means the latest version can be installed easily via the *pip* packaging tool (this will also install the dependencies automatically):
 
 .. code-block:: bash
 
@@ -24,6 +15,19 @@ The latest development version can also be installed from GitHub with *pip*:
 
     $ pip install git+https://github.com/PyPlr/cvd_pupillometry.git
 
+Alternatively, you can clone from from git and install with `setuptools <https://setuptools.readthedocs.io/en/latest/index.html>`_:
+
+.. code-block:: bash
+
+    $ git clone https://github.com/PyPlr/cvd_pupillometry.git PyPlr
+    $ cd PyPlr
+    $ python setup.py install
+
+If you want to make changes to the code and have those changes instantly available on `sys.path` you can use setuptools' `develop mode <https://setuptools.readthedocs.io/en/latest/userguide/development_mode.html>`_:
+
+.. code-block:: bash
+
+    $ python setup.py develop
 
 Requirements
 ------------

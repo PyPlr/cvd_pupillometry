@@ -6,12 +6,14 @@ pyplr/CIE.py
 pyplr/__init__.py
 pyplr/calibrate.py
 pyplr/graphing.py
+pyplr/jeti.py
 pyplr/leduino.py
 pyplr/oceanops.py
 pyplr/plr.py
 pyplr/preproc.py
 pyplr/protocol.py
 pyplr/pupil.py
+pyplr/silentsub.py
 pyplr/spectools.py
 pyplr/stlab.py
 pyplr/utils.py
