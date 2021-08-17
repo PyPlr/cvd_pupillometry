@@ -4,7 +4,7 @@
 pyplr.jeti
 ==========
 
-A (currently) bare bones serial interface for JETI Spectraval. 
+A (currently) bare bones serial interface for JETI Spectraval.
 
 @author: jtm
 '''
@@ -14,41 +14,38 @@ import matplotlib.pyplot as plt
 import serial
 
 class Spectraval:
+    '''Interface to JETI Spectraval.
     
-    def __init__(self, 
-               port='/dev/cu.usbserial-DJ5F3W9U', 
-               baudrate=921600, 
-               bytesize=8, 
-               stopbits=1, 
-               parity='N', 
-               timeout=240):
-        
+    '''
+
+    def __init__(self,
+                 port='/dev/cu.usbserial-DJ5F3W9U',
+                 baudrate=921600,
+                 bytesize=8,
+                 stopbits=1,
+                 parity='N',
+                 timeout=240):
+
         # open serial connection
         self.ser = serial.Serial(
-            port = port,
-            baudrate = baudrate, 
-            bytesize = bytesize, 
-            stopbits = stopbits, 
-            parity = parity,
-            timeout = timeout)
-        
-    def measurement(self, integration_time=None, setting={}):
+            port=port,
+            baudrate=baudrate,
+            bytesize=bytesize,
+            stopbits=stopbits,
+            parity=parity,
+            timeout=timeout)
+
+    def measurement(self, setting=None):
         '''Obtain a measurement with JETI Spectraval.
-        
-        If `integration_time` is not specified, will use  adaptive procedure
-        (suitable for most situations).
-    
+
         Parameters
         ----------
-        integration_time : int
-            The integration time to use for the measurement. Leave as None to
-            to use JETI Spectraval adaptive procedure
         setting : dict, optional
-             Current setting of the light source (if known), to be included in 
-             the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or 
-             ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
+             Current setting of the light source (if known), to be included in
+             the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or
+             ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``.
              The default is ``{}``.
-    
+
         Returns
         -------
         spectrum : `np.array`
@@ -56,33 +53,31 @@ class Spectraval:
         info : dict
             Whatever other info we want from the spectrometer (e.g. PCB
             temperature)
-    
+
         '''
-        
-        # Perform reference measurement
+
+        # Perform reference measurement and wait for acknowledgement.
         self.ser.write(b'*MEAS:REFER 0 1 0\r')
         ack = self.ser.read(1)
         while ack != b'\x07':
             ack = self.ser.read(1)
-            
-        # Calculate spectral radiance and retrieve byte array
-        # as 32-bit float. Note that the first two bytes are
-        # not part of the spectrum.
+
+        # Calculate spectral radiance and retrieve byte array as 32-bit float.
+        # Note that the first two bytes are not part of the spectrum.
         self.ser.write(b'*CALC:SPRAD\r')
         data = self.ser.read(1606)
         spec = np.frombuffer(data[2:], dtype=np.float32)
-        
-        #don't need this anymore as the above is quicker
-        #data = np.array(data[2:], dtype=np.uint8)
-        #spectrum = np.array([x.view('<f')[0] for x in data])
 
-        #more code here for any device related info
-        info = {**setting}
-        
+        # Add the luminaire setting, if given, to the info.
+        info = {}
+        if setting is not None:
+            if not isinstance(setting, dict):
+                raise TypeError('Setting must be of type dict')
+            info = {**setting}
+
         return spec, info
-    
-#test
 
+# Test
 if __name__ == '__main__':
     device = Spectraval()
     specs = []
@@ -92,5 +87,4 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     for s in specs:
-        ax.plot(s)          
-
+        ax.plot(s)

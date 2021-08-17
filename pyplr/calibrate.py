@@ -4,7 +4,7 @@
 pyplr.calibrate
 ===============
 
-Module to assist with calibrating the sphere. 
+Module to assist with calibrating the sphere.
 
 @author: jtm
 
@@ -28,29 +28,30 @@ from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 
 class SpectraTuneLabSampler(SpectraTuneLab):
     '''Subclass of `stlab.SpectraTuneLab` with added sampling methods.
-    
-    Optional support for concurrent measurements with external spectrometer. 
-    
+
+    Optional support for concurrent measurements with external spectrometer.
+
     '''
-    
-    def __init__(self, password, username='admin', identity=1, 
+
+    def __init__(self, password, username='admin', identity=1,
                  lighthub_ip='192.168.7.2', external=None):
         '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
         more info.
-        
+
         Parameters
         ----------
         external : Class, optional
-            Acquire concurrent measurements with an external spectrometer. 
-            Must be a device class with ``.measurement(...)`` and 
-            ``.wavelengths(...)`` methods. See `pyplr.oceanops.OceanOptics` 
+            Acquire concurrent measurements with an external spectrometer.
+            Must be a device class with ``.measurement(...)`` and
+            ``.wavelengths(...)`` methods. See `pyplr.oceanops.OceanOptics`
             for an example.
-            
+
         Returns
         -------
         None.
 
         '''
+
         super().__init__(password, username, identity, lighthub_ip)
         self.external = external
         self._ready_cache()
@@ -61,11 +62,11 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         if self.external:
             self.ex_spectra = []
             self.ex_info = []
-    
+
     def make_dfs(self, save_csv=False):
-        '''Turn cached data and info into pandas DataFrames and optionally 
+        '''Turn cached data and info into pandas DataFrames and optionally
         save to csv format.
-        
+
         '''
         self.stlab_spectra = pd.DataFrame(self.stlab_spectra)
         self.stlab_spectra.columns = pd.Int64Index(self.wlbins)
@@ -81,18 +82,18 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             if 'led' in self.ex_info.columns:
                 self.ex_spectra['led'] = self.ex_info['led']
                 self.ex_spectra['intensity'] = self.ex_info['intensity']
-                
+
         if save_csv:
             self.stlab_spectra.to_csv(
                 op.join(os.getcwd(), 'stlab_spectra.csv'))
             self.stlab_info.to_csv(
-                op.join(os.getcwd(), 'stlab_info.csv'))            
-            if self.ocean_optics:
+                op.join(os.getcwd(), 'stlab_info.csv'))
+            if self.external:
                 self.ex_spectra.to_csv(
-                    op.join(os.getcwd(), 'external_spectra.csv'))            
+                    op.join(os.getcwd(), 'external_spectra.csv'))
                 self.ex_info.to_csv(
-                    op.join(os.getcwd(), 'external_info.csv'))            
-        
+                    op.join(os.getcwd(), 'external_info.csv'))
+
     def full_readout(self, norm=False, setting={}):
         '''Get a full readout from STLAB.
 
@@ -103,7 +104,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         setting : dict, optional
             The current setting of the luminaire (if known), to be included in
             the `info_dict`. For example ``{'led' : 5, 'intensity' : 3000}``,
-            or ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``. 
+            or ``{'intensities' : [0, 0, 0, 300, 4000, 200, 0, 0, 0, 0]}``.
             The default is ``{}``.
 
         Returns
@@ -115,9 +116,9 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
         '''
         tmps = self.get_pcb_temperature()
-        ip   = self.get_input_power()
-        it   = self.get_spectrometer_integration_time()
-        dl   = self.get_dimming_level()
+        ip = self.get_input_power()
+        it = self.get_spectrometer_integration_time()
+        dl = self.get_dimming_level()
         rmv, spec = self.get_spectrometer_spectrum(norm=norm)
         info_dict = {
             'rmv': rmv,
@@ -131,57 +132,57 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             }
         info_dict = {**info_dict, **setting}
         return spec, info_dict
-    
-    def sample(self, 
-               leds=[0], 
-               intensities=[500], 
+
+    def sample(self,
+               leds=[0],
+               intensities=[500],
                spectra=None,
                wait_before_sample=.3,
                ocean_optics=None,
                randomise=False):
-        '''Sample a set of LEDs individually at a range of specified 
-        intensities using STLABs on-board spectrometer. Alternatively, sample 
+        '''Sample a set of LEDs individually at a range of specified
+        intensities using STLABs on-board spectrometer. Alternatively, sample
         a set of pre-defined spectra. Option to also obtain concurrent
-        measurements with an external Ocean Optics spectrometer. Data are 
+        measurements with an external Ocean Optics spectrometer. Data are
         stored in class lists.
-    
+
         Parameters
         ----------
         leds : list, optional
             List of unique integers from 0-9 representing the LEDs to sample.
             The default is [0].
         intensities : list, optional
-            List of integer values between 0-4095 representing the intensity 
+            List of integer values between 0-4095 representing the intensity
             values at which to sample the LEDs. The default is [500].
         spectra : list, optinal
             List of predfined spectra to sample. Must be None if specifying
             leds or intensities. The default is None.
         wait_before_sample : float, optional
-            Time in seconds to wait after setting a spectrum before acquiring 
+            Time in seconds to wait after setting a spectrum before acquiring
             a measurement from the spectrometer(s). The default is .2.
         randomise : bool, optional
-            Whether to randomise the order in which the LED-intensity settings 
+            Whether to randomise the order in which the LED-intensity settings
             or spectra are sampled. The default is False.
 
-    
+
         Returns
         -------
         None.
-        
+
         '''
         if spectra and (leds or intensities):
             raise ValueError(
                 'leds and intensities must be None when specifying spectra')
-        
+
         # clear the cache
         self._ready_cache()
 
-        # off spectrum    
+        # off spectrum
         leds_off = [0]*10
 
         # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
-        
+
         # generate the settings
         if spectra:
             settings = spectra
@@ -191,12 +192,12 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             settings = [(l, i) for l in leds for i in intensities]
             print('Sampling {} leds at the following intensities: {}'.format(
                 len(leds), intensities))
-            
+
         # shuffle
         if randomise:
             shuffle(settings)
-        
-        # begin sampling            
+
+        # begin sampling
         for i, s in enumerate(settings):
             if not spectra:
                 led, intensity = s[0], s[1]
@@ -209,38 +210,37 @@ class SpectraTuneLabSampler(SpectraTuneLab):
                 setting = {'intensities': s}
                 print('Measurement: {} / {}, spectrum: {}'.format(
                     i + 1, len(settings), s))
-                       
+
             # set the spectrum
             self.set_spectrum_a(s)
             sleep(wait_before_sample)
-            
+
             # full readout from STLAB
             stlab_spec, stlab_info_dict = self.full_readout(setting=setting)
             self.stlab_spectra.append(stlab_spec)
             self.stlab_info.append(stlab_info_dict)
-            
+
             if self.external:
                 ex_spec, ex_info_dict = self.external.measurement(
                     setting=setting)
                 self.ex_spectra.append(ex_spec)
                 self.ex_info.append(ex_info_dict)
-        
+
         # turn off
         self.turn_off()
 
-# TODO: document this properly
 class CalibrationContext:
-    '''Create a calibration context based on spectrometer measurements. 
-    
+    '''Create a calibration context based on spectrometer measurements.
+
     Automatically creates a forward model of the device with linear
     interpolation. Currently this requires the measurements to be for each LED
     in steps of 65.
-    
+
     Example
     -------
     >>> cc = CalibrationContext('spectrometer_data.csv')
     >>> fig = cc.plot_calibrated_spectra()
-    
+
     '''
     def __init__(self, data, binwidth):
         '''
@@ -259,7 +259,7 @@ class CalibrationContext:
             None.
 
         '''
-        self.data = pd.read_csv(data, index_col=['led','intensity'])
+        self.data = pd.read_csv(data, index_col=['led', 'intensity'])
         self.binwidth = binwidth
         self.wls = self.data.columns.astype('int')
         self.data.columns = self.wls
@@ -268,7 +268,7 @@ class CalibrationContext:
         self.lux = self.create_lux_table()
         self.irradiance = self.lkp.sum(axis=1)
         self.curveparams = {}
-    
+
     def plot_calibrated_spectra(self):
         '''Plot the calibrated spectra.
 
@@ -281,19 +281,19 @@ class CalibrationContext:
         # TODO: move to graphing?
         colors = get_led_colors(rgb=True)
         data = (self.data.reset_index()
-                    .melt(id_vars=['led','intensity'], 
+                    .melt(id_vars=['led', 'intensity'],
                           value_name='flux',
                           var_name='wavelength'))
-        
-        fig, ax = plt.subplots(figsize=(14,5))
-        
+
+        fig, ax = plt.subplots(figsize=(14, 5))
+
         _ = sns.lineplot(x='wavelength', y='flux', data=data, hue='led',
-                     palette=colors, units='intensity', ax=ax, 
-                     lw=.1, estimator=None)
+                         palette=colors, units='intensity', ax=ax,
+                         lw=.1, estimator=None)
         ax.set_ylabel('SPD (W/m2/nm)')
         ax.set_xlabel('Wavelength (nm)')
-        return fig    
-    
+        return fig
+
     def create_lookup_table(self):
         '''Using `self.data`, create a lookup table for all settings with
         linear interpolation.
@@ -310,7 +310,7 @@ class CalibrationContext:
             lkp_tbl = lkp_tbl.append(self.interp_led_spectra(led, df))
         lkp_tbl.set_index(['led','intensity'], inplace=True)
         return lkp_tbl
-    
+
     def interp_led_spectra(self, led, df):
         intensities = df.index.get_level_values('intensity')
         minimum = intensities.min()
@@ -323,12 +323,12 @@ class CalibrationContext:
         df['intensity'] = df.index
         df['led'] = led
         return df
-        
+
     def create_alphaopic_irradiances_table(self):
-        '''Using the CIE026 spectral sensetivities, calculate alphaopic 
-        irradiances (S, M, L, Rhod and Melanopic) for every spectrum in 
+        '''Using the CIE026 spectral sensetivities, calculate alphaopic
+        irradiances (S, M, L, Rhod and Melanopic) for every spectrum in
         `self.lkp`.
-        
+
         Returns
         -------
         pd.DataFrame
@@ -338,9 +338,9 @@ class CalibrationContext:
         sss = get_CIES026(asdf=True, binwidth=self.binwidth)
         sss = sss.fillna(0)
         return self.lkp.dot(sss)
-    
+
     def create_lux_table(self):
-        '''Using the CIE1924 photopic luminosity function, calculate lux for 
+        '''Using the CIE1924 photopic luminosity function, calculate lux for
         every spectrum in `self.lkp`.
 
         Returns
@@ -353,11 +353,11 @@ class CalibrationContext:
         lux = self.lkp.dot(vl.values) * 683
         lux.columns = ['lux']
         return lux
-    
+
     def fit_curves(self):
         '''Fit curves to the unweighted irradiance of spectral measurements
         and save the parameters.
-        
+
         Returns
         -------
         fig
@@ -367,43 +367,43 @@ class CalibrationContext:
         # intensity levels from original data and corresponding irradiances
         idxs = self.data.index.get_level_values(1).unique().to_numpy()
         ir = self.irradiance.loc[:, idxs, :]
-        
+
         # plot
-        fig, axs = plt.subplots(2, 5, figsize=(16,6), sharex=True, sharey=True)
+        fig, axs = plt.subplots(2, 5, figsize=(16, 6), sharex=True, sharey=True)
         axs = [item for sublist in axs for item in sublist]
         colors = get_led_colors()
-        
+
         for idx, df in ir.groupby(level=0):
             xdata = idxs / 4095
             ydata = df.values
             ydata = ydata / np.max(ydata)
-            
+
             # Curve fitting function
             def func(x, a, b):
                 return beta.cdf(x, a, b)
-        
+
             axs[idx].scatter(xdata, ydata, color=colors[idx], s=2)
-            
+
             # Fit
             popt, pcov = curve_fit(beta.cdf, xdata, ydata, p0=[2.0, 1.0])
             self.curveparams[idx] = popt
             ypred = func(xdata, *popt)
-            axs[idx].plot(xdata, ypred, color=colors[idx], 
+            axs[idx].plot(xdata, ypred, color=colors[idx],
                           label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
             axs[idx].set_title('Channel {}'.format(idx))
             axs[idx].legend()
-            
-        for ax in [axs[0],axs[5]]:
+
+        for ax in [axs[0], axs[5]]:
             ax.set_ylabel('Output fraction (irradiance)')
         for ax in axs[5:]:
-            ax.set_xlabel('Input fraction')   
-            
+            ax.set_xlabel('Input fraction')
+
         plt.tight_layout()
-        
+
         return fig
-    
+
     def optimise(self, led, intensities):
-        '''Optimise a stimulus profile by applying the curve parameters. 
+        '''Optimise a stimulus profile by applying the curve parameters.
 
         Parameters
         ----------
@@ -424,22 +424,23 @@ class CalibrationContext:
         intensities = intensities / 4095
         return (beta.ppf(intensities, params[0], params[1]) * 4095).astype(
             'int')
-    
-    def predict_spd(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
-        '''Using `self.lkp`, predict the spectral power distribution for a 
+
+    def predict_spd(self,
+                    intensities=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], asdf=True):
+        '''Using `self.lkp`, predict the spectral power distribution for a
         given list of led intensities.
-        
+
         Parameters
         ----------
         intensities : list
-            List of intensity values for each led. The default is 
+            List of intensity values for each led. The default is
             ``[0,0,0,0,0,0,0,0,0,0]``.
-        
+
         Returns
         -------
         spectrum : np.array
             Predicted spectrum for given intensities.
-            
+
         '''
         spectrum = np.zeros(len(self.lkp.columns))
         for led, val in enumerate(intensities):
@@ -449,31 +450,32 @@ class CalibrationContext:
         else:
             return spectrum
 
-    def predict_aopic(self, intensities=[0,0,0,0,0,0,0,0,0,0], asdf=True):
+    def predict_aopic(self,
+                      intensities=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], asdf=True):
         '''Using `self.aopic`, predict the a-opic irradiances for a given list
         of led intensities.
-        
+
         Parameters
         ----------
         intensities : list
-            List of intensity values for each led. The default is 
+            List of intensity values for each led. The default is
             ``[0,0,0,0,0,0,0,0,0,0]``.
-        
+
         Returns
         -------
         aopic : np.array
             Predicted a-opic irradiances for given intensities.
-            
+
         '''
         spectrum = self.predict_spd(intensities)
         sss = get_CIES026(asdf=True, binwidth=self.binwidth)
         sss = sss.fillna(0)
         return spectrum.dot(sss)
-        
-    def match(self, match_led, match_led_intensity, 
+
+    def match(self, match_led, match_led_intensity,
               target_led, match_type='irrad'):
-        '''Determine the appropriate intensity setting for `target_led` so that 
-        its output will match `match_led` at `match_led_intensity` with respect 
+        '''Determine the appropriate intensity setting for `target_led` so that
+        its output will match `match_led` at `match_led_intensity` with respect
         to `match_type`.
 
         Parameters
@@ -486,7 +488,7 @@ class CalibrationContext:
             The led whose intensity is to be determined.
         match_type : str, optional
             The type of match to be performed. One of:
-                
+
                 * 'irrad' - overall (unweighted) irradiance
                 * 'lux'   - lux
                 * 'mel'   - melanopic irradiance
@@ -494,7 +496,7 @@ class CalibrationContext:
                 * 's'     - s-cone-opic irradiance
                 * 'm'     - m-cone-opic irradiance
                 * 'l'     - l-cone-opic irradiance
-                
+
             The default is 'irrad'.
 
         Returns
@@ -505,34 +507,34 @@ class CalibrationContext:
             The required intensity for `match_led`.
 
         '''
-        if match_type=='irrad':
+        if match_type == 'irrad':
             values = self.irradiance
             target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='lux':
+
+        elif match_type == 'lux':
             values = self.lux
             target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='mel':
+
+        elif match_type == 'mel':
             values = self.aopic.Mel
             target = values.loc[(match_led, match_led_intensity)]
-        
-        elif match_type=='rhod':
+
+        elif match_type == 'rhod':
             values = self.aopic.Rods
-            target = values.loc[(match_led, match_led_intensity)]      
-            
-        elif match_type=='s':
+            target = values.loc[(match_led, match_led_intensity)]
+
+        elif match_type == 's':
             values = self.aopic.S
             target = values.loc[(match_led, match_led_intensity)]
 
-        elif match_type=='m':
+        elif match_type == 'm':
             values = self.aopic.M
             target = values.loc[(match_led, match_led_intensity)]
-            
-        elif match_type=='l':
+
+        elif match_type == 'l':
             values = self.aopic.L
             target = values.loc[(match_led, match_led_intensity)]
-            
+
         match_intensity = (values.loc[target_led]
                                  .sub(target)
                                  .abs()
@@ -541,7 +543,5 @@ class CalibrationContext:
                        .sub(target)
                        .abs()
                        .min())
-        
-        return error, match_intensity
 
-         
+        return error, match_intensity
