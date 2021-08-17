@@ -374,7 +374,8 @@ with access to the return value.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Requires a suitable geometry and for the World Camera to be pointed at
-the light source. Also requires the following settings in Pupil Capture:</p>
+the light source. Also requires the following settings in Pupil
+Capture:</p>
 <ul class="simple">
 <li><p>Auto Exposure mode - Manual Exposure (eye and world)</p></li>
 <li><p>Frame publisher format - BGR</p></li>
@@ -392,10 +393,10 @@ the light source. Also requires the following settings in Pupil Capture:</p>
 
 <dl class="py method">
 <dt id="pyplr.pupil.PupilCore.new_annotation">
-<code class="sig-name descname">new_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">custom_fields</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.new_annotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">annotation</a>
-(a.k.a. message / event marker / whatever you want to call it). Send it
-to Pupil Capture with the <code class="docutils literal notranslate"><span class="pre">.send_annotation(...)</span></code> method.</p>
+<code class="sig-name descname">new_annotation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">custom_fields</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.pupil.PupilCore.new_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">annotation</a></p>
+<p>a.k.a. message / event marker / trigger. Send it to Pupil Capture with
+the <cite>.send_annotation(…)</cite> method.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The default timestamp for an annotation is the current Pupil time
@@ -406,9 +407,9 @@ can be overridden at a later point if desired.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>string</em>) – A label for the event.</p></li>
-<li><p><strong>custom_fields</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any additional information to add (e.g., <code class="docutils literal notranslate"><span class="pre">{'duration':</span> <span class="pre">2,</span>
-<span class="pre">'color':</span> <span class="pre">'blue'}</span></code>).
-The default is <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
+<li><p><strong>custom_fields</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any additional information to add (e.g., <cite>{‘duration’: 2,
+‘color’: ‘blue’}</cite>).
+The default is <cite>None</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1054,8 +1055,8 @@ millisecond.</p>
 <dt id="pyplr.stlab.SpectraTuneLab.set_spectrum_a">
 <code class="sig-name descname">set_spectrum_a</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intensity_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.stlab.SpectraTuneLab.set_spectrum_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes a spectrum based on the intensity values provided for each
-of the channels. Each channel can be set between 0 and 4095 (only integer
-values).</p>
+of the channels. Each channel can be set between 0 and 4095 (only
+integer values).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>intensity_values</strong> (<em>list</em>) – List of 10 integer values between 0 and 4095.</p>
@@ -1219,14 +1220,67 @@ with the STLAB.</p>
 <h2>pyplr.jeti<a class="headerlink" href="#pyplr-jeti" title="Permalink to this headline">¶</a></h2>
 <p>A (currently) bare bones serial interface for JETI Spectraval.</p>
 <p>&#64;author: jtm</p>
+<dl class="py class">
+<dt id="pyplr.jeti.Spectraval">
+<em class="property">class </em><code class="sig-prename descclassname">pyplr.jeti.</code><code class="sig-name descname">Spectraval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">'/dev/cu.usbserial-DJ5F3W9U'</span></em>, <em class="sig-param"><span class="n">baudrate</span><span class="o">=</span><span class="default_value">921600</span></em>, <em class="sig-param"><span class="n">bytesize</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">stopbits</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">parity</span><span class="o">=</span><span class="default_value">'N'</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">240</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface to JETI Spectraval.</p>
+<dl class="py method">
+<dt id="pyplr.jeti.Spectraval.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">'/dev/cu.usbserial-DJ5F3W9U'</span></em>, <em class="sig-param"><span class="n">baudrate</span><span class="o">=</span><span class="default_value">921600</span></em>, <em class="sig-param"><span class="n">bytesize</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">stopbits</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">parity</span><span class="o">=</span><span class="default_value">'N'</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">240</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyplr.jeti.Spectraval.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#pyplr.jeti.Spectraval.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyplr.jeti.Spectraval.measurement">
+<code class="sig-name descname">measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval.measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a measurement with JETI Spectraval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>setting</strong> (<em>dict</em><em>, </em><em>optional</em>) – Current setting of the light source (if known), to be included in
+the <cite>info</cite>. For example <code class="docutils literal notranslate"><span class="pre">{'led'</span> <span class="pre">:</span> <span class="pre">5,</span> <span class="pre">'intensity'</span> <span class="pre">:</span> <span class="pre">3000}</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">{'intensities'</span> <span class="pre">:</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">300,</span> <span class="pre">4000,</span> <span class="pre">200,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]}</span></code>.
+The default is <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>spectrum</strong> (<cite>np.array</cite>) – JETI Spectraval spectral measurement</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – Whatever other info we want from the spectrometer (e.g. PCB
+temperature)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <span class="target" id="module-pyplr.oceanops"></span><div class="section" id="pyplr-oceanops">
 <h2>pyplr.oceanops<a class="headerlink" href="#pyplr-oceanops" title="Permalink to this headline">¶</a></h2>
 <p>A module to help with measurents for Ocean Optics spectrometers.</p>
 <dl class="py class">
 <dt id="pyplr.oceanops.OceanOptics">
-<em class="property">class </em><code class="sig-prename descclassname">pyplr.oceanops.</code><code class="sig-name descname">OceanOptics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pyplr.oceanops.</code><code class="sig-name descname">OceanOptics</code><a class="headerlink" href="#pyplr.oceanops.OceanOptics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Device class for Ocean Optics spectrometer with user-defined methods.</p>
+<dl class="py method">
+<dt id="pyplr.oceanops.OceanOptics.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Spectrometer instance for the provided device</p>
+<p>The Spectrometer class provides a thin abstraction layer for the
+basic spectrometer feature of the provided SeaBreezeDevice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>device</strong> (<cite>seabreeze.spectrometers.SeaBreezeDevice</cite>) – a SeaBreezeDevice as returned from <cite>list_devices</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="pyplr.oceanops.OceanOptics.dark_measurement">
 <code class="sig-name descname">dark_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">integration_times</span><span class="o">=</span><span class="default_value">[1000]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics.dark_measurement" title="Permalink to this definition">¶</a></dt>
@@ -1919,6 +1973,27 @@ DataFrame (drop = True).</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="pyplr.preproc.even_range_samples">
+<code class="sig-prename descclassname">pyplr.preproc.</code><code class="sig-name descname">even_range_samples</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rangs</span></em>, <em class="sig-param"><span class="n">sample_rate</span></em>, <em class="sig-param"><span class="n">fields</span><span class="o">=</span><span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.preproc.even_range_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the space between samples even, for a dataframe of ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rangs</strong> (<em>pd.DataFrame</em>) – Ranges.</p></li>
+<li><p><strong>sample_rate</strong> (<em>int</em>) – The sample rate of the data.</p></li>
+<li><p><strong>fields</strong> (<em>list</em><em>, </em><em>optional</em>) – List of fields to make even. The default is [].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>rangs</strong> – New dataframe with even samples.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="pyplr.preproc.even_samples">
 <code class="sig-prename descclassname">pyplr.preproc.</code><code class="sig-name descname">even_samples</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">sample_rate</span></em>, <em class="sig-param"><span class="n">fields</span><span class="o">=</span><span class="default_value">['diameter']</span></em>, <em class="sig-param"><span class="n">zero_index</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.preproc.even_samples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resample  data in <cite>fields</cite> to a new index with evenly spaced timepoints.</p>
@@ -2129,6 +2204,12 @@ to interpolating blinks.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="pyplr.preproc.rolling_mean_series">
+<code class="sig-prename descclassname">pyplr.preproc.</code><code class="sig-name descname">rolling_mean_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">window_size</span></em>, <em class="sig-param"><span class="n">fields</span><span class="o">=</span><span class="default_value">['diameter']</span></em>, <em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.preproc.rolling_mean_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smoothes the data with a rolling mean.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt id="pyplr.preproc.savgol_series">
 <code class="sig-prename descclassname">pyplr.preproc.</code><code class="sig-name descname">savgol_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samples</span></em>, <em class="sig-param"><span class="n">fields</span><span class="o">=</span><span class="default_value">['diameter']</span></em>, <em class="sig-param"><span class="n">window_length</span><span class="o">=</span><span class="default_value">51</span></em>, <em class="sig-param"><span class="n">filt_order</span><span class="o">=</span><span class="default_value">7</span></em>, <em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.preproc.savgol_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies a savitsky-golay filter to the given fields
@@ -2140,11 +2221,6 @@ See documentation on scipys savgol_filter method FMI.</p>
 <h2>pyplr.plr<a class="headerlink" href="#pyplr-plr" title="Permalink to this headline">¶</a></h2>
 <p>A module to assist with parametrising and plotting pupillary light responses.</p>
 <p>&#64;author: jtm</p>
-<dl class="py class">
-<dt id="pyplr.plr.PIPR">
-<em class="property">class </em><code class="sig-prename descclassname">pyplr.plr.</code><code class="sig-name descname">PIPR</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plr</span></em>, <em class="sig-param"><span class="n">sample_rate</span></em>, <em class="sig-param"><span class="n">onset_idx</span></em>, <em class="sig-param"><span class="n">stim_duration</span></em>, <em class="sig-param"><span class="n">other_plr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.plr.PIPR" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py class">
 <dt id="pyplr.plr.PLR">
 <em class="property">class </em><code class="sig-prename descclassname">pyplr.plr.</code><code class="sig-name descname">PLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plr</span></em>, <em class="sig-param"><span class="n">sample_rate</span></em>, <em class="sig-param"><span class="n">onset_idx</span></em>, <em class="sig-param"><span class="n">stim_duration</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.plr.PLR" title="Permalink to this definition">¶</a></dt>
@@ -2288,7 +2364,7 @@ acceleration profiles.</p>
 <li><p><strong>vel_acc</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to also plot the velocity and acceleration profiles.
 The default is False.</p></li>
 <li><p><strong>print_params</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to annotate the axis with the results of a call to
-<code class="docutils literal notranslate"><span class="pre">.parameters(...)</span></code>. The default is True.</p></li>
+<cite>.parameters(…)</cite>. The default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
