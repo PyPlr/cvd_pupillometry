@@ -4,21 +4,22 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Pupil Core device timing &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Matching spectra for a-opic irradiance with STLAB" href="06c_finding_stlab_settings.html" />
-    <link rel="prev" title="PIPR analysis pipeline" href="06a_pipr_analysis_pipeline.html" />
+    <link rel="prev" title="PIPR preprocessing pipeline" href="06a_pipr_analysis_pipeline.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -283,7 +284,7 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Pupil-Core-device-timing">
+<section id="Pupil-Core-device-timing">
 <h1>Pupil Core device timing<a class="headerlink" href="#Pupil-Core-device-timing" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> marks the onset of a light stimulus by sending an annotation containing the timestamp of the first frame where the light becomes visible to the World camera. This timestamp is ultimately what gets used to extract pupil data and as a reference for calculating time-critical measures, such as constriction latency and time-to-peak constriction. The validity of any time-related measures therefore depends on Pupil Capture’s ability to synchronise the clocks of the
 cameras on a Pupil Core headset. How well does it handle this task? We were able to test camera clock synchronisation by putting the Pupil Core headset inside our integrating sphere and repeatedly flashing a bright orange light containing enough near infrared to afford detection by the Eye cameras as well as the World camera. Prior to each flash, concurrent <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s were instantiated, giving us the timestamp of the frame where the luminance change was detected independently
@@ -305,7 +306,7 @@ precision of the <code class="docutils literal notranslate"><span class="pre">.l
 </pre></div>
 </div>
 </div>
-<div class="section" id="Calculate-differences-from-annotation-timestamps">
+<section id="Calculate-differences-from-annotation-timestamps">
 <h2>Calculate differences from annotation timestamps<a class="headerlink" href="#Calculate-differences-from-annotation-timestamps" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -456,8 +457,8 @@ precision of the <code class="docutils literal notranslate"><span class="pre">.l
 <p>1200 rows × 4 columns</p>
 </div></div>
 </div>
-</div>
-<div class="section" id="Plot-the-timestamp-differences">
+</section>
+<section id="Plot-the-timestamp-differences">
 <h2>Plot the timestamp differences<a class="headerlink" href="#Plot-the-timestamp-differences" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -482,19 +483,19 @@ precision of the <code class="docutils literal notranslate"><span class="pre">.l
 <img alt="_images/06b_pupil_core_timing_analysis_5_0.png" src="_images/06b_pupil_core_timing_analysis_5_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Interpretation">
+</section>
+<section id="Interpretation">
 <h2>Interpretation<a class="headerlink" href="#Interpretation" title="Permalink to this headline">¶</a></h2>
 <p>These data show the time difference between when the same light flash was detected by independant <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code>’s running concurrently for both Eye cameras and the World camera. On Mac and Windows, the Eye cameras appear to be well-synchronised with a margin of error that is to be expected given the frame rate. On Windows, the light flashes were consistently stamped on the World camera around 60 ms before they were stamped on the Eye cameras for both 60 and 120 FPS. The same pattern
 was observed, though to a lesser degree, with Mac. The timestamps were best synchronised on Mac OS with cameras running at 120 FPS, where the World camera lead by 15 ms on average.</p>
-</div>
-<div class="section" id="Implications">
+</section>
+<section id="Implications">
 <h2>Implications<a class="headerlink" href="#Implications" title="Permalink to this headline">¶</a></h2>
 <p>It is difficult to interpret these data without a detailed understanding of the inner workings of the Pupil software. But in practical terms, as far as the PLR is concerned, our data suggest that any time-critical measures using a World camera <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> timestamp as a reference point will be consistently <em>overestimated</em> by 15 to 60 ms, depending on the operating system and camera settings being used. But, given that these timestamp discrepenacies are highly repeatable and
 potentially correctable, they do not preclude researchers from obtaining time-critical measures of the PLR.</p>
 <p>It is worth noting that the ‘ground truth’ for measures of constriction latency and pupil size is inaccessible, and that values depend strongly on hardware, settings, and measurement principles. Our data show at least that with Pupil Core we can achieve a level of precision that rivals that of automated pupillometers.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -532,9 +533,10 @@ potentially correctable, they do not preclude researchers from obtaining time-cr
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR preprocessing pipeline</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Pupil Core device timing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06c_finding_stlab_settings.html">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06d_silent_substitution_STLAB.html">Silent substitution with STLAB</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
@@ -558,7 +560,7 @@ potentially correctable, they do not preclude researchers from obtaining time-cr
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="06_example_analyses.html">Example analyses</a><ul>
-      <li>Previous: <a href="06a_pipr_analysis_pipeline.html" title="previous chapter">PIPR analysis pipeline</a></li>
+      <li>Previous: <a href="06a_pipr_analysis_pipeline.html" title="previous chapter">PIPR preprocessing pipeline</a></li>
       <li>Next: <a href="06c_finding_stlab_settings.html" title="next chapter">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
   </ul></li>
   </ul></li>
@@ -590,7 +592,7 @@ potentially correctable, they do not preclude researchers from obtaining time-cr
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

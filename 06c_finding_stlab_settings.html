@@ -4,20 +4,21 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Matching spectra for a-opic irradiance with STLAB &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API documentation" href="07_api.html" />
+    <link rel="next" title="Silent substitution with STLAB" href="06d_silent_substitution_STLAB.html" />
     <link rel="prev" title="Pupil Core device timing" href="06b_pupil_core_timing_analysis.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -283,7 +284,7 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Matching-spectra-for-a-opic-irradiance-with-STLAB">
+<section id="Matching-spectra-for-a-opic-irradiance-with-STLAB">
 <h1>Matching spectra for <em>a</em>-opic irradiance with STLAB<a class="headerlink" href="#Matching-spectra-for-a-opic-irradiance-with-STLAB" title="Permalink to this headline">¶</a></h1>
 <p>When designing stimuli with STLAB, you may need to find the settings that most closely match a spectrum you measured elsewhere, which requires some linear algebra. In this example we are aiming to match the spectral output of a NeurOptics PLR-3000 automated pupillometer, which administers light stimuli with 4 white LEDs. We measured the spectral output of the PLR-3000 with an OceanOptics STS-VIS spectrometer at the usual eye position and calibrated using our <a class="reference internal" href="04c_integrating_sphere.html#Calibration"><span class="std std-ref">standard
 pipeline</span></a>.</p>
@@ -549,7 +550,7 @@ pipeline</span></a>.</p>
         <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">predicted</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lw</span><span class="o">=.</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lw</span><span class="o">=</span><span class="mf">.2</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength (nm)&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;SPD (W/m$^2$/nm)&#39;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;../img/PLR-3000-STLAB-stimuli.tiff&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
@@ -622,7 +623,7 @@ pipeline</span></a>.</p>
   {&#39;spectrum&#39;: 3, &#39;power&#39;: 100, &#39;time&#39;: 1100, &#39;flags&#39;: 0}]}
 </pre></div></div>
 </div>
-</div>
+</section>
 
 
           </div>
@@ -660,9 +661,10 @@ pipeline</span></a>.</p>
 <li class="toctree-l1"><a class="reference internal" href="04_overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="05_example_protocols.html">Example protocols</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="06_example_analyses.html">Example analyses</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR analysis pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06a_pipr_analysis_pipeline.html">PIPR preprocessing pipeline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="06b_pupil_core_timing_analysis.html">Pupil Core device timing</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Matching spectra for <em>a</em>-opic irradiance with STLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="06d_silent_substitution_STLAB.html">Silent substitution with STLAB</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="07_api.html">API documentation</a></li>
@@ -687,7 +689,7 @@ pipeline</span></a>.</p>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="06_example_analyses.html">Example analyses</a><ul>
       <li>Previous: <a href="06b_pupil_core_timing_analysis.html" title="previous chapter">Pupil Core device timing</a></li>
-      <li>Next: <a href="07_api.html" title="next chapter">API documentation</a></li>
+      <li>Next: <a href="06d_silent_substitution_STLAB.html" title="next chapter">Silent substitution with STLAB</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -718,7 +720,7 @@ pipeline</span></a>.</p>
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

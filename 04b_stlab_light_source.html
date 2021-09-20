@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Spectra Tune Lab light source &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Integrating sphere" href="04c_integrating_sphere.html" />
@@ -283,12 +284,12 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Spectra-Tune-Lab-light-source">
+<section id="Spectra-Tune-Lab-light-source">
 <h1>Spectra Tune Lab light source<a class="headerlink" href="#Spectra-Tune-Lab-light-source" title="Permalink to this headline">¶</a></h1>
-<p><img alt="drawing" class="no-scaled-link" src="_images/STLAB.png" style="width: 300px;" /></p>
+<p><img alt="drawing" class="no-scaled-link" src="../img/STLAB.png" style="width: 300px;" /></p>
 <p><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">PupilCore().light_stamper(...)</span></code> method makes it easy to integrate any light source given a suitable geometry. For our own application, we chose to administer light stimuli with a custom-built integrating sphere and Spectra Tune Lab (STLAB: <a class="reference external" href="https://ledmotive.com/">Ledmotive Technologies, LLC</a>)—a spectrally tuneable light engine with 10 LED colour channels, capable of generating a broad range of spectral compositions. STLAB can be controlled programmatically with most languages
 via its <em>REST API</em>, which works with generic HTTP requests. The API includes commands to set a specific spectrum, turn the light off, get readouts from the onboard spectrometer, etc. We opted to work with STLAB because it offers a high level of control over the temporal and spectral properties of light stimuli.</p>
-<div class="section" id="PyPlr’s-stlab.py-module">
+<section id="PyPlr’s-stlab.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> module<a class="headerlink" href="#PyPlr’s-stlab.py-module" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> provides full native support for STLAB by encapsulating its <em>REST API</em> in a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLab()</span></code> device class and streamlining various routines with helper functions. STLAB connects via ethernet to a small computer called the <em>Light Hub</em> (a BeagleBone running Linux), which in turn connects via USB to the controlling computer. When all hardware is correctly assembled and the appropriate software installed, establishing a connection to the device is easy (note that a password is
 required for access to the <em>Light Hub</em>):</p>
@@ -693,8 +694,8 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
     <span class="n">standalone</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_spectral_locus</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="o">-.</span><span class="mi">15</span><span class="p">,</span><span class="o">.</span><span class="mi">9</span><span class="p">))</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="o">-.</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="o">-</span><span class="mf">.15</span><span class="p">,</span><span class="mf">.9</span><span class="p">))</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="o">-</span><span class="mf">.1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">],</span> <span class="n">xyz</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
          <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
@@ -719,8 +720,8 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
 </pre></div>
 </div>
 <p>We do this <a class="reference internal" href="04c_integrating_sphere.html#Calibration"><span class="std std-ref">elsewhere</span></a> with an <a class="reference external" href="https://www.oceaninsight.com/products/spectrometers/microspectrometer/sts-series/sts-vis/">Ocean Optics STS-VIS</a> spectrometer in order to create a forward model for the STLAB-sphere rig.</p>
-</div>
-<div class="section" id="Device-timing-in-standard-mode">
+</section>
+<section id="Device-timing-in-standard-mode">
 <h2>Device timing in standard mode<a class="headerlink" href="#Device-timing-in-standard-mode" title="Permalink to this headline">¶</a></h2>
 <p>STLAB queues commands received by the <em>Light Hub</em> and processes them when possible. According to the device manual, response times in the standard mode of operation are on the order of around 250 milliseconds. We can test this.</p>
 <div class="nbinput docutils container">
@@ -739,7 +740,7 @@ Measurement: 10 / 10, LED: 9, intensity: 4095
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">d</span><span class="o">.</span><span class="n">set_spectrum_a</span><span class="p">(</span><span class="n">on</span><span class="p">)</span>
     <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-    <span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mf">.2</span><span class="p">)</span>
     <span class="n">t3</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">d</span><span class="o">.</span><span class="n">set_spectrum_a</span><span class="p">(</span><span class="n">off</span><span class="p">)</span>
     <span class="n">t4</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
@@ -780,8 +781,8 @@ dtype: float64
 </div>
 <p>Clearly there is variability. It probably depends on the machine, hardware, other processes, etc., but in our general testing we have seen even bigger delays, with commands sometimes taking up to 5 seconds to execute. Given that we will want to administer light stimuli of a precise duration, the uncertainty here is problematic. Thankfully, STLAB has an <em>asynchronous</em> mode of operation which allows for real-time spectral streaming with a spectral switching time of less than 10 milliseconds (i.e.,
 1 spectrum every 10 milliseconds). We leverage this mode in order to get the desired control over the temporal characteristics of our light stimuli.</p>
-</div>
-<div class="section" id="Playing-video-files">
+</section>
+<section id="Playing-video-files">
 <h2>Playing video files<a class="headerlink" href="#Playing-video-files" title="Permalink to this headline">¶</a></h2>
 <p>Using the asynchronous mode requires the creation of <em>dynamic sequence files</em>, which are essentially JSON files with a particular file structure and a .DSF extension. <code class="docutils literal notranslate"><span class="pre">stlab.py</span></code> has some handy tools for creating video files. For example, we can create a 2-second pulse of bright red light using <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code>:</p>
 <div class="nbinput docutils container">
@@ -982,8 +983,8 @@ playing video file...
 </pre></div></div>
 </div>
 <p>Bear in mind that <code class="docutils literal notranslate"><span class="pre">stlab.pulse_protocol(...)</span></code> is just one of a few convenience functions that call an underlying <code class="docutils literal notranslate"><span class="pre">stlab.make_video_file(...)</span></code> function. The latter will turn any dataframe like the one returned above into a video file. Just make sure the column names are the same and that there is at least 10 ms between every consecutive value in the ‘time’ column (otherwise spectra may be dropped). So it is possible to get creative and produce all kinds of cool sequences.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -1080,7 +1081,7 @@ playing video file...
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

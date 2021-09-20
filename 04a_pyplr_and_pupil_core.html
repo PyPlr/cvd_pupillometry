@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>PyPlr and Pupil Core &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spectra Tune Lab light source" href="04b_stlab_light_source.html" />
@@ -283,9 +284,9 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="PyPlr-and-Pupil-Core">
+<section id="PyPlr-and-Pupil-Core">
 <h1><em>PyPlr</em> and Pupil Core<a class="headerlink" href="#PyPlr-and-Pupil-Core" title="Permalink to this headline">¶</a></h1>
-<p><img alt="drawing" class="no-scaled-link" src="_images/Pupil-Labs-Glasses.png" style="width: 500px;" /></p>
+<p><img alt="drawing" class="no-scaled-link" src="../img/Pupil-Labs-Glasses.png" style="width: 500px;" /></p>
 <p><em>PyPlr</em> was designed to work with <a class="reference external" href="https://pupil-labs.com/products/core/">Pupil Core</a>—an affordable, open-source, versatile, research-grade eye tracking platform with high sampling rates, precise model-based 3D estimation of pupil size, and many other features which make it well-suited to our application (see <a class="reference external" href="https://arxiv.org/abs/1405.0006">Kassner et al., 2014</a>, for a detailed overview of the system). In particular, we leverage real-time data streaming with the forward facing scene
 camera to timestamp the onset of light stimuli with good temporal accuracy, opening the door to integration with virtually any light source given a suitable geometry.</p>
 <p>The best place to start learning more about Pupil Core is on the <a class="reference external" href="https://docs.pupil-labs.com/core/">Pupil Labs website</a>, but the features most relevant to <em>PyPlr</em> are:</p>
@@ -294,7 +295,7 @@ camera to timestamp the onset of light stimuli with good temporal accuracy, open
 <li><p><a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/#load-a-recording">Pupil Player</a>: Software for visualising and exporting data</p></li>
 <li><p><a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/">Pupil Core Network API</a>: Fast and reliable real-time communication and data streaming with <a class="reference external" href="https://zeromq.org/">ZeroMQ</a>, an open source universal messaging library, and <a class="reference external" href="https://msgpack.org/index.html">MessagePack</a>, a binary format for computer data interchange</p></li>
 </ul>
-<div class="section" id="PyPlr’s-pupil.py-module">
+<section id="PyPlr’s-pupil.py-module">
 <h2><em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> module<a class="headerlink" href="#PyPlr’s-pupil.py-module" title="Permalink to this headline">¶</a></h2>
 <p><em>PyPlr</em> has a module called <code class="docutils literal notranslate"><span class="pre">pupil.py</span></code> which facilitates working with the Pupil Core Network API by wrapping all of the tricky ZeroMQ and MessagePack stuff into a single device class. The <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code> device class has a <code class="docutils literal notranslate"><span class="pre">.command(...)</span></code> method giving convenient access to all of the commands available via <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote">Pupil Remote</a>. With Pupil Capture already running, we can make a short recording as follows:</p>
 <div class="nbinput docutils container">
@@ -324,8 +325,8 @@ camera to timestamp the onset of light stimuli with good temporal accuracy, open
 &#39;OK&#39;
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Annotations-and-notifications">
+</section>
+<section id="Annotations-and-notifications">
 <h2>Annotations and notifications<a class="headerlink" href="#Annotations-and-notifications" title="Permalink to this headline">¶</a></h2>
 <p>To extract experimental events and calculate time-critical PLR parameters (e.g., constriction latency, time-to-peak constriction) we need a reliable indication in the pupil data of the time at which a light stimulus was administered. The Pupil Labs <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#annotations">Annotation Capture</a> plugin helps us with this. The plugin allows timestamps to be marked with a label manually via keypress or programmatically via the Network API in a process
 that is analogous to sending a ‘trigger’, ‘message’, or ‘event marker’. With <em>PyPlr</em>’s <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code> interface, annotations can be generated programmatically with <code class="docutils literal notranslate"><span class="pre">.new_annotation(...)</span></code> and sent with <code class="docutils literal notranslate"><span class="pre">.send_annotation(...)</span></code>. It is important to make sure that the Annotation Capture plugin has been enabled. You can do this manually in the Pupil Capture GUI or programmatically by sending a <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#notification-message">notification
@@ -414,8 +415,8 @@ time (corrected for transmission delay); but this can be overridden at a later p
 </pre></div></div>
 </div>
 <p>This shows some of the pupil detector properties that can be modified with notifications. Bare in mind that for most use cases it will be best to verify manually in Pupil Capture that all of your most important settings are as they should be.</p>
-</div>
-<div class="section" id="Getting-pupil-data-in-real-time">
+</section>
+<section id="Getting-pupil-data-in-real-time">
 <h2>Getting pupil data in real-time<a class="headerlink" href="#Getting-pupil-data-in-real-time" title="Permalink to this headline">¶</a></h2>
 <p>The Pupil Capture continuously generates data from the camera frames it receives from a Pupil Core headset and makes them available via the <a class="reference external" href="https://docs.pupil-labs.com/developer/core/network-api/#reading-from-the-ipc-backbone">IPC backbone</a>. <code class="docutils literal notranslate"><span class="pre">PupilCore()</span></code> has a <code class="docutils literal notranslate"><span class="pre">.pupil_grabber(...)</span></code> method which simplifies access to these data, empowering users to design lightweight applications that bypass the record-load-export routine of the Pupil Player software. Just specify the topic of interest
 and how long you want to spend grabbing data:</p>
@@ -507,8 +508,8 @@ PupilGrabber done grabbing 10 seconds of pupil.1.3d
 <img alt="_images/04a_pyplr_and_pupil_core_12_0.png" src="_images/04a_pyplr_and_pupil_core_12_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Timestamping-a-light-stimulus">
+</section>
+<section id="Timestamping-a-light-stimulus">
 <h2>Timestamping a light stimulus<a class="headerlink" href="#Timestamping-a-light-stimulus" title="Permalink to this headline">¶</a></h2>
 <p>The obvious way to timestamp a light stimulus would be to control the light source programatically and send an annotation as close as possible to when we change the status of the light:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">PupilCore</span><span class="p">()</span>
@@ -578,8 +579,8 @@ following settings in Pupil Capture:</p>
 </ul>
 <p>In our testing, <code class="docutils literal notranslate"><span class="pre">.light_stamper(...)</span></code> flawlessly captures the first frame where a light becomes visible, as verified using Pupil Player and the Annotation Player plugin. Timestamping accuracy therefore is limited only by frame rate and <a class="reference internal" href="06b_pupil_core_timing_analysis.html"><span class="doc">how well the Pupil software is able to synchronise the clocks of the eye and world cameras</span></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">PupilCore(...)</span></code> also has some other cool features, like a <code class="docutils literal notranslate"><span class="pre">.fixation_trigger(...)</span></code> method that allows you to wait for a fixation that satisfies criteria relating to dispersion, duration and location of gaze samples. Check out the code for more insights.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -676,7 +677,7 @@ following settings in Pupil Capture:</p>
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Integrating sphere &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Analysis of pupil data" href="04d_analysis.html" />
@@ -283,17 +284,17 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Integrating-sphere">
+<section id="Integrating-sphere">
 <h1>Integrating sphere<a class="headerlink" href="#Integrating-sphere" title="Permalink to this headline">¶</a></h1>
 <p>For some experiments it may be sufficient to perform light stimulation with a standard computer monitor, but where research calls for advanced control over the geometry of retinal stimulation, a bespoke setup is required. One solution is to use a <a class="reference external" href="https://medical-dictionary.thefreedictionary.com/maxwellian+view">Maxwellian view</a> pupillometry system, where the light stimulus is focused onto an aperture positioned in front of the eye, or in the entrance plane of a pharmacologically dilated
 pupil, and the consensual pupil response is measured from the other eye. But this approach requires optical engineering and resources that may not be available in the average research setting. As an alternative, we developed a low-cost integrating sphere that provides a full-field, ‘Ganzfeld’, stimulus and precludes the need for optical engineering, pharmacological dilation of the pupil, and strict fixation control on behalf of the participant.</p>
-<div class="section" id="Construction">
+<section id="Construction">
 <h2>Construction<a class="headerlink" href="#Construction" title="Permalink to this headline">¶</a></h2>
 <p>We built the sphere from two 45 cm flanged acrylic half domes (<a class="reference external" href="https://www.projectplastics.co.uk/">Project Plastics Ltd</a>), each coated on the inside surface with <a class="reference external" href="https://aviantechnologies.com/product/avian-b-white-reflectance-coating/">Avian-B white reflectance coating</a> to scatter light homogenously. A 28 cm opening in one of the domes serves as a viewing port and an additional 7 cm (subtending ~9 degrees from the plane of the viewing port) opening opposite the viewing port was included
 to allow for secondary stimuli (e.g., a fixation target) or to allow for exclusion of the foveal macular pigment from stimulation. On the same half of the sphere as the viewing port, a 30 mm entry port for the light source was cut at an angle of 22.5 deg from the top, such that it could not be seen directly when looking straight ahead. The sphere and STLAB were stabilised on a wooden fixing plate making it suitable for placement on a desk.</p>
-<p><img alt="Integrating sphere" class="no-scaled-link" src="_images/setup.JPG" style="width: 500px;" /></p>
-</div>
-<div class="section" id="Calibration">
+<p><img alt="Integrating sphere" class="no-scaled-link" src="../img/setup.JPG" style="width: 500px;" /></p>
+</section>
+<section id="Calibration">
 <h2>Calibration<a class="headerlink" href="#Calibration" title="Permalink to this headline">¶</a></h2>
 <p>To build a calibrated forward model of our STLAB-sphere rig that represents what an observer actually sees when looking into it, we collected measurements with an external spectrometer positioned at the plane of the viewing port. The <code class="docutils literal notranslate"><span class="pre">pyplr.calibrate</span></code> module streamlines this process with a <code class="docutils literal notranslate"><span class="pre">SpectraTuneLabSampler()</span></code> class, which is just a sub-class of <code class="docutils literal notranslate"><span class="pre">pyplr.stlab.SpectraTuneLab</span></code> with added sampling methods and support for an external spectrometer. Any spectrometer with a python interface
 can be integrated here with minimal effort, but we used an <a class="reference external" href="https://www.oceaninsight.com/products/spectrometers/microspectrometer/sts-series/sts-vis/">Ocean Optics STS-VIS</a>, supported by <code class="docutils literal notranslate"><span class="pre">pyplr.oceanops</span></code> and the <a class="reference external" href="https://pypi.org/project/seabreeze/">Seabreeze</a> Python library.</p>
@@ -801,8 +802,8 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 </div>
 </div>
 <p>Nice and linear, overall, with a only a slight loss of linearity at the ends and for some channels more than others. If necessary, we can correct for this using the model fit parameters and the <code class="docutils literal notranslate"><span class="pre">.optimse(...)</span></code> method.</p>
-</div>
-<div class="section" id="Safety">
+</section>
+<section id="Safety">
 <h2>Safety<a class="headerlink" href="#Safety" title="Permalink to this headline">¶</a></h2>
 <p>We evaluated the safety of our stimulation system in accordance with the <a class="reference external" href="https://landingpage.bsigroup.com/LandingPage/Undated?UPI=000000000030149289">British Standards Document on the Photobiological Safety of Lamps and Lamp Systems (BS EN 62471)</a>. Initial scoping measurements collected with a Photo Research SpectraScan PR-670 for all LEDs at 100% gave a luminance reading of 18000 cd/m<span class="math notranslate nohighlight">\(^2\)</span> at the plane of the viewing port.</p>
 <p><strong>BS EN 62471: Section 4.1 (Annex ZB, page 40)</strong></p>
@@ -828,7 +829,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <li><p>Blue Light Corrected Radiance: 18.8</p></li>
 <li><p>EyeLight: 16.8</p></li>
 </ul>
-<img alt="_images/EyeLight.png" src="_images/EyeLight.png" />
+<img alt="../img/EyeLight.png" src="../img/EyeLight.png" />
 <p><strong>Section 4.2.1 (Annex ZB, page 40)</strong></p>
 <blockquote>
 <div><p>“When the luminance of the source is adequately high (<span class="math notranslate nohighlight">\(\gt 10\,cd \cdot m^{-2}\)</span>), and the exposure duration is greater the 0.25 s, a 3 mm pupil diameter (7mm<span class="math notranslate nohighlight">\(^2\)</span> area) was used to derive the exposure limit”</p>
@@ -837,8 +838,8 @@ can be integrated here with minimal effort, but we used an <a class="reference e
 <p>Pupil ratio <span class="math notranslate nohighlight">\((\frac{7}{3})^2\)</span> = 5.4</p>
 <p>To take this into account we applied a pupil correction factor of 6, which reduces the retinal blue light hazard exposure limit to 16.6 <span class="math notranslate nohighlight">\(W \cdot m^2 \cdot sr^{-1}\)</span></p>
 <p>In conclusion, when running the source at 100% and applying a safety factor to correct for the pupil size, our stimulation system is above the radiance retinal blue light hazard exposure limit value of 100 <span class="math notranslate nohighlight">\(W \cdot m^2 \cdot sr^{-1}\)</span> for an exposure of 10000 s.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -935,7 +936,7 @@ can be integrated here with minimal effort, but we used an <a class="reference e
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

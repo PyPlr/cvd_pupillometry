@@ -4,17 +4,18 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Analysis of pupil data &#8212; PyPlr v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Example protocols" href="05_example_protocols.html" />
@@ -283,13 +284,13 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Analysis-of-pupil-data">
+<section id="Analysis-of-pupil-data">
 <h1>Analysis of pupil data<a class="headerlink" href="#Analysis-of-pupil-data" title="Permalink to this headline">¶</a></h1>
 <p>There are many valid approaches to the analysis of pupillometry data, but the optimal approach will depend on the type of experiment being run and the research question in mind. <a class="reference external" href="https://www.frontiersin.org/articles/10.3389/fneur.2019.00129/full">Kelbsch et al. (2019)</a> provide an informative view on standards in pupillometry, and there are <a class="reference external" href="https://github.com/samhforbes/PupillometryR">some</a> <a class="reference external" href="https://github.com/beOn/cili">great</a> <a class="reference external" href="https://github.com/ihrke/pypillometry">examples</a> of
 community-developed packages for streamlining pupillometry data analysis. Whilst it is always worth exploring the wider options that are available, <em>PyPlr</em> includes a set of pandas-reliant (you won’t regret <a class="reference external" href="https://bitbucket.org/hrojas/learn-pandas/src/master/">learning pandas!</a>) scripting tools for implementing a standard data processing pipeline that is optimised to work with some of the idiosynchrasies of Pupil Labs data. So far we have found these tools to be adequate for analysing our
 own data, but we welcome suggestions for improvements.</p>
 <p>See <a class="reference external" href="https://github.com/pupil-labs/pupil-tutorials/blob/master/01_load_exported_data_and_visualize_pupillometry.ipynb">here</a> for a general introduction to analysing Pupil Labs pupillometry data. What follows is a typical <em>PyPlr</em> analysis pipeline with tools from <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> and <code class="docutils literal notranslate"><span class="pre">pyplr.preproc</span></code>.</p>
-<div class="section" id="Export-with-Pupil-Player">
+<section id="Export-with-Pupil-Player">
 <h2>Export with Pupil Player<a class="headerlink" href="#Export-with-Pupil-Player" title="Permalink to this headline">¶</a></h2>
 <p>The first step in our pipeline is to export the data using <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-player/">Pupil Player</a>, making sure the required plugins (e.g., Annotation Player plugin) are enabled. Currently this must be done individually for each recording. Below is printed the file structure of a typical recording after export (more info on recording format <a class="reference external" href="https://docs.pupil-labs.com/developer/core/recording-format/#recording-format">here</a>).</p>
 <div class="nbinput docutils container">
@@ -363,8 +364,8 @@ JTM/
             pupil_positions_producer_Pupil_From_Recording.token
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Load-exported-data">
+</section>
+<section id="Load-exported-data">
 <h2>Load exported data<a class="headerlink" href="#Load-exported-data" title="Permalink to this headline">¶</a></h2>
 <p>Now we can set up some constants and use <code class="docutils literal notranslate"><span class="pre">pyplr.utils</span></code> to get things moving. <code class="docutils literal notranslate"><span class="pre">new_subject(...)</span></code> returns a dictionary with the root directory, recording id, data directory and a newly made output directory for the analysis results. Then, passing the data directory to <code class="docutils literal notranslate"><span class="pre">load_pupil(...)</span></code>, we load the specified columns from the <em>pupil_positions.csv</em> exported data.</p>
 <div class="nbinput docutils container">
@@ -534,8 +535,8 @@ Loaded 48552 samples
 <p>48552 rows × 5 columns</p>
 </div></div>
 </div>
-</div>
-<div class="section" id="Preprocessing">
+</section>
+<section id="Preprocessing">
 <h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
 <p>Preprocessing pupillometry data is relatively straight-forward and typically involves dealing with signal loss due to eye blinks and smoothing out any high frequency noise. There are <a class="reference external" href="https://osf.io/jyz43/">sophisticated algorithms</a> for detecting blinks in a pupil time course, but Pupil Player has its own <a class="reference external" href="https://docs.pupil-labs.com/core/software/pupil-capture/#blink-detection">Blink Detection</a> plugin that detects blinks based on rapid changes in the <a class="reference external" href="https://docs.pupil-labs.com/core/terminology/#confidence">confidence
 metric</a>. Whilst you can export these blink events and use the timestamps to index and mask the pupil timecourse, we find that it is effective simply to mask the pupil data with thresholds on the first derivative and confidence metric, and then to follow up with linear interpolation and smoothing.</p>
@@ -596,8 +597,8 @@ metric</a>. Whilst you can export these blink events and use the timestamps to i
 <img alt="_images/04d_analysis_6_0.png" src="_images/04d_analysis_6_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Extraction">
+</section>
+<section id="Extraction">
 <h2>Extraction<a class="headerlink" href="#Extraction" title="Permalink to this headline">¶</a></h2>
 <p>Having cleaned the timecourse we need to extract the events of interest. This requires the annotation events sent during the recording, which have the timestamps needed for extraction. These can be loaded with <code class="docutils literal notranslate"><span class="pre">utlis.load_annotations(...)</span></code>.</p>
 <div class="nbinput docutils container">
@@ -1165,8 +1166,8 @@ Extracted ranges for 6 events
 <p>46800 rows × 10 columns</p>
 </div></div>
 </div>
-</div>
-<div class="section" id="Plotting-and-parametrisation">
+</section>
+<section id="Plotting-and-parametrisation">
 <h2>Plotting and parametrisation<a class="headerlink" href="#Plotting-and-parametrisation" title="Permalink to this headline">¶</a></h2>
 <p>It is common practice when analysing the PLR to describe it in terms of paremeters relating to time, velocity and acceleration. So once you have an array of data representing a pupil’s response to light, be it from a single trial or an average of multiple trials, simply pass it to <code class="docutils literal notranslate"><span class="pre">pyplr.plr.PLR</span></code> along with some basic parameters.</p>
 <div class="nbinput nblast docutils container">
@@ -1299,8 +1300,8 @@ Extracted ranges for 6 events
 </table>
 </div></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -1397,7 +1398,7 @@ Extracted ranges for 6 events
       &copy;2021, Joel T. Martin and Manuel Spitschan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
