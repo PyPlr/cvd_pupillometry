@@ -1215,6 +1215,51 @@ with the STLAB.</p>
 </dd></dl>
 
 </section>
+<span class="target" id="module-pyplr.jeti"></span><section id="pyplr-jeti">
+<h2>pyplr.jeti<a class="headerlink" href="#pyplr-jeti" title="Permalink to this headline">¶</a></h2>
+<p>A (currently) bare bones serial interface for JETI Spectraval.</p>
+<p>&#64;author: jtm</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyplr.jeti.Spectraval">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyplr.jeti.</span></span><span class="sig-name descname"><span class="pre">Spectraval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/dev/cu.usbserial-DJ5F3W9U'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">921600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytesize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stopbits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'N'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">240</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface to JETI Spectraval.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyplr.jeti.Spectraval.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/dev/cu.usbserial-DJ5F3W9U'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">921600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytesize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stopbits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'N'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">240</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyplr.jeti.Spectraval.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#pyplr.jeti.Spectraval.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyplr.jeti.Spectraval.measurement">
+<span class="sig-name descname"><span class="pre">measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.jeti.Spectraval.measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a measurement with JETI Spectraval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>setting</strong> (<em>dict</em><em>, </em><em>optional</em>) – Current setting of the light source (if known), to be included in
+the <cite>info</cite>. For example <code class="docutils literal notranslate"><span class="pre">{'led'</span> <span class="pre">:</span> <span class="pre">5,</span> <span class="pre">'intensity'</span> <span class="pre">:</span> <span class="pre">3000}</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">{'intensities'</span> <span class="pre">:</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">300,</span> <span class="pre">4000,</span> <span class="pre">200,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]}</span></code>.
+The default is <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>spectrum</strong> (<cite>np.array</cite>) – JETI Spectraval spectral measurement</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – Whatever other info we want from the spectrometer (e.g. PCB
+temperature)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <span class="target" id="module-pyplr.oceanops"></span><section id="pyplr-oceanops">
 <h2>pyplr.oceanops<a class="headerlink" href="#pyplr-oceanops" title="Permalink to this headline">¶</a></h2>
 <p>A module to help with measurents for Ocean Optics spectrometers.</p>
@@ -2415,6 +2460,7 @@ and averaging across multiple PLRs should remove cause for concern.</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pyplr-pupil">pyplr.pupil</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyplr-stlab">pyplr.stlab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyplr-jeti">pyplr.jeti</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyplr-oceanops">pyplr.oceanops</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyplr-calibrate">pyplr.calibrate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyplr-cie">pyplr.CIE</a></li>
