@@ -143,6 +143,8 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
+/paper/
+/utils/
 /pyplr.egg.info/
 /build/
 /dist/
