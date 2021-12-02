@@ -1,30 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.jeti
 ==========
 
 A (currently) bare bones serial interface for JETI Spectraval.
 
 @author: jtm
-'''
+"""
+
+from typing import Tuple
 
 import numpy as np
 import matplotlib.pyplot as plt
 import serial
 
+
 class Spectraval:
-    '''Interface to JETI Spectraval.
-    
-    '''
+    """Interface to JETI Spectraval.
+
+    """
 
     def __init__(self,
-                 port='/dev/cu.usbserial-DJ5F3W9U',
-                 baudrate=921600,
-                 bytesize=8,
-                 stopbits=1,
-                 parity='N',
-                 timeout=240):
+                 port: str = '/dev/cu.usbserial-DJ5F3W9U',
+                 baudrate: int = 921600,
+                 bytesize: int = 8,
+                 stopbits: int = 1,
+                 parity: str = 'N',
+                 timeout: int = 240):
 
         # open serial connection
         self.ser = serial.Serial(
@@ -35,8 +38,8 @@ class Spectraval:
             parity=parity,
             timeout=timeout)
 
-    def measurement(self, setting=None):
-        '''Obtain a measurement with JETI Spectraval.
+    def measurement(self, setting: dict = None) -> Tuple[np.array, dict]:
+        """Obtain a measurement with JETI Spectraval.
 
         Parameters
         ----------
@@ -54,7 +57,7 @@ class Spectraval:
             Whatever other info we want from the spectrometer (e.g. PCB
             temperature)
 
-        '''
+        """
 
         # Perform reference measurement and wait for acknowledgement.
         self.ser.write(b'*MEAS:REFER 0 1 0\r')
@@ -75,7 +78,11 @@ class Spectraval:
                 raise TypeError('Setting must be of type dict')
             info = {**setting}
 
-        return spec, info
+        return (spec, info)
+
+    def wavelengths(self) -> np.array:
+        return np.arange(380, 781, 1)
+
 
 # Test
 if __name__ == '__main__':

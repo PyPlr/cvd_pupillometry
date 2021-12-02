@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.graphing
 ==============
 
 Functions to help with plotting.
 
 @author: jtm
-'''
+"""
 
 import matplotlib.pyplot as plt
 
 
 def pupil_preprocessing_figure(nrows, subject, **kwargs):
-    '''Set up a figure to show the stages of pupil data processing.
+    """Set up a figure to show the stages of pupil data processing.
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def pupil_preprocessing_figure(nrows, subject, **kwargs):
     axs : list
         List of axes.
 
-    '''
+    """
 
     fig, axs = plt.subplots(
         nrows=nrows, ncols=1, sharex=True, figsize=(14, 14), **kwargs)

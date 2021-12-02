@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pyplr', # Replace with your own username
-    version='1.0.0',
+    version='1.0.2',
     author='Joel T. Martin',
     author_email='joel.t.martin36@gmail.com',
     description='Software for researching the pupillary light reflex',

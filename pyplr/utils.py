@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.utils
 ===========
 
@@ -8,18 +8,22 @@ Scripting tools for working with pupil data.
 
 @author: jtm
 
-'''
+"""
 
 import os
 import os.path as op
 import shutil
 from copy import deepcopy
+from typing import List
 
 import numpy as np
 import pandas as pd
 
-def new_subject(rec_dir, export='000', out_dir_nm='pyplr_analysis'):
-    '''Get a handle on a new subject for data analysis.
+
+def new_subject(rec_dir: str,
+                export: str = '000',
+                out_dir_nm: str = 'pyplr_analysis') -> dict:
+    """Get a handle on a new subject for data analysis.
 
     Parameters
     ----------
@@ -42,7 +46,7 @@ def new_subject(rec_dir, export='000', out_dir_nm='pyplr_analysis'):
     s : dict
         Dictionary of subject information.
 
-    '''
+    """
     if not op.isdir(rec_dir):
         raise FileNotFoundError(
             '"{}" does not appear to exist.'.format(rec_dir))
@@ -55,20 +59,21 @@ def new_subject(rec_dir, export='000', out_dir_nm='pyplr_analysis'):
     os.mkdir(out_dir)
     print('{}\n{:*^60s}\n{}'.format('*'*60, ' ' + identifier + ' ', '*'*60))
     return {
-        'root':root,
-        'id':identifier,
-        'data_dir':data_dir,
-        'out_dir':out_dir
-        }
+        'root': root,
+        'id': identifier,
+        'data_dir': data_dir,
+        'out_dir': out_dir
+    }
 
-def print_file_structure(rec_dir):
-    '''Print the file structure of a recording directory.
+
+def print_file_structure(rec_dir: str) -> None:
+    """Print the file structure of a recording directory.
 
     Returns
     -------
     None.
 
-    '''
+    """
     for root, dirs, files in os.walk(rec_dir):
         level = root.replace(rec_dir, '').count(os.sep)
         indent = ' ' * 4 * (level)
@@ -77,8 +82,12 @@ def print_file_structure(rec_dir):
         for f in sorted(files):
             print(f'{subindent}{f}')
 
-def load_pupil(data_dir, eye_id='best', method='3d c++', cols=None):
-    '''Loads 'pupil_positions.csv' data exported from Pupil Player.
+
+def load_pupil(data_dir: str,
+               eye_id: str = 'best',
+               method: str = '3d c++',
+               cols: List[str] = None) -> pd.DataFrame:
+    """Loads 'pupil_positions.csv' data exported from Pupil Player.
 
     Parameters
     ----------
@@ -101,7 +110,7 @@ def load_pupil(data_dir, eye_id='best', method='3d c++', cols=None):
     samps : pandas.DataFrame
         Pandas DataFrame containing requested samples.
 
-    '''
+    """
     fname = op.join(data_dir, '', 'pupil_positions.csv')
     try:
         if cols is None:
@@ -125,8 +134,9 @@ def load_pupil(data_dir, eye_id='best', method='3d c++', cols=None):
         print('Loaded {} samples'.format(len(samples)))
         return samples
 
-def load_annotations(data_dir):
-    '''Loads 'annotations' exported from Pupil Player.
+
+def load_annotations(data_dir: str) -> pd.DataFrame:
+    """Loads 'annotations' exported from Pupil Player.
 
     Parameters
     ----------
@@ -138,7 +148,7 @@ def load_annotations(data_dir):
     events : pandas.DataFrame
         Pandas DataFrame containing annotations / events.
 
-    '''
+    """
     fname = op.join(data_dir, '', 'annotations.csv')
     try:
         events = pd.read_csv(fname, index_col='timestamp')
@@ -148,8 +158,9 @@ def load_annotations(data_dir):
     else:
         return events
 
-def load_blinks(data_dir):
-    '''Loads 'blinks' data exported from Pupil Player.
+
+def load_blinks(data_dir: str) -> pd.DataFrame:
+    """Loads 'blinks' data exported from Pupil Player.
 
     Parameters
     ----------
@@ -161,7 +172,7 @@ def load_blinks(data_dir):
     blinks : pandas.DataFrame
         Pandas DataFrame containing blink events.
 
-    '''
+    """
     fname = op.join(data_dir, '', 'blinks.csv')
     try:
         blinks = pd.read_csv(fname, index_col='id')
@@ -173,12 +184,14 @@ def load_blinks(data_dir):
         return blinks
 
 #TODO: optimse and debug
-def extract(samples,
-            events,
-            offset=0,
-            duration=0,
-            borrow_attributes=[]):
-    '''
+
+
+def extract(samples: pd.DataFrame,
+            events: pd.DataFrame,
+            offset: int = 0,
+            duration: int = 0,
+            borrow_attributes: List[str] = []) -> pd.DataFrame:
+    """
     Extracts ranges from samples based on event timing and sample count.
 
     Parameters
@@ -206,7 +219,7 @@ def extract(samples,
     df : pandas.DataFrame
         Extracted events complete with hierarchical multi-index.
 
-    '''
+    """
     # negative duration should raise an exception
     if duration <= 0:
         raise ValueError('Duration must be >0')
@@ -234,7 +247,7 @@ def extract(samples,
         # get the start time and add the required number of indices
         end_idx = start_idx + range_duration - 1  # .loc indexing is inclusive
         new_df = deepcopy(
-            samples.loc[samples.index[start_idx] : samples.index[end_idx]])
+            samples.loc[samples.index[start_idx]: samples.index[end_idx]])
         for ba in borrow_attributes:
             new_df[ba] = events.iloc[idx].get(ba, float('nan'))
         df = pd.concat([df, new_df])
@@ -243,8 +256,11 @@ def extract(samples,
     print('Extracted ranges for {} events'.format(len(events)))
     return df
 
-def reject_bad_trials(ranges, interp_thresh=20, drop=False):
-    '''Drop or markup trials which exceed a threshold of interpolated data.
+
+def reject_bad_trials(ranges: pd.DataFrame,
+                      interp_thresh: int = 20,
+                      drop: bool = False) -> pd.DataFrame:
+    """Drop or markup trials which exceed a threshold of interpolated data.
 
     Parameters
     ----------
@@ -263,12 +279,12 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         rejection (drop = False) or with those trials dropped from the
         DataFrame (drop = True).
 
-    '''
+    """
     if not isinstance(ranges.index, pd.MultiIndex):
         raise ValueError('Index of ranges must be pd.MultiIndex')
 
     pct_interp = ranges.groupby(by='event').agg(
-        {'interpolated':lambda x: float(x.sum())/len(x)*100})
+        {'interpolated': lambda x: float(x.sum())/len(x)*100})
     print('Percentage of data interpolated for each trial (mean = {:.2f}): \
           \n'.format(pct_interp.mean()[0]), pct_interp)
     reject_idxs = (pct_interp.loc[pct_interp['interpolated'] > interp_thresh]
@@ -284,9 +300,13 @@ def reject_bad_trials(ranges, interp_thresh=20, drop=False):
         print('{} trials were marked for rejection'.format(len(reject_idxs)))
     return ranges
 
-def unpack_data_numpy(data, what):
+
+def unpack_data_numpy(data: dict, what: str) -> np.array:
     return np.array([entry[what] for entry in data])
 
-def unpack_data_pandas(data, cols=['timestamp','diameter']):
+
+def unpack_data_pandas(data: dict,
+                       cols: List[str] = ['timestamp', 'diameter']
+                       ) -> pd.DataFrame:
     return (pd.DataFrame(data)
             .set_index('timestamp'))

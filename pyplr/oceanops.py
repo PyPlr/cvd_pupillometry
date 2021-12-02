@@ -1,31 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.oceanops
 ==============
 
 A module to help with measurents for Ocean Optics spectrometers.
 
-'''
+"""
 
 from time import sleep
+from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 from seabreeze.spectrometers import Spectrometer
 
+
 class OceanOptics(Spectrometer):
-    '''Device class for Ocean Optics spectrometer with user-defined methods.
+    """Device class for Ocean Optics spectrometer with user-defined methods.
 
-    '''
+    """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(Spectrometer, self).__init__()
 
     # User defined methods
-    def measurement(self, integration_time=None, setting={}):
-        '''Obtain a measurement with an Ocean Optics spectrometer.
+    def measurement(self,
+                    integration_time: int = None,
+                    setting: dict = {}) -> Tuple[np.array, dict]:
+        """Obtain a measurement with an Ocean Optics spectrometer.
 
         If `integration_time` is not specified, will use an adaptive procedure
         that avoids saturation by aiming for a maximum reported value of
@@ -51,7 +55,7 @@ class OceanOptics(Spectrometer):
         info : dict
             Companion info for measurement.
 
-        '''
+        """
         if integration_time:
             # set the spectrometer integration time
             self.integration_time_micros(int(integration_time))
@@ -142,13 +146,15 @@ class OceanOptics(Spectrometer):
             'micro_temp': temps[2],
             'integration_time': intgt,
             'model': self.model
-            }
+        }
         info = {**info, **setting}
 
-        return counts, info
+        return (counts, info)
 
-    def dark_measurement(self, integration_times=[1000]):
-        '''Sample the dark spectrum with a range of integration times.
+    def dark_measurement(self,
+                         integration_times: List[int] = [1000],
+                         ) -> Tuple[pd.DataFrame]:
+        """Sample the dark spectrum with a range of integration times.
 
         Do this for a range of temperatures to map the relationship between
         temperature and integration time.
@@ -166,7 +172,7 @@ class OceanOptics(Spectrometer):
         info : `pandas.DataFrame`
             Companion info.
 
-        '''
+        """
         data = []
         info = []
         for intgt in integration_times:
@@ -179,10 +185,12 @@ class OceanOptics(Spectrometer):
             info.append(i)
         data = pd.DataFrame(data, columns=self.wavelengths())
         info = pd.DataFrame(info)
-        return data, info
+        return (data, info)
 
-def predict_dark_counts(spectra_info, darkcal):
-    '''Predict dark counts from temperature and integration times.
+
+def predict_dark_counts(spectra_info: pd.DataFrame,
+                        darkcal: pd.DataFrame) -> pd.DataFrame:
+    """Predict dark counts from temperature and integration times.
 
     These get subtracted from measured pixel counts in
     `OceanOptics.calibrated_radiance(...)`
@@ -202,7 +210,7 @@ def predict_dark_counts(spectra_info, darkcal):
     pandas.DataFrame
         The predicted dark counts.
 
-    '''
+    """
     dark_counts = []
 
     for idx, row in spectra_info.iterrows():
@@ -237,12 +245,13 @@ def predict_dark_counts(spectra_info, darkcal):
 
     return pd.DataFrame(dark_counts)
 
-def calibrated_radiance(spectra,
-                        spectra_info,
-                        dark_counts,
-                        cal_per_wl,
-                        sensor_area):
-    '''Convert raw OceanOptics data into calibrated radiance.
+
+def calibrated_radiance(spectra: pd.DataFrame,
+                        spectra_info: pd.DataFrame,
+                        dark_counts: pd.DataFrame,
+                        cal_per_wl: pd.DataFrame,
+                        sensor_area: float) -> pd.DataFrame:
+    """Convert raw OceanOptics data into calibrated radiance.
 
     Parameters
     ----------
@@ -265,7 +274,7 @@ def calibrated_radiance(spectra,
     w_per_m2_per_nm : `pandas.DataFrame`
         Calibrated radiance data in watts per meter squared units.
 
-    '''
+    """
     # we have no saturated spectra due to adaptive measurement
     # convert integration time from us to s
     spectra_info['integration_time'] = (spectra_info['integration_time']

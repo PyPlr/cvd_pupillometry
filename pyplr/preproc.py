@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.preproc
 =============
 
@@ -8,14 +8,20 @@ Scripting tools for preprocessing pupil data.
 
 @author: jtm
 
-'''
+"""
+
+from typing import List
 
 import numpy as np
+import pandas as pd
 import scipy.signal as signal
 
 
-def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
-    '''Resample  data in `fields` to a new index with evenly spaced timepoints.
+def even_samples(samples: pd.DataFrame,
+                 sample_rate: int,
+                 fields: List[str] = ['diameter'],
+                 zero_index: bool = False) -> pd.DataFrame:
+    """Resample  data in `fields` to a new index with evenly spaced timepoints.
 
     Pupil Core data samples are unevenly spaced.
 
@@ -33,7 +39,7 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
     samps : pandas.DataFrame
         DataFrame with evenly spaced index and interpolated data.
 
-    '''
+    """
     # TODO: When is the best time to do this?
     samps = samples.copy(deep=True)
     x = samps.index.to_numpy()
@@ -47,9 +53,13 @@ def even_samples(samples, sample_rate, fields=['diameter'], zero_index=False):
     return samps
 
 # TODO: check this works
-def even_range_samples(rangs, sample_rate, fields=[]):
-    '''Make the space between samples even, for a dataframe of ranges.
-    
+
+
+def even_range_samples(rangs: pd.DataFrame,
+                       sample_rate: int,
+                       fields: List[str] = []) -> pd.DataFrame:
+    """Make the space between samples even, for a dataframe of ranges.
+
 
     Parameters
     ----------
@@ -65,7 +75,7 @@ def even_range_samples(rangs, sample_rate, fields=[]):
     rangs : pd.DataFrame
         New dataframe with even samples.
 
-    '''
+    """
     for idx, df in rangs.groupby(level=['event']):
         for f in fields:
             x = df.orig_idx.to_numpy()
@@ -76,10 +86,12 @@ def even_range_samples(rangs, sample_rate, fields=[]):
             rangs.loc[idx, 'even_idx'] = xnew
     return rangs
 
-def mask_pupil_first_derivative(samples,
-                                threshold=3.0,
-                                mask_cols=['diameter']):
-    '''Apply a masking threshold on the first derivative of pupil data.
+
+def mask_pupil_first_derivative(
+        samples: pd.DataFrame,
+        threshold: float = 3.0,
+        mask_cols: List[str] = ['diameter']) -> pd.DataFrame:
+    """Apply a masking threshold on the first derivative of pupil data.
 
     Use a statistical criterion on the first derivative of pupil data to mask
     poor quality data. Helpful for dealing with blinks.
@@ -99,19 +111,22 @@ def mask_pupil_first_derivative(samples,
     samps : pandas.DataFrame
         masked data
 
-    '''
+    """
     samps = samples.copy(deep=True)
     for col in mask_cols:
         d = samps[col].diff()
         m = samps[col].diff().mean()
         s = samps[col].diff().std() * threshold
-        #TODO: check this works properly
+        # TODO: check this works properly
         samps[col] = samps[col].mask((d < (m-s)) | (d > (m+s)))
         samps.loc[samps[col] == 0, col] = np.nan
     return samps
 
-def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
-    '''
+
+def mask_pupil_confidence(samples: pd.DataFrame,
+                          threshold: float = .8,
+                          mask_cols: List[str] = ['diameter']) -> pd.DataFrame:
+    """
     Sets data in mask_cols to NaN where the corresponding confidence metric is
     below threshold. Pupil Labs reccommend a threshold of 0.8. Helpful for
     dealing with blinks.
@@ -130,13 +145,17 @@ def mask_pupil_confidence(samples, threshold=.8, mask_cols=['diameter']):
     samps : pandas.DataFrame
         masked data
 
-    '''
+    """
     samps = samples.copy(deep=True)
     samps[mask_cols] = samps[mask_cols].mask(samps.confidence < threshold)
     return samps
 
-def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
-    '''
+
+def pupil_confidence_filter(samples: pd.DataFrame,
+                            threshold: float = .8,
+                            mask_cols: List[str] = ['diameter']
+                            ) -> pd.DataFrame:
+    """
     Sets data in mask_cols to NaN where the corresponding confidence metric is
     below threshold. Pupil Labs reccommend a threshold of .8. An alterntive
     to interpolating blinks.
@@ -155,7 +174,7 @@ def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
     samps : pandas.DataFrame
         Masked data.
 
-    '''
+    """
 
     samps = samples.copy(deep=True)
     indices = samples[samples.confidence < threshold].index
@@ -164,9 +183,12 @@ def pupil_confidence_filter(samples, threshold=.8, mask_cols=['diameter']):
     samps.loc[indices, 'interpolated'] = 1
     return samps
 
-def interpolate_pupil(samples, interp_cols=['diameter'],
-                      method='linear', order=None):
-    '''
+
+def interpolate_pupil(samples: pd.DataFrame,
+                      interp_cols: List[str] = ['diameter'],
+                      method: str = 'linear',
+                      order: int = None) -> pd.DataFrame:
+    """
     Use linear interpolation to reconstruct nan values in interp_cols.
 
     Parameters
@@ -177,13 +199,15 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
         Columns to interpolate. The default is ['diameter'].
     method : string
         Linear or polynomial. If polynomial, requires 'order' to be specified.
+    order : int
+        Polynomial order.
 
     Returns
     -------
     samps : pandas.DataFrame
         Masked data
 
-    '''
+    """
     if method == 'polynomial' and not order:
         raise ValueError('Must specify order for polynomial')
     samps = samples.copy(deep=True)
@@ -198,32 +222,36 @@ def interpolate_pupil(samples, interp_cols=['diameter'],
         limit_direction='both')
     return samps
 
-def percent_signal_change(ranges, baselines, pupil_cols=[]):
-    '''Add new columns expressing pupil_cols as percent change from baseline.
+
+def percent_signal_change(ranges: pd.DataFrame,
+                          baselines: pd.DataFrame,
+                          pupil_cols: List[str] = []) -> pd.DataFrame:
+    """Add new columns expressing pupil_cols as percent change from baseline.
 
     Parameters
     ----------
     ranges : pandas.DataFrame
-        DataFrame with MultiIndex. Usually the output from ``utils.extract(...)``
-    baselines : TYPE
-        DESCRIPTION.
-    pupil_cols : TYPE, optional
-        DESCRIPTION. The default is [].
+        DataFrame with MultiIndex, e.g., output from ``utils.extract(...)``
+    baselines : pandas.DataFrame
+        DataFrame with baselines.
+    pupil_cols : list, optional
+        List of pupil columns to process. The default is [].
 
     Returns
     -------
     ranges : pandas.DataFrame
         Original DataFrame with new columns for percent-signal change.
 
-    '''
+    """
     for col in pupil_cols:
         new_col = col + '_pc'
         ranges[new_col] = (ranges[col] / baselines[col] - 1).values * 100
     return ranges
 
 
-def ev_row_idxs(samples, blinks):
-    '''
+def ev_row_idxs(samples: pd.DataFrame,
+                blinks: pd.DataFrame) -> list:
+    """
     Returns the indices in 'samples' contained in events from 'events'.
 
     Parameters
@@ -238,7 +266,7 @@ def ev_row_idxs(samples, blinks):
     samps : pandas.DataFrame
         Masked data
 
-    '''
+    """
     idxs = []
     for start, end in zip(blinks['start_timestamp'], blinks['end_timestamp']):
         idxs.extend(list(samples.loc[start:end].index))
@@ -246,16 +274,20 @@ def ev_row_idxs(samples, blinks):
     idxs = np.intersect1d(idxs, samples.index.tolist())
     return idxs
 
+
 def get_mask_idxs(samples, blinks):
-    '''
+    """
     Finds indices from 'samples' within the returned events.
 
-    '''
+    """
     blidxs = ev_row_idxs(samples, blinks)
     return blidxs
 
-def mask_blinks(samples, blinks, mask_cols=['diameter']):
-    '''
+
+def mask_blinks(samples: pd.DataFrame,
+                blinks: pd.DataFrame,
+                mask_cols: List[str] = ['diameter']) -> pd.DataFrame:
+    """
     Sets untrustworthy pupil data to NaN.
 
     Parameters
@@ -271,7 +303,7 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
     samps : pandas.DataFrame
         Masked data
 
-    '''
+    """
     samps = samples.copy(deep=True)
     indices = get_mask_idxs(samps, blinks)
     samps.loc[indices, mask_cols] = float('nan')
@@ -279,8 +311,11 @@ def mask_blinks(samples, blinks, mask_cols=['diameter']):
     samps.loc[indices, 'interpolated'] = 1
     return samps
 
-def interpolate_blinks(samples, blinks, fields=['diameter']):
-    '''Reconstructs Pupil Labs eye blinks with linear interpolation.
+
+def interpolate_blinks(samples: pd.DataFrame,
+                       blinks: pd.DataFrame,
+                       fields: List[str] = ['diameter']) -> pd.DataFrame:
+    """Reconstructs Pupil Labs eye blinks with linear interpolation.
 
     Parameters
     ----------
@@ -288,7 +323,7 @@ def interpolate_blinks(samples, blinks, fields=['diameter']):
         Must contain at least 'pupil_timestamp' and 'diameter' columns
     blinks : pandas.DataFrame
         Must contain 'start_timestamp' and 'end_timestamp' columns
-    interp_cols : list, optional
+    fields : list, optional
         Columns to interpolate. The default is ['diameter'].
 
     Returns
@@ -296,34 +331,43 @@ def interpolate_blinks(samples, blinks, fields=['diameter']):
     samps : pandas.DataFrame
         Blink-interpolated data
 
-    '''
-    #TODO: fix this pipeline
+    """
+    # TODO: fix this pipeline
     samps = mask_blinks(samples, blinks, mask_cols=fields)
     n = samps[fields].isna().sum().max()
     samps = samps.interpolate(method='linear', axis=0, inplace=False)
-    #breakpoint()
-    print('{} samples ({:.3f} %) reconstructed with linear interpolation'.format(
+    # breakpoint()
+    print('{} samples ({:.3f} %) interpolated'.format(
         len(samps.loc[samps['interpolated'] == 1]), n))
     return samps
 
-def mask_zeros(samples, mask_cols=['diameter']):
-    '''Sets any 0 values in columns in mask_cols to NaN.
+
+def mask_zeros(samples: pd.DataFrame,
+               mask_cols: List[str] = ['diameter']) -> pd.DataFrame:
+    """Sets any 0 values in columns in mask_cols to NaN.
 
     Parameters
     ----------
     samples : pandas.DataFrame
         The samples to search for 0 values.
-    mask_fields (list of strings)
+    mask_cols (list of strings)
         The columns to search for 0 values.
 
-    '''
+    Returns
+    -------
+    samps : pandas.DataFrame
+        Masked data
+
+    """
     samps = samples.copy(deep=True)
     for f in mask_cols:
         samps[samps[f] == 0] = float('nan')
     return samps
 
-def interpolate_zeros(samples, fields=['diameter']):
-    '''Replace 0s in "samples" with linearly interpolated data.
+
+def interpolate_zeros(samples: pd.DataFrame,
+                      fields: List[str] = ['diameter']) -> pd.DataFrame:
+    """Replace 0s in "samples" with linearly interpolated data.
 
     Parameters
     ----------
@@ -332,7 +376,7 @@ def interpolate_zeros(samples, fields=['diameter']):
     interp_cols : list
         The column names from samples in which you'd like to replace 0s.
 
-    '''
+    """
     samps = mask_zeros(samples, mask_cols=fields)
     samps = samps.interpolate(method='linear', axis=0, inplace=False)
     # since interpolate doesn't handle the start/finish, bfill the ffill to
@@ -341,12 +385,13 @@ def interpolate_zeros(samples, fields=['diameter']):
     samps.fillna(method='ffill', inplace=True)
     return samps
 
-def butterworth_series(samples,
-                       fields=['diameter'],
-                       filt_order=3,
-                       cutoff_freq=.01,
-                       inplace=False):
-    '''Applies a Butterworth filter to the given fields.
+
+def butterworth_series(samples: pd.DataFrame,
+                       fields: List[str] = ['diameter'],
+                       filt_order: int = 3,
+                       cutoff_freq: float = .01,
+                       inplace: bool = False) -> pd.DataFrame:
+    """Applies a Butterworth filter to the given fields.
 
     Parameters
     ----------
@@ -364,28 +409,28 @@ def butterworth_series(samples,
 
     Returns
     -------
-    samps :
+    samps : pd.DataFrame
         The samples.
 
-    '''
+    """
     samps = samples if inplace else samples.copy(deep=True)
     B, A = signal.butter(filt_order, cutoff_freq, output='BA')
     samps[fields] = samps[fields].apply(
         lambda x: signal.filtfilt(B, A, x), axis=0)
     return samps
 
+
 def rolling_mean_series(samples,
                         window_size,
                         fields=['diameter'],
                         inplace=False):
-    '''Smoothes the data with a rolling mean.
+    """Smoothes the data with a rolling mean.
 
-    '''
+    """
     samps = samples if inplace else samples.copy(deep=True)
     for f in fields:
         samps[f] = samps[f].rolling(window_size).mean()
     return samps
-
 
 
 def savgol_series(samples,
@@ -393,10 +438,10 @@ def savgol_series(samples,
                   window_length=51,
                   filt_order=7,
                   inplace=False):
-    '''
+    """
     Applies a savitsky-golay filter to the given fields
     See documentation on scipys savgol_filter method FMI.
-    '''
+    """
     samps = samples if inplace else samples.copy(deep=True)
     samps[fields] = samps[fields].apply(
         lambda x: signal.savgol_filter(x, window_length, filt_order), axis=0)

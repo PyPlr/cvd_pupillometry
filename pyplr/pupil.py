@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
 pyplr.pupil
 ===========
 
@@ -8,17 +8,19 @@ A module for interfacing with a Pupil Core eye tracker.
 
 @author: jtm
 
-'''
+"""
 
 from time import time
 from concurrent import futures
+from typing import List, Tuple
 
 import numpy as np
 import msgpack
 import zmq
 
+
 class PupilCore:
-    '''Class to facilitate working with Pupil Core via the Network API.
+    """Class to facilitate working with Pupil Core via the Network API.
 
     Example
     -------
@@ -27,14 +29,15 @@ class PupilCore:
     >>> sleep(2.)
     >>> p.command('r')
 
-    '''
+    """
 
     # TODO: use this
     eyemap = {'left': 0, 'right': 1}
 
-    def __init__(self, address='127.0.0.1', request_port='50020',
-                 pyplr_defaults=False):
-        '''Initialize the connection with Pupil Core.
+    def __init__(self,
+                 address: str = '127.0.0.1',
+                 request_port: str = '50020') -> None:
+        """Initialize the connection with Pupil Core.
 
         Parameters
         ----------
@@ -44,16 +47,8 @@ class PupilCore:
             Pupil Remote accepts requests via a REP socket, by default on port
             50020. Alternatively, you can set a custom port in Pupil Capture
             or via the `--port` application argument. The default is `50020`.
-        pyplr_defaults : bool, optional
-            Whether to configure Pupil Capture with the defaults used for the
-            ``light_stamper(...)`` method. This includes making sure the
-            Annotation Capture plugin is active, that frames are published in
-            BGR format, and that the world camera is using a frame rate of
-            (320,240) at 120 hz with exposure mode set to manual. Always
-            manually verify that the settings are appropriate for the
-            application you are running. The default is True.
 
-        '''
+        """
         self.address = address
         self.request_port = request_port
 
@@ -76,31 +71,8 @@ class PupilCore:
         self.pub_socket.connect(
             'tcp://{}:{}'.format(self.address, self.pub_port))
 
-        # TODO: just get reid of these
-        # some useful defaults
-        if pyplr_defaults:
-            self.notify({
-                'subject': 'start_plugin',
-                'name': 'Annotation_Capture',
-                'args': {}
-                })
-            self.notify({
-                'subject': 'frame_publishing.set_format',
-                'format': 'bgr'
-                })
-            self.notify({
-                'subject': 'start_plugin',
-                'name': 'UVC_Source',
-                'args': {
-                    'frame_size': (320, 240),
-                    'frame_rate': 120,
-                    'name': 'Pupil Cam1 ID2',
-                    'exposure_mode': 'manual'
-                    }
-                })
-
-    def command(self, cmd):
-        '''
+    def command(self, cmd: str) -> str:
+        """
         Send a command via `Pupil Remote
         <https://docs.pupil-labs.com/developer/core/network-api/#pupil-remote>`_.
 
@@ -126,12 +98,12 @@ class PupilCore:
             The result of the command. If the command was not acceptable, this
             will be 'Unknown command.'
 
-        '''
+        """
         self.remote.send_string(cmd)
         return self.remote.recv_string()
 
-    def notify(self, notification):
-        '''Send a `notification <https://docs.pupil-labs.com/developer/core/network-api/#notification-message>`_
+    def notify(self, notification: dict) -> str:
+        """Send a `notification <https://docs.pupil-labs.com/developer/core/network-api/#notification-message>`_
         to Pupil Remote.
 
         Every notification has a topic and can contain potential payload data.
@@ -155,15 +127,15 @@ class PupilCore:
         string
             The response.
 
-        '''
+        """
         topic = 'notify.' + notification['subject']
         self.remote.send_string(topic, flags=zmq.SNDMORE)
         payload = msgpack.dumps(notification, use_bin_type=True)
         self.remote.send(payload)
         return self.remote.recv_string()
 
-    def annotation_capture_plugin(self, should):
-        '''Start or stop the Annotatiob Capture plugin.
+    def annotation_capture_plugin(self, should: str) -> None:
+        """Start or stop the Annotatiob Capture plugin.
 
         Parameters
         ----------
@@ -179,7 +151,7 @@ class PupilCore:
         -------
         None.
 
-        '''
+        """
         if should not in ['start', 'stop']:
             raise ValueError('Must specify start or stop for should.')
         subject = '{}_plugin'.format(should)
@@ -187,25 +159,28 @@ class PupilCore:
             'subject': subject,
             'name': 'Annotation_Capture',
             'args': {}
-            })
+        })
 
-    #TODO: is this correct?
-    def get_corrected_pupil_time(self):
-        '''Get the current Pupil Timestamp, corrected for transmission delay.
+    # TODO: is this correct?
+    def get_corrected_pupil_time(self) -> float:
+        """Get the current Pupil Timestamp, corrected for transmission delay.
 
         Returns
         -------
         float
             The current pupil time.
-        '''
+        """
         t_before = time()
         t = float(self.command('t'))
         t_after = time()
         delay = (t_after - t_before) / 2.0
         return t + delay
 
-    def _broadcast_pupil_detector_properties(self, detector_name, eye):
-        '''Request property broadcast from a single pupil detector running in
+    def _broadcast_pupil_detector_properties(
+            self,
+            detector_name: str,
+            eye: str) -> None:
+        """Request property broadcast from a single pupil detector running in
         single eye process.
 
         Parameters
@@ -219,7 +194,7 @@ class PupilCore:
         -------
         None.
 
-        '''
+        """
         if eye not in ['left', 'right']:
             raise ValueError('Eye must be "left" or "right".')
 
@@ -231,8 +206,10 @@ class PupilCore:
         payload = {k: v for k, v in payload.items() if v is not None}
         self.notify(payload)
 
-    def get_pupil_detector_properties(self, detector_name, eye_id):
-        '''Get the detector properties for a single pupil detector running in
+    def get_pupil_detector_properties(self,
+                                      detector_name: str,
+                                      eye_id: int) -> dict:
+        """Get the detector properties for a single pupil detector running in
         a single eye process.
 
         Parameters
@@ -247,15 +224,15 @@ class PupilCore:
         payload : dict
             Dictionary of detector properties.
 
-        '''
+        """
         self._broadcast_pupil_detector_properties(detector_name, eye_id)
         subscriber = self.subscribe_to_topic(
             topic='notify.pupil_detector.properties')
         _, payload = self.recv_from_subscriber(subscriber)
         return payload
 
-    def freeze_3d_model(self, eye_id, frozen):
-        '''Freeze or unfreeze the Pye3D pupil detector model.
+    def freeze_3d_model(self, eye_id: int, frozen: bool) -> str:
+        """Freeze or unfreeze the Pye3D pupil detector model.
 
         The Pye3D pupil detector updates continuously unless the model is
         frozen. The updates help to account for head slippage, but can cause
@@ -280,7 +257,7 @@ class PupilCore:
         string
             The notification response.
 
-        '''
+        """
         if eye_id not in [0, 1]:
             raise ValueError('Must specify 0 or 1 for eye_id')
 
@@ -293,13 +270,15 @@ class PupilCore:
             'values': {'is_long_term_model_frozen': frozen},
             'eye_id': eye_id,
             'detector_plugin_class_name': 'Pye3DPlugin'
-            }
+        }
         mode = 'Freezing' if frozen else 'Unfreezing'
         print(f'> {mode} 3d model for eye {eye_id}')
         return self.notify(notification)
 
-    def check_3d_model(self, eyes=[0, 1], alert=False):
-        '''Stop and ask the overseer whether the 3D model should be refit.
+    def check_3d_model(self,
+                       eyes: List[int] = [0, 1],
+                       alert: bool = False) -> None:
+        """Stop and ask the overseer whether the 3D model should be refit.
 
         The model is well-fit when the blue and red ellipses overlap as much
         as possible for all gaze angles and when the size of the green ellipse
@@ -314,7 +293,7 @@ class PupilCore:
         -------
         None.
 
-        '''
+        """
         if alert:
             print('\a')
         while True:
@@ -334,8 +313,8 @@ class PupilCore:
         else:
             pass
 
-    def new_annotation(self, label, custom_fields=None):
-        '''Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+    def new_annotation(self, label: str, custom_fields: dict = None) -> dict:
+        """Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
 
         a.k.a. message / event marker / trigger. Send it to Pupil Capture with
         the `.send_annotation(...)` method.
@@ -360,12 +339,12 @@ class PupilCore:
         annotation : dict
             The annotation dictionary, ready to be sent.
 
-        '''
+        """
         annotation = {
             'topic': 'annotation',
             'label': label,
             'timestamp': self.get_corrected_pupil_time()
-            }
+        }
 
         if custom_fields is not None:
             if not isinstance(custom_fields, dict):
@@ -374,8 +353,8 @@ class PupilCore:
 
         return annotation
 
-    def send_annotation(self, annotation):
-        '''Send an annotation to Pupil Capture.
+    def send_annotation(self, annotation: dict) -> None:
+        """Send an annotation to Pupil Capture.
 
         Use to mark the timing of events.
 
@@ -388,13 +367,13 @@ class PupilCore:
         -------
         None.
 
-        '''
+        """
         payload = msgpack.dumps(annotation, use_bin_type=True)
         self.pub_socket.send_string(annotation['topic'], flags=zmq.SNDMORE)
         self.pub_socket.send(payload)
 
-    def pupil_grabber(self, topic, seconds):
-        '''Concurrent access to data from Pupil Core.
+    def pupil_grabber(self, topic: str, seconds: float) -> futures.Future:
+        """Concurrent access to data from Pupil Core.
 
         Executes the ``.grab_data(...)`` method in a thread using
         ``concurrent.futures.ThreadPoolExecutor()``, returning a Future object
@@ -420,12 +399,12 @@ class PupilCore:
         concurrent.futures._base_Future
             An object giving access to the data from the thread.
 
-        '''
+        """
         args = (topic, seconds)
         return futures.ThreadPoolExecutor().submit(self.grab_data, *args)
 
-    def grab_data(self, topic, seconds):
-        '''Start grabbing data in real time from Pupil Core.
+    def grab_data(self, topic: str, seconds: float) -> futures.Future:
+        """Start grabbing data in real time from Pupil Core.
 
         Parameters
         ----------
@@ -448,7 +427,7 @@ class PupilCore:
         data : list
             A list of dictionaries.
 
-        '''
+        """
         print('> Grabbing {} seconds of {}'.format(seconds, topic))
         subscriber = self.subscribe_to_topic(topic)
         data = []
@@ -460,9 +439,12 @@ class PupilCore:
             seconds, topic))
         return data
 
-    def light_stamper(self, annotation, timeout, threshold=15,
-                      topic='frame.world'):
-        '''Concurrent timestamping of light stimuli with World Camera.
+    def light_stamper(self,
+                      annotation: dict,
+                      timeout: float,
+                      threshold: int = 15,
+                      topic: str = 'frame.world') -> futures.Future:
+        """Concurrent timestamping of light stimuli with World Camera.
 
         Executes the ``.detect_light_onset(...)`` method in a thread using
         ``concurrent.futures.ThreadPoolExecutor()``, returning a Future object
@@ -492,7 +474,7 @@ class PupilCore:
         Note
         ----
         Requires a suitable geometry and for the World Camera to be pointed at
-        the light source. Also requires the following settings in Pupil 
+        the light source. Also requires the following settings in Pupil
         Capture:
 
         * Auto Exposure mode - Manual Exposure (eye and world)
@@ -503,15 +485,18 @@ class PupilCore:
         concurrent.futures._base_Future
             An object giving access to the data from the thread.
 
-        '''
+        """
         args = (annotation, threshold, timeout, topic)
         return futures.ThreadPoolExecutor().submit(
             self.detect_light_onset, *args)
 
     # TODO: Add option to stamp offset
-    def detect_light_onset(self, annotation, timeout, threshold=15,
-                           topic='frame.world'):
-        '''Algorithm to detect onset of light stimulus with the World Camera.
+    def detect_light_onset(self,
+                           annotation: dict,
+                           timeout: float,
+                           threshold: int = 15,
+                           topic: str = 'frame.world') -> Tuple:
+        """Algorithm to detect onset of light stimulus with the World Camera.
 
         Parameters
         ----------
@@ -540,7 +525,7 @@ class PupilCore:
             `'frame.world'`, but the method will also work for `'frame.eye.0'`
             and `'frame.eye.1'` if the light source contains enough near-
             infrared. The default is `'frame.world'`.
-        '''
+        """
         subscriber = self.subscribe_to_topic(topic)
         print('> Waiting for a light to stamp...')
         start_time = time()
@@ -558,8 +543,8 @@ class PupilCore:
                     return (False,)
             previous_frame = current_frame
 
-    def subscribe_to_topic(self, topic):
-        '''Subscribe to a topic.
+    def subscribe_to_topic(self, topic: str) -> zmq.sugar.socket.Socket:
+        """Subscribe to a topic.
 
         Parameters
         ----------
@@ -571,15 +556,17 @@ class PupilCore:
         subscriber : zmq.sugar.socket.Socket
             Subscriber socket.
 
-        '''
+        """
         subscriber = self.context.socket(zmq.SUB)
         subscriber.connect(
             'tcp://{}:{}'.format(self.address, self.sub_port))
         subscriber.setsockopt_string(zmq.SUBSCRIBE, topic)
         return subscriber
 
-    def get_next_camera_frame(self, subscriber, topic):
-        '''Get the next camera frame.
+    def get_next_camera_frame(self,
+                              subscriber: zmq.sugar.socket.Socket,
+                              topic: str) -> Tuple:
+        """Get the next camera frame.
 
         Used by ``.detect_light_onset(...)``.
 
@@ -597,7 +584,7 @@ class PupilCore:
         recent_frame_ts : float
             Timestamp of the camera frame.
 
-        '''
+        """
         target = ''
         while target != topic:
             target, msg = self.recv_from_subscriber(subscriber)
@@ -605,10 +592,11 @@ class PupilCore:
             msg['__raw_data__'][0], dtype=np.uint8).reshape(
                 msg['height'], msg['width'], 3)
         recent_frame_ts = msg['timestamp']
-        return recent_frame, recent_frame_ts
+        return (recent_frame, recent_frame_ts)
 
-    def recv_from_subscriber(self, subscriber):
-        '''Receive a message with topic and payload.
+    def recv_from_subscriber(self,
+                             subscriber: zmq.sugar.socket.Socket) -> Tuple:
+        """Receive a message with topic and payload.
 
         Parameters
         ----------
@@ -624,7 +612,7 @@ class PupilCore:
             Any addional message frames will be added as a list in the payload
             dictionary with key: ``'__raw_data__'``.
 
-        '''
+        """
         topic = subscriber.recv_string()
         payload = msgpack.unpackb(subscriber.recv())
         extra_frames = []
@@ -632,11 +620,14 @@ class PupilCore:
             extra_frames.append(subscriber.recv())
         if extra_frames:
             payload['__raw_data__'] = extra_frames
-        return topic, payload
+        return (topic, payload)
 
-    def fixation_trigger(self, max_dispersion=3.0, min_duration=300,
-                         trigger_region=[0.0, 0.0, 1.0, 1.0]):
-        '''Wait for a fixation that satisfies the given constraints.
+    def fixation_trigger(self,
+                         max_dispersion: float = 3.0,
+                         min_duration: int = 300,
+                         trigger_region: List[float] = [0.0, 0.0, 1.0, 1.0]
+                         ) -> dict:
+        """Wait for a fixation that satisfies the given constraints.
 
         Use to check for stable fixation before presenting a stimulus, for
         example.
@@ -669,13 +660,13 @@ class PupilCore:
         fixation : dict
             The triggering fixation.
 
-        '''
+        """
         self.notify({
             'subject': 'start_plugin',
             'name': 'Fixation_Detector',
             'args': {'max_dispersion': max_dispersion,
                      'min_duration': min_duration}
-            })
+        })
         s = self.subscribe_to_topic(topic='fixation')
         print('> Waiting for a fixation...')
         while True:
@@ -684,25 +675,33 @@ class PupilCore:
                 print('> Valid fixation detected...')
                 return fixation
 
-    def _fixation_in_trigger_region(self, fixation,
-                                    trigger_region=[0.0, 0.0, 1.0, 1.0]):
-        '''Return True if fixation is within trigger_region else False.
+    def _fixation_in_trigger_region(
+            self,
+            fixation: dict,
+            trigger_region: List[float] = [0.0, 0.0, 1.0, 1.0]) -> bool:
+        """Return True if fixation is within trigger_region else False.
 
-        '''
+        """
         x, y = fixation['norm_pos']
         return (x > trigger_region[0] and x < trigger_region[2]
                 and y > trigger_region[1] and y < trigger_region[3])
 
-    def _luminance_jump(self, current_frame, previous_frame, threshold):
-        '''Detect an increase in luminance.
+    def _luminance_jump(self,
+                        current_frame: np.array,
+                        previous_frame: np.array,
+                        threshold: int) -> bool:
+        """Detect an increase in luminance.
 
-        '''
+        """
         return current_frame.mean() - previous_frame.mean() > threshold
 
-    def _stamp_light(self, timestamp, annotation, subscription):
-        '''Send annotation with updated timestamp.
+    def _stamp_light(self,
+                     timestamp: float,
+                     annotation: dict,
+                     subscription: str) -> None:
+        """Send annotation with updated timestamp.
 
-        '''
+        """
         print('> Light stamped on {} at {}'.format(
             subscription, timestamp))
         annotation['timestamp'] = timestamp
