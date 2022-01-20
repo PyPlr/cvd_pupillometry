@@ -5,7 +5,7 @@ Developers
    :width: 200
    :class: no-scaled-link
   
-`PyPlr` was developed at The University of Oxford by `Dr Joel T. Martin <https://orcid.org/0000-0002-4475-3835>`_ with help and support from `Dr Manuel Spitschan <https://orcid.org/0000-0002-8572-9268>`_ and `Dr Daniel Bulte <https://orcid.org/0000-0002-3034-8986>`_.
+`PyPlr` was developed at The University of Oxford by `Dr Joel Martin <https://orcid.org/0000-0002-4475-3835>`_ with help and support from `Dr Manuel Spitschan <https://orcid.org/0000-0002-8572-9268>`_ and `Dr Daniel Bulte <https://orcid.org/0000-0002-3034-8986>`_.
 
 The project is currently maintained on GitHub by Joel and Manuel.
 

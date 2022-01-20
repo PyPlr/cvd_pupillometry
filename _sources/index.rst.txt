@@ -5,7 +5,9 @@
 
 Welcome to *PyPlr*'s documentation!
 ===================================
-   
+
+*PyPlr* is a Python software for researching the pupillary light reflex with the `Pupil Core <https://pupil-labs.com/products/core/>`_ eye tracking platform. See also, `PySilSub <https://pysilentsubstitution.github.io/pysilsub/index.html#>`_, a sister project offering Python support for the method of silent substitution. 
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -23,9 +25,9 @@ Welcome to *PyPlr*'s documentation!
    11_citation
    
 
-Tables and indices
-------------------
+.. rubric:: Tables and indices
+------------------------------
 
-   * :ref:`genindex`
-   * :ref:`modindex`
-   * :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
