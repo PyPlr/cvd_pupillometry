@@ -109,7 +109,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
     def full_readout(self,
                      norm: bool = False,
-                     setting: dict = {}) -> Tuple(np.array, dict):
+                     setting: dict = {}) -> Tuple[np.array, dict]:
         """Get a full readout from STLAB.
 
         Parameters
@@ -499,7 +499,7 @@ class CalibrationContext:
               match_led: int,
               match_led_intensity: int,
               target_led: int,
-              match_type: str = 'irrad') -> Tuple(float, int):
+              match_type: str = 'irrad') -> Tuple[float, int]:
         """Determine the appropriate intensity setting for `target_led` so that
         its output will match `match_led` at `match_led_intensity` with respect
         to `match_type`.

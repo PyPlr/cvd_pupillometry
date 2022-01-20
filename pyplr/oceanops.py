@@ -22,9 +22,25 @@ class OceanOptics(Spectrometer):
 
     """
 
-    def __init__(self) -> None:
-        super(Spectrometer, self).__init__()
+    def __init__(self, device):
+        super().__init__(device)
+        
+    def get_temperatures(self):
+        """Get temperatures of the printed circuit board and microcontroller.
 
+        """
+        
+        if not self.features['temperature'] == []:
+            temps = self.f.temperature.temperature_get_all()
+            sleep(.01)
+            board_temp = temps[0]
+            micro_temp = temps[2]
+        else:
+            board_temp = 'NA'
+            micro_temp = 'NA'
+            
+        return (board_temp, micro_temp)
+            
     # User defined methods
     def measurement(self,
                     integration_time: int = None,
@@ -42,6 +58,8 @@ class OceanOptics(Spectrometer):
         integration_time : int
             The integration time to use for the measurement. Leave as None to
             adaptively set the integration time based on spectral measurements.
+        correct_dark_counts : bool, optional
+            Pass True to remove the noise floor in measurements
         setting : dict, optional
              Current setting of the light source (if known), to be included in
              the `info`. For example ``{'led' : 5, 'intensity' : 3000}``, or
@@ -57,75 +75,77 @@ class OceanOptics(Spectrometer):
 
         """
         if integration_time:
-            # set the spectrometer integration time
+            # Set the spectrometer integration time
             self.integration_time_micros(int(integration_time))
             sleep(.01)
 
-            # obtain temperature measurements
-            temps = self.f.temperature.temperature_get_all()
-            sleep(.01)
+            # Obtain temperature measurements
+            board_temp, micro_temp = self.get_temperatures()
 
-            # obtain intensity measurements
-            counts = self.intensities()
+            # Obtain intensity measurements
+            counts = self.intensities(correct_dark_counts=True)
 
-            # get the maximum reported value
+            # Get the maximum reported value
             max_reported = max(counts)
-            print('\tIntegration time: {} ms --> maximum value: {}'.format(
-                integration_time / 1000, max_reported))
+            print(f'\tIntegration time: {int(integration_time)} micros')
+            print(f'\tMaximum value: {max_reported}')
+            intgt = integration_time
 
         else:
-            # initial parameters
-            intgtlims = self.integration_time_micros_limits
+            # Initial parameters
             maximum_intensity = self.max_intensity
             lower_intgt = None
             upper_intgt = None
-            lower_bound = maximum_intensity * .8
+            lower_bound = maximum_intensity * .7
             upper_bound = maximum_intensity * .9
 
-            # start with 1000 micros
-            intgt = 1000.0
+            # Start with the minimum integration time available
+            intgt = min(self.integration_time_micros_limits)
+            intgt_hist = []
             max_reported = 0
 
-            # keep sampling with different integration times until the maximum
+            # Keep sampling with different integration times until the maximum
             # reported value is within 80-90% of the maximum intensity value
             # for the device
             while max_reported < lower_bound or max_reported > upper_bound:
+                
+                intgt_hist.append(intgt)
 
-                # if current integration time is greater than the upper limit,
+                # If current integration time is greater than the upper limit,
                 # set it too the upper limit
-                if intgt >= intgtlims[1]:
-                    intgt = intgtlims[1]
+                if intgt >= self.integration_time_micros_limits[1]:
+                    intgt = self.integration_time_micros_limits[1]
 
-                # set the spectrometer integration time
-                self.integration_time_micros(intgt)
+                # Set the spectrometer integration time
+                self.integration_time_micros(int(intgt))
                 sleep(.01)
 
-                # obtain temperature measurements
-                temps = self.f.temperature.temperature_get_all()
+                # Obtain temperature measurements if available
+                board_temp, micro_temp = self.get_temperatures()
+
+                # Obtain intensity measurements
+                counts = self.intensities(correct_dark_counts=True)
                 sleep(.01)
 
-                # obtain intensity measurements
-                counts = self.intensities()
-
-                # get the maximum reported value
+                # Get the maximum reported value
                 max_reported = max(counts)
-                print('\tIntegration time: {} ms --> maximum value: {}'.format(
-                    intgt / 1000, max_reported))
+                print(f'\tIntegration time: {int(intgt)} micros')
+                print(f'\tMaximum value: {max_reported}')
 
-                # if the integration time has reached the upper limit for the
+                # If the integration time has reached the upper limit for the
                 # spectrometer, exit the while loop, having obtained the final
                 # measurement
-                if intgt == intgtlims[1]:
+                if intgt == self.integration_time_micros_limits[1]:
                     break
 
-                # if the max_reported value is less than the lower_bound and
+                # If the max_reported value is less than the lower_bound and
                 # the upper_ingt is not yet known, update the lower_intgt and
                 # double intgt ready for the next iteration
                 elif max_reported < lower_bound and upper_intgt is None:
                     lower_intgt = intgt
                     intgt *= 2.0
 
-                # if the max_reported value is greater than the upper_bound,
+                # If the max_reported value is greater than the upper_bound,
                 # update the upper_intgt and subtract half of the difference
                 # between upper_intgt and lower_intgt from intgt ready for the
                 # next iteration
@@ -133,26 +153,35 @@ class OceanOptics(Spectrometer):
                     upper_intgt = intgt
                     intgt -= (upper_intgt - lower_intgt) / 2
 
-                # if the max_reported value is less than the lower_bound and
+                # If the max_reported value is less than the lower_bound and
                 # the value of upper_intgt is known, update the lower_intgt and
                 # add half of the difference between upper_intgt and
                 # lower_intgt to intgt ready for the next iteration
                 elif max_reported < lower_bound and upper_intgt is not None:
                     lower_intgt = intgt
                     intgt += (upper_intgt - lower_intgt) / 2
-
+                
+                # TODO: fix
+                # Sometimes the algo gets stuck so we need to do something else
+                if len(intgt_hist) > 10:
+                    if all(val == intgt_hist[-1] for val in intgt_hist[-10:]):
+                        intgt = min(self.integration_time_micros_limits)
+                        intgt_hist = []
+                        max_reported = 0
+                        
         info = {
-            'board_temp': temps[0],
-            'micro_temp': temps[2],
-            'integration_time': intgt,
+            'board_temp': board_temp,
+            'micro_temp': micro_temp,
+            'integration_time': int(intgt),
             'model': self.model
         }
         info = {**info, **setting}
 
         return (counts, info)
 
+
     def dark_measurement(self,
-                         integration_times: List[int] = [1000],
+                         integration_times: List[int] = [3000],
                          ) -> Tuple[pd.DataFrame]:
         """Sample the dark spectrum with a range of integration times.
 

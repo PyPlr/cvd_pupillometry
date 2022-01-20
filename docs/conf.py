@@ -51,8 +51,10 @@ html_logo = '../logo/orange_eye.png'
 html_theme_options = {
     'github_user': 'PyPlr',
     'github_repo': 'cvd_pupillometry',
-    'extra_nav_links': {'PyPi': 'https://pypi.org/project/pyplr/', 
-    'bioRxiv preprint':'https://www.biorxiv.org/content/10.1101/2021.06.02.446731v1'},
+    'extra_nav_links': {
+        'PyPi': 'https://pypi.org/project/pyplr/', 
+        'Publication':'https://link.springer.com/article/10.3758/s13428-021-01759-3'
+    },
     'description': 'A Python software for researching the pupillary light reflex.'
 }
 # Add any paths that contain custom static files (such as style sheets) here,
