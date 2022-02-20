@@ -135,7 +135,7 @@ class PupilCore:
         return self.remote.recv_string()
 
     def annotation_capture_plugin(self, should: str) -> None:
-        """Start or stop the Annotatiob Capture plugin.
+        """Start or stop the Annotation Capture plugin.
 
         Parameters
         ----------
@@ -314,7 +314,7 @@ class PupilCore:
             pass
 
     def new_annotation(self, label: str, custom_fields: dict = None) -> dict:
-        """Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_
+        """Create a new `annotation <https://docs.pupil-labs.com/core/software/pupil-capture/#annotations>`_.
 
         a.k.a. message / event marker / trigger. Send it to Pupil Capture with
         the `.send_annotation(...)` method.

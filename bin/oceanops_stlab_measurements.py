@@ -15,7 +15,7 @@ from pyplr.oceanops import OceanOptics
 
 oo = OceanOptics.from_first_available()
 d = SpectraTuneLabSampler(
-    username='admin', identity=1, password='83e47941d9e930f6', ocean_optics=oo)
+    username='admin', identity=1, password='83e47941d9e930f6')#, ocean_optics=oo)
 
 #%%
 # specify leds and intensities to sample

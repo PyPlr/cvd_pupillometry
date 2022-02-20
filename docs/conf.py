@@ -30,7 +30,7 @@ release = 'v1.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinxcontrib.napoleon", "nbsphinx"]
+extensions = ["sphinxcontrib.napoleon", "sphinx.ext.autodoc", "sphinx_autodoc_typehints", "nbsphinx"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -40,7 +40,8 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
+typehints_document_rtype=False
+typehints_use_rtype=False
 # -- Options for HTML output -------------------------------------------------
 smart_quotes = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
