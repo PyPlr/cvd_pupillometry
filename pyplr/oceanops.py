@@ -83,7 +83,8 @@ class OceanOptics(Spectrometer):
             board_temp, micro_temp = self.get_temperatures()
 
             # Obtain intensity measurements
-            counts = self.intensities(correct_dark_counts=True)
+            counts = self.intensities(correct_dark_counts=True,
+                                      correct_nonlinearity=True)
 
             # Get the maximum reported value
             max_reported = max(counts)
@@ -124,7 +125,8 @@ class OceanOptics(Spectrometer):
                 board_temp, micro_temp = self.get_temperatures()
 
                 # Obtain intensity measurements
-                counts = self.intensities(correct_dark_counts=True)
+                counts = self.intensities(correct_dark_counts=True,
+                                          correct_nonlinearity=True)
                 sleep(.01)
 
                 # Get the maximum reported value

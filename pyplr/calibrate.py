@@ -37,7 +37,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
     def __init__(self,
                  password: str,
                  username: str = 'admin',
-                 identity: int = 1,
+                 default_address: int = 1023,
                  lighthub_ip: str = '192.168.7.2',
                  external: object = None) -> None:
         """Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
@@ -57,7 +57,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
         """
 
-        super().__init__(password, username, identity, lighthub_ip)
+        super().__init__(password, username, default_address, lighthub_ip)
         self.external = external
         self._ready_cache()
 
@@ -68,7 +68,8 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.ex_spectra = []
             self.ex_info = []
 
-    def make_dfs(self, save_csv: bool = False) -> None:
+    def make_dfs(self, save_csv: bool = False,
+                 fname_prefix: str = None) -> None:
         """Turn cached data and info into pandas DataFrames.
 
         Parameters
