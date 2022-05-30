@@ -97,7 +97,7 @@ class OceanOptics(Spectrometer):
             maximum_intensity = self.max_intensity
             lower_intgt = None
             upper_intgt = None
-            lower_bound = maximum_intensity * .7
+            lower_bound = maximum_intensity * .8
             upper_bound = maximum_intensity * .9
 
             # Start with the minimum integration time available

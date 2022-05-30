@@ -347,9 +347,11 @@ class PupilCore:
         }
 
         if custom_fields is not None:
-            if not isinstance(custom_fields, dict):
+            if isinstance(custom_fields, dict):
                 for k, v in custom_fields.items():
                     annotation[k] = v
+            else:
+                ValueError('Custom fields must be of type dict...')
 
         return annotation
 

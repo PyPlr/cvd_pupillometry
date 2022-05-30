@@ -23,7 +23,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from pyplr.stlab import SpectraTuneLab, get_led_colors
+from pyplr.stlab import SpectraTuneLab
+from pyplr.stlabhelp import get_led_colors
 from pyplr.CIE import get_CIE_1924_photopic_vl, get_CIES026
 
 
@@ -69,33 +70,38 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.ex_info = []
 
     def make_dfs(self, save_csv: bool = False,
-                 fname_prefix: str = None) -> None:
+                 external_fname: str = None) -> None:
         """Turn cached data and info into pandas DataFrames.
 
         Parameters
         ----------
         save_csv : bool
             Optionally save to csv format in the current working directory.
+        external_fname : str
+            Prefix for filenames containing data from external spectrometer.
 
         Returns
         -------
         None.
 
         """
+        if external_fname is None:
+            external_fname = 'external'
+            
         self.stlab_spectra = pd.DataFrame(self.stlab_spectra)
         self.stlab_spectra.columns = pd.Int64Index(self.wlbins)
         self.stlab_info = pd.DataFrame(self.stlab_info)
-        if 'led' in self.stlab_info.columns:
-            self.stlab_spectra['led'] = self.stlab_info['led']
-            self.stlab_spectra['intensity'] = self.stlab_info['intensity']
+        if 'Primary' in self.stlab_info.columns:
+            self.stlab_spectra['Primary'] = self.stlab_info['Primary']
+            self.stlab_spectra['Setting'] = self.stlab_info['Setting']
 
         if self.external is not None:
             self.ex_spectra = pd.DataFrame(self.ex_spectra)
             self.ex_spectra.columns = self.external.wavelengths()
             self.ex_info = pd.DataFrame(self.ex_info)
-            if 'led' in self.ex_info.columns:
-                self.ex_spectra['led'] = self.ex_info['led']
-                self.ex_spectra['intensity'] = self.ex_info['intensity']
+            if 'Primary' in self.ex_info.columns:
+                self.ex_spectra['Primary'] = self.ex_info['Primary']
+                self.ex_spectra['Setting'] = self.ex_info['Setting']
 
         if save_csv:
             self.stlab_spectra.to_csv(
@@ -103,10 +109,11 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.stlab_info.to_csv(
                 op.join(os.getcwd(), 'stlab_info.csv'), index=False)
             if self.external is not None:
-                self.ex_spectra.to_csv(
-                    op.join(os.getcwd(), 'external_spectra.csv'), index=False)
+                self.ex_spectra.to_csv(op.join(
+                    os.getcwd(), f'{external_fname}_spectra.csv'), index=False)
                 self.ex_info.to_csv(
-                    op.join(os.getcwd(), 'external_info.csv'), index=False)
+                    op.join(os.getcwd(), f'{external_fname}_info.csv'),
+                    index=False)
 
     def full_readout(self,
                      norm: bool = False,
@@ -205,7 +212,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
                 len(spectra), spectra))
         else:
             settings = [(l, i) for l in leds for i in intensities]
-            print('Sampling {} leds at the following intensities: {}'.format(
+            print('Sampling {} primaries at the following settings: {}'.format(
                 len(leds), intensities))
 
         # shuffle
@@ -216,10 +223,10 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         for i, s in enumerate(settings):
             if not spectra:
                 led, intensity = s[0], s[1]
-                setting = {'led': led, 'intensity': intensity}
+                setting = {'Primary': led, 'Setting': intensity}
                 s = [0] * 10
                 s[led] = intensity
-                print('Measurement: {} / {}, LED: {}, intensity: {}'.format(
+                print('Measurement: {} / {}, Primary: {}, Setting: {}'.format(
                     i + 1, len(settings), led, intensity))
             else:
                 setting = {'intensities': s}

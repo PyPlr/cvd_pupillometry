@@ -9,6 +9,9 @@ Created on Tue Apr 20 10:13:58 2021
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
+from colour.plotting import plot_chromaticity_diagram_CIE1931
+
 
 from pyplr.CIE import get_CIES026, get_CIE_CMF, get_CIE_1924_photopic_vl
 
@@ -66,21 +69,21 @@ def spectra_to_xyz(spectra, binwidth):
         The xyz values for each spectrum.
         
     '''
-    cmf = get_CIE_CMF(binwidth=binwidth)[1:].T
+    cmf = get_CIE_CMF(binwidth=binwidth)
     idx = []    
     xyz = []
-    for i, spec in spectra.groupby(by=['led','intensity']):
+    for i, spec in spectra.groupby(by=['Primary','Setting']):
         idx.append(i)
         xyz.append(spec_to_xyz(spec.to_numpy()[0], cmf=cmf))
     xyz = pd.DataFrame(xyz, columns=['X','Y','Z'])
-    xyz.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
+    xyz.index = pd.MultiIndex.from_tuples(idx, names=['Primary','Setting'])
     return xyz
 
 def spectra_to_peak_wavelengths(spectra):
     '''Calculate the peak wavelengths for a given set of spectra.
 
     '''
-    return spectra.idxmax(axis=1)
+    return pd.Series(spectra.idxmax(axis=1), name='peak_wl')
 
 def spectra_to_dominant_wavelength(spectra, binwidth, 
                                    ref_white=[0.3333, 0.3333]):
@@ -93,21 +96,15 @@ def spectra_to_dominant_wavelength(spectra, binwidth,
         result = dominant_wavelength((row.X, row.Y), ref_white)
         dwl.append(result[0])
         idx.append(i)
-    dwl = pd.DataFrame(dwl, columns=['wavelength'])
-    dwl.index = pd.MultiIndex.from_tuples(idx, names=['led','intensity'])
+    dwl = pd.Series(dwl, name='dom_wl')
+    dwl.index = pd.MultiIndex.from_tuples(idx, names=['Primary','Setting'])
     return dwl
 
-def spectra_to_melanopic_irradiance(spectra, binwidth):
-    # get melanopsin sensitivity
-    sss = get_CIES026(asdf=True, binwidt=binwidth)
-    mel = sss['Mel']
-    
-    # aggregate to melanopic irradiance
-    mi = spectra.groupby(by=['led','intensity'])['flux'].agg(
-        lambda x: x.dot(mel.values.T))
-    return mi
+def spectra_to_aopic_irradiance(spectra, binwidth):
+    sss = get_CIES026(binwidth=binwidth)
+    return spectra.dot(sss)
 
-def spectra_to_luminance(spectra, grouper=['led','intensity']):
+def spectra_to_luminance(spectra, grouper=['Primary','Setting']):
     
     # get luminancephotopic luminance curve
     vl = get_CIE_1924_photopic_vl(asdf=True)
@@ -123,8 +120,6 @@ def explore_spectra(spectra, binwidth):
     This function takes a DataFrame of spectra and plots them, along with other
     useful info.
     '''
-    from colour.plotting import plot_chromaticity_diagram_CIE1931
-    import seaborn as sns
     
     # get xy chromaticities
     xyz = spectra_to_xyz(spectra, binwidth)
@@ -136,7 +131,7 @@ def explore_spectra(spectra, binwidth):
     dwl = spectra_to_dominant_wavelength(spectra, binwidth=binwidth)
     
     # get malanopic irradiances
-    mi = spectra_to_melanopic_irradiance(spectra, binwidth=binwidth)
+    mi = spectra_to_aopic_irradiance(spectra, binwidth=binwidth)
 
     # set up figure
     fig , ax = plt.subplots(10, 4, figsize=(16,36))
@@ -180,7 +175,7 @@ def explore_spectra(spectra, binwidth):
 
 def spectra_wide_to_long(wide_spectra):
     return (wide_spectra.reset_index()
-                        .melt(id_vars=['led','intensity'], 
-                              var_name='wavelength', value_name='flux')
-                        .sort_values(by=['led','intensity'])
+                        .melt(id_vars=['Primary','Setting'], 
+                              var_name='Wavelength', value_name='flux')
+                        .sort_values(by=['Primary','Setting'])
                         .reset_index(drop=True))
