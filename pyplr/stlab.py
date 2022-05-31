@@ -639,13 +639,39 @@ class SpectraTuneLab:
         return requests.post(
             cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
 
-    def clear_video_cache(self, address: int = None):
+    def clear_video_cache(self, address: int = 1023):
+        """Clears all videos cached into the gateway memory.
+        
+        By default each time a video is played using the PLAY_VIDEO_FILE 
+        command, the video file is opened, parsed and loaded into memory. 
+        Because this is a blocking and time consuming I/O operation, the loaded
+        video is cached into memory so successive calls require virtually no 
+        time to load the video. In contrast loading a 2 MB video for play can 
+        take up to 1.5 seconds. Up to 8 videos are cached at all times, 
+        dropping the least recently used ones when needed.
+
+        Parameters
+        ----------
+        address : int, optional
+            Luminaire address. The default is 1023 (the broadcast address).
+
+        Returns
+        -------
+        {}
+            Empty object or an error.
+
+        """
         address = self._get_address(address)
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             address + '/command/CLEAR_VIDEO_CACHE'
         print('Cleared video cache...')
-        return requests.post(
+        response = requests.post(
             cmd_url, json={}, cookies=self.info['cookiejar'], verify=False)
+        if 'error' in response.json():
+            with response.json()['error'] as e:
+                print(e)
+        else: 
+            return response
 
     def get_device_info(self, address: int = None) -> Any:
         """Returns the device characteristics and basic configuration. These
