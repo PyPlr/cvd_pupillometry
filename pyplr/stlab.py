@@ -664,12 +664,12 @@ class SpectraTuneLab:
         address = self._get_address(address)
         cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
             address + '/command/CLEAR_VIDEO_CACHE'
-        print('Cleared video cache...')
         response = requests.post(
             cmd_url, json={}, cookies=self.info['cookiejar'], verify=False)
         if 'error' in response.json():
-            print(response.json()['error'])
+            raise ValueError((response.json()['error']))
         else: 
+            print('Cleared video cache...')
             return response
 
     def get_device_info(self, address: int = None) -> Any:
