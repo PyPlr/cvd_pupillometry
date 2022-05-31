@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Oct  5 11:40:12 2021
+stlabscene
+==========
 
-@author: jtm545
+A module for launching two different video files on separate STLabs at the 
+same time. Speak to Ledmotive about the scene command. 
+
 """
 
 import requests
 
-from pyplr.stlab import SpectraTuneLab, pulse_protocol, video_file_to_dict
+from pyplr.stlab import SpectraTuneLab, video_file_to_dict
 
 
 class SpectraTuneLabScene(SpectraTuneLab):
@@ -19,26 +22,42 @@ class SpectraTuneLabScene(SpectraTuneLab):
 
     def __init__(self, password, username='admin', identity=1,
                  lighthub_ip='192.168.7.2'):
-        '''Initialize class and subclass. See `pyplr.stlab.SpectraTuneLab` for
-        more info.
-
-        Parameters
-        ----------
-        external : Class, optional
-            Acquire concurrent measurements with an external spectrometer.
-            Must be a device class with ``.measurement(...)`` and
-            ``.wavelengths(...)`` methods. See `pyplr.oceanops.OceanOptics`
-            for an example.
-
-        Returns
-        -------
-        None.
+        '''See `stlab.SpectraTuneLab` for more info.
 
         '''
 
         super().__init__(password, username, identity, lighthub_ip)
         
-    def load_video_file_2(self, fname, return_vf_dict=True):
+    # TODO: can this replace load_video_file in main class? 
+    def upload_video(self, fname, return_vf_dict=True):
+        '''Upload a video file to the Light Hub.
+
+        Parameters
+        ----------
+        fname : str
+            Name of the video file to upload. Only the following filenames are 
+            accepted: video1.json, video2.json, video3.json, video4.json, 
+            video5.json, video1.dsf, video2.dsf, video3.dsf, video4.dsf and
+            video5.dsf. This effectively means we can have up to 10 different
+            custom videos in the LIGHT HUB. Each video can be up to 40 MB in 
+            size (it is advisable to minimize the JSON format before uploading 
+            to reduce the file size). In case you get an error saying the disk
+            is full, you can try to free some space by uploading smaller videos 
+            to overwrite the previous ones.
+        return_vf_dict : bool, optional
+            Whether to return the video file as a dict when uploaded. The 
+            default is True.
+
+        Raises
+        ------
+        
+            DESCRIPTION.
+
+        Returns
+        -------
+        dict if return_vf_dict is True else None
+
+        '''
         args = [('file', (fname, open(fname, 'rb'), 'application/json'))]
         cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/video/' + \
             fname
@@ -50,23 +69,45 @@ class SpectraTuneLabScene(SpectraTuneLab):
         if return_vf_dict:
             return video_file_to_dict(fname)    
     
-    def preload_video_files():
-        pass
-    
-    def scene(self, source1, source2):
+    def scene(
+            self, 
+            source_1: int,
+            source_2: int, 
+            source_1_vf: str, 
+            source_2_vf: str, 
+            source_1_delay: int = 0,
+            source_2_delay: int = 0):
+        '''Custom command to launch two different video files at the same time 
+        on different luminaires. 
+        
+        Parameters
+        ----------
+        source_1 : int
+            Device ID or multicast address for source 1.
+        source_2 : int
+            Device ID or multicast address for source 2.
+        source_1_vf : str
+            Video file for source 1.
+        source_2_vf : str
+            Video file for source 2.
+        source_1_delay : int
+            Delay in milliseconds before the video starts on playing on source
+            1. The default is 0.
+        source_2_delay : int
+            Delay in milliseconds before the video starts on playing on source
+            2. The default is 0.  
+            
+        Returns
+        -------
+        {}
+
+        '''
         data = {
             'arg': {
-                source1: {'spectrum': ['video1.dsf', 0]}, #  added zero here for no delay 
-                source2: {'spectrum': ['video2.dsf', 0]}  #  added zero here for no delay 
+                source_1: {'spectrum': [source_1_vf, source_1_delay]}, 
+                source_2: {'spectrum': [source_2_vf, source_2_delay]}  
                 }
             }
         cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/scene'
         return requests.post(
             cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
-
-d = SpectraTuneLabScene(password='23acd0c3e4c5c533', identity=1, lighthub_ip='192.168.6.2')
-d.load_video_file_2('video1.dsf')
-d.load_video_file_2('video2.dsf')
-d.get_video_file_metadata('video1.dsf')
-d.get_video_file_metadata('video2.dsf')
-d.scene(1,2)
