@@ -668,8 +668,7 @@ class SpectraTuneLab:
         response = requests.post(
             cmd_url, json={}, cookies=self.info['cookiejar'], verify=False)
         if 'error' in response.json():
-            with response.json()['error'] as e:
-                print(e)
+            print(response.json()['error'])
         else: 
             return response
 
