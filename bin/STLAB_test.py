@@ -9,6 +9,7 @@ Created on Tue Mar 15 09:38:06 2022
 from time import sleep
 
 from pyplr.stlab import SpectraTuneLab
+from pyplr.stlabhelp import make_spectrum_s
 
 d = SpectraTuneLab(
     password='23acd0c3e4c5c533', 
