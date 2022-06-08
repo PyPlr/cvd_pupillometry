@@ -20,13 +20,13 @@ class SpectraTuneLabScene(SpectraTuneLab):
 
     """
 
-    def __init__(self, password, username='admin', identity=1,
+    def __init__(self, password, username='admin', default_address=1,
                  lighthub_ip='192.168.7.2'):
         """See `stlab.SpectraTuneLab` for more info.
 
         """
 
-        super().__init__(password, username, identity, lighthub_ip)
+        super().__init__(password, username, default_address, lighthub_ip)
         
     # TODO: can this replace load_video_file in main class? 
     def upload_video(self, fname, return_vf_dict=True):
@@ -96,7 +96,7 @@ class SpectraTuneLabScene(SpectraTuneLab):
             source_2_vf: str, 
             source_1_delay: int = 0,
             source_2_delay: int = 0):
-        '''Play different video files at the same time on different luminaires. 
+        """Play different video files at the same time on different luminaires. 
         
         This new command has been developed in order to achieve an even
         greater synchronization time between multiple videos. With the scene
@@ -166,7 +166,7 @@ class SpectraTuneLabScene(SpectraTuneLab):
             limitation in the device (for example sending a video designed for 
             a 7 channels device to a 10 channels device).
 
-        '''
+        """
         data = {
             'arg': {
                 source_1: {'spectrum': [source_1_vf, source_1_delay]}, 
