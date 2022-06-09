@@ -11,6 +11,8 @@ required to develop against the RESTful API.
 
 """
 
+import os.path as op
+from pathlib import Path
 from typing import List, Tuple, Union
 from time import sleep
 
@@ -168,6 +170,47 @@ class SpectraTuneLab:
             print(f'The following addresses are defined: {addresses}')
             print('Call get_luminaires() / get_device_info() for more info')
 
+        finally:
+            pass
+        
+    @classmethod
+    def from_config(cls):
+        """Initialise connection using config file in home directory.
+        
+        The file must be called .stlabconfig and have the following structure:
+            
+            password ***************
+            username admin
+            default_address 1
+            lighthub_ip 192.168.6.2
+            
+        Returns
+        -------
+        SpectraTuneLab instance
+        
+        Raises
+        ------
+        FileNotFoundError if .stlabconfig does not exist
+
+        """
+        home = op.expanduser('~')
+        conf_file = op.abspath(op.join(home, '.stlabconfig'))
+        try:
+            with open(conf_file, 'r') as f:
+                for line in f.readlines(): 
+                    if 'password' in line:
+                        password = line.split()[1] 
+                    if 'username' in line:
+                        username = line.split()[1] 
+                    if 'default_address' in line:
+                        default_address = line.split()[1] 
+                    if 'lighthub_ip' in line:
+                        lighthub_ip = line.split()[1] 
+            return cls(password, username, default_address, lighthub_ip)
+        
+        except FileNotFoundError as err:
+            raise err('.stlabconfig is not there...')
+            
     # Response checkers
     def _check_response_for_error(self, response: Response) -> Response:
         """Catch and raise errors from LIGHT HUB, if present."""
@@ -186,7 +229,7 @@ class SpectraTuneLab:
 
     # Adress checker
     def _get_address(self, address: int = None):
-        """Get address for command target."""
+        """Get string address for command target."""
         if address is None:
             return str(self.default_address)
         else:

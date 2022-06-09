@@ -29,6 +29,8 @@ class SpectraTuneLabScene(SpectraTuneLab):
         super().__init__(password, username, default_address, lighthub_ip)
         
     # TODO: can this replace load_video_file in main class? 
+    # Don't think so... It is a custom command... load_video_file renaims to 
+    # video1.json
     def upload_video(self, fname, return_vf_dict=True):
         """Upload a video file to the Light Hub.
         
@@ -66,11 +68,6 @@ class SpectraTuneLabScene(SpectraTuneLab):
         return_vf_dict : bool, optional
             Whether to return the video file as a dict when uploaded. The 
             default is True.
-
-        Raises
-        ------
-        
-            DESCRIPTION.
 
         Returns
         -------

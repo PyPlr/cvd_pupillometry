@@ -55,7 +55,7 @@ metadata = {'title': '1Hz luminance modulation', 'seconds': 20}
 vf = make_video_file(cycle, repeats=20, fname='video1', **metadata)
 vf = d.load_video_file('video1.dsf')
 d.get_video_file_metadata('video1.dsf')
-d.play_video_file('video1.json', address=1023)
+d.play_video_file('data/video1.dsf', offset=100, address=1022)
 duration = vf['metadata']['seconds']
 name = vf['metadata']['title']
 #timer(1, duration, name)
