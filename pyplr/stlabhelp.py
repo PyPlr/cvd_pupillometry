@@ -82,20 +82,17 @@ def _get_transitions(df):
     return list_of_dicts
 
 
-def get_time_vector(duration):
-    t = np.arange(0, (duration*1000), 10).astype("int")
-    return t
+def get_sinusoid_time_vector(duration):
+    return np.arange(0, (duration * 1000), 10).astype('int')
 
 
 def sinusoid_modulation(f, duration, Fs=100):
-    x = np.arange(duration*Fs)
-    sm = np.sin(2 * np.pi * f * x / Fs)
-    return sm
+    x  = np.arange(duration * Fs)
+    return np.sin(2 * np.pi * f * x / Fs)
 
 
 def modulate_intensity_amplitude(sm, background, amplitude):
-    ivals = (background + (sm*amplitude)).astype("int")
-    return ivals
+    return (background + (sm * amplitude)).astype('int')
 
 
 def get_video_cols():
@@ -280,3 +277,19 @@ def get_led_colors(rgb=False):
             'lime', 'orange', 'red', 'darkred'
         ]
     return colors
+
+
+class VideoFile:
+    def __init__(self, spectra, transitions):
+        self.spectra = spectra
+        self.transitions = transitions
+        pass
+    
+    def from_csv(cls, fpath):
+        pass
+    
+    def set_repeats(self):
+        pass
+    
+    
+

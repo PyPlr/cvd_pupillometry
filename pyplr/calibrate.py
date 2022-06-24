@@ -4,7 +4,9 @@
 pyplr.calibrate
 ===============
 
-Module to assist with calibrating the sphere.
+Module to assist with calibrating the sphere. 
+
+THIS MODULE IS BEING REFACTORED
 
 @author: jtm
 

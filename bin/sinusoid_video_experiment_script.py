@@ -13,11 +13,12 @@ if __name__ == "__main__":
     from time import sleep, time
 
     # set up light device
-    device = apy.setup_device(username='admin', identity=1, password='83e47941d9e930f6')
-    
+    device = apy.setup_device(
+        username='admin', identity=1, password='83e47941d9e930f6')
+
     # background spectrum
     bg = [204, 2047, 2047, 2047, 2047, 2047, 2047, 2047, 2047, 2047]
-    
+
     # Setup zmq context and remote helper for tracker
     ctx = zmq.Context()
     pupil_remote = zmq.Socket(ctx, zmq.REQ)
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     # Start the annotations plugin
     notify({"subject": "start_plugin", "name": "Annotation_Capture", "args": {}})
-    #notify({"subject": "start_plugin", "name": "Time_Sync", "args": {}}) # added this...?
+    # notify({"subject": "start_plugin", "name": "Time_Sync", "args": {}}) # added this...?
 
     pupil_remote.send_string("R")
     pupil_remote.recv_string()
@@ -81,7 +82,7 @@ if __name__ == "__main__":
               "f0.5dur60.dsf",
               "f0.05dur60.dsf"]
     trials = trials*2
-    
+
     # make trigger labels
     label_start = "video_start"
     label_stop = "video_stop"
@@ -89,33 +90,35 @@ if __name__ == "__main__":
     video_dur = 70
     mod_dur = 60
     duration_off = 0.
-    
+
     # baseline
-    sleep(10.) 
-    
+    sleep(10.)
+
     # run trials
     for i, trial in enumerate(trials):
         print(trial)
-        #adapt to background spectrum before first trial
+        # adapt to background spectrum before first trial
         if i == 0:
             apy.set_spectrum_a(device, bg)
             sleep(10.)
-            
+
         apy.load_video_file(device, trial)
-        sleep(5.) 
+        sleep(5.)
         t1 = time()
-        on_trigger   = new_trigger(label_start, video_dur, trial) # make on trigger
-        send_trigger(on_trigger) # send on trigger
+        on_trigger = new_trigger(
+            label_start, video_dur, trial)  # make on trigger
+        send_trigger(on_trigger)  # send on trigger
         apy.play_video_file(device)
         t2 = time()
         sleep(10. - (t2-t1))
-        mod_trigger  = new_trigger(label_mod, mod_dur, trial) # make mod start trigger
-        send_trigger(mod_trigger) # send mod start trigger
+        # make mod start trigger
+        mod_trigger = new_trigger(label_mod, mod_dur, trial)
+        send_trigger(mod_trigger)  # send mod start trigger
         sleep(60)
-        off_trigger  = new_trigger(label_stop, duration_off, trial) # make off trigger
-        send_trigger(off_trigger) # send off trigger
-        sleep(5.) 
-
+        off_trigger = new_trigger(
+            label_stop, duration_off, trial)  # make off trigger
+        send_trigger(off_trigger)  # send off trigger
+        sleep(5.)
 
     # stop recording
     pupil_remote.send_string("r")

@@ -9,10 +9,12 @@ Most documentation comes from the 'LIGHT HUB RESTful API' manual, so please
 consult this for further functions and more info. Note that a license is
 required to develop against the RESTful API.
 
+author: JTM
+
 """
 
+import os
 import os.path as op
-from pathlib import Path
 from typing import List, Tuple, Union
 from time import sleep
 
@@ -66,6 +68,7 @@ class SpectraTuneLab:
 
     """
     # Class attributes
+    config_fpath = op.abspath(op.join(op.expanduser('~'), '.stlabconfig'))
     colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan',
               'green', 'lime', 'orange', 'red', 'darkred']
     rgb_colors = [[.220, .004, .773, 1.], [.095, .232, .808, 1.],
@@ -76,7 +79,7 @@ class SpectraTuneLab:
     wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     min_intensity = 0
     max_intensity = 4095
-
+        
     # Initializer / Instance Attributes
     def __init__(self,
                  password: str,
@@ -172,12 +175,20 @@ class SpectraTuneLab:
 
         finally:
             pass
-        
+    
+    def __repr__(self):
+        return (f'{self.__class__.__name__}' 
+               + f'("{self.password}", ' 
+               + f'"{self.username}", '
+               + f'{self.default_address}, ' 
+               + f'"{self.lighthub_ip}")')
+    
     @classmethod
     def from_config(cls):
         """Initialise connection using config file in home directory.
         
-        The file must be called .stlabconfig and have the following structure:
+        Makes life easier when working cross-platform. The file must be 
+        called ~/.stlabconfig and have the following structure:
             
             password ***************
             username admin
@@ -193,10 +204,8 @@ class SpectraTuneLab:
         FileNotFoundError if .stlabconfig does not exist
 
         """
-        home = op.expanduser('~')
-        conf_file = op.abspath(op.join(home, '.stlabconfig'))
         try:
-            with open(conf_file, 'r') as f:
+            with open(cls.config_fpath, 'r') as f:
                 for line in f.readlines(): 
                     if 'password' in line:
                         password = line.split()[1] 
@@ -208,8 +217,40 @@ class SpectraTuneLab:
                         lighthub_ip = line.split()[1] 
             return cls(password, username, default_address, lighthub_ip)
         
-        except FileNotFoundError as err:
-            raise err('.stlabconfig is not there...')
+        except FileNotFoundError:
+            raise FileNotFoundError('~/.stlabconfig does not exist...')
+            
+    def save_config(self) -> None:
+        """Save current instance parameters to ~/.stlabconfig
+        
+        Allows initialization with `cls.from_config()`.
+        
+        Returns
+        -------
+        None
+
+        """
+        lines = [f'password {self.password}\n',
+                 f'username {self.username}\n',
+                 f'default_address {self.default_address}\n',
+                 f'lighthub_ip {self.lighthub_ip}\n']
+        if op.exists(self.config_fpath):
+            exists = True
+            answer = input('~/.stlabconfig already exists. Overwrite? [y, n] ')
+        else:
+            exists = False
+            answer = 'y'
+        if answer=='y':
+            if exists:
+                os.remove(self.config_fpath)
+            with open(self.config_fpath, 'w') as f:
+                f.writelines(lines)
+            print('~/.stlabconfig overwritten with:\n', *lines, sep='\t')
+        elif answer=='n':
+            print('Cancelling operation')
+        else:
+            self.save_config()
+        return None
             
     # Response checkers
     def _check_response_for_error(self, response: Response) -> Response:

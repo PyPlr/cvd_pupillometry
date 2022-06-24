@@ -114,6 +114,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# Vscode settings
+.vscode
+
 # Rope project settings
 .ropeproject
 
@@ -162,3 +165,4 @@ Thumbs.db
 /data/
 /protocols/
 /code/PyPlr/pyplr/data/corrected_oo_lookup_table.csv
+/misc/

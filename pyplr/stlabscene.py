@@ -80,7 +80,7 @@ class SpectraTuneLabScene(SpectraTuneLab):
         response = requests.post(
             cmd_url, files=args, cookies=self.info['cookiejar'], verify=False)
         if 'data' not in response.json():
-            raise 'Upload file error'
+            raise AttributeError('No data in response.')
         print('video file loaded...')
         if return_vf_dict:
             return video_file_to_dict(fname)    
