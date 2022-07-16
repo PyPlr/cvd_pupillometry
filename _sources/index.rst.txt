@@ -26,13 +26,13 @@ a sister project offering Python support for the method of silent substitution.
    cleaning, and analysis of pupil data
 
 .. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg
-   :target: ./CODE_OF_CONDUCT.md
+   :target: https://github.com/PyPlr/cvd_pupillometry/blob/master/CODE_OF_CONDUCT.md
 .. |DOI| image:: https://zenodo.org/badge/249983560.svg
    :target: https://zenodo.org/badge/latestdoi/249983560
 .. |PyPI version| image:: https://badge.fury.io/py/pyplr.svg
    :target: https://badge.fury.io/py/pyplr
 .. |PyPi license| image:: https://badgen.net/pypi/license/pip/
-   :target: https://pypi.com/project/pip/
+   :target: https://github.com/PyPlr/cvd_pupillometry/blob/master/LICENSE.txt
 
 .. toctree::
    :maxdepth: 2
