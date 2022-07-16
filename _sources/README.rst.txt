@@ -1,10 +1,5 @@
-.. PyPlr documentation master file, created by
-   sphinx-quickstart on Wed Feb 10 20:19:35 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to *PyPlr*'s documentation!
-===================================
+PyPlr
+=====
 
 |Contributor Covenant| |DOI| |PyPI version| |PyPi license|
 
@@ -22,6 +17,11 @@ tracking platform. Features include:
    delivery, communication with respect to timing, and extraction,
    cleaning, and analysis of pupil data
 
+The code is here: https://github.com/PyPlr/cvd_pupillometry
+
+The documentation is here:
+https://pyplr.github.io/cvd_pupillometry/index.html
+
 .. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg
    :target: ./CODE_OF_CONDUCT.md
 .. |DOI| image:: https://zenodo.org/badge/249983560.svg
@@ -30,27 +30,3 @@ tracking platform. Features include:
    :target: https://badge.fury.io/py/pyplr
 .. |PyPi license| image:: https://badgen.net/pypi/license/pip/
    :target: https://pypi.com/project/pip/
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-  
-   01_includeme
-   02_purpose
-   03_installation
-   04_overview
-   05_example_protocols
-   06_example_analyses
-   07_api
-   08_developers
-   09_acknowledgements
-   10_funding
-   11_citation
-   
-
-.. rubric:: Tables and indices
-------------------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
