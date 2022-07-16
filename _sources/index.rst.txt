@@ -10,7 +10,10 @@ Welcome to *PyPlr*'s documentation!
 
 *PyPlr* is a Python library for researching the pupillary light reflex
 with the `Pupil Core <https://pupil-labs.com/products/core/>`__ eye
-tracking platform. Features include:
+tracking platform. See also, `PySilSub <https://pysilentsubstitution.github.io/pysilsub/index.html#>`_, 
+a sister project offering Python support for the method of silent substitution.
+
+*PyPlr's* features include:
 
 -  User-friendly and feature-rich interfaces to Pupil Core (Pupil Labs
    GmbH, Berlin, Germany), Spectra Tune Lab (STLAB: LEDMOTIVE
