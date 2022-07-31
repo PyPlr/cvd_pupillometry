@@ -116,7 +116,7 @@ def _video_file_end(end_time):
     return df
 
 
-def make_video_file(df, fname='our_video_file', repeats=1, **metadata):
+def make_video_file(df, fname='our_video_file.json', repeats=1, **metadata):
     """
     Takes a DataFrame with columns 'time', 'LED-1'...'LED-10'
     and save it as a .dsf ('dynamic sequence file') in the current
@@ -129,10 +129,9 @@ def make_video_file(df, fname='our_video_file', repeats=1, **metadata):
         'spectra': _get_spectra(df),
         'transitions': _get_transitions(df)
     }
-    with open(fname + '.dsf', 'w') as outfile:
-        json.dump(d, outfile)
-    print(
-        '"{}" saved in the current working directory.'.format(fname + '.dsf'))
+    with open(fname, 'w') as outfile:
+        json.dump(d, outfile, indent=2)
+    print(f'Saved video file: {fname}') 
 
 
 def pulse_protocol(pulse_spec,

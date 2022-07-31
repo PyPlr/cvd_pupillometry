@@ -90,19 +90,16 @@ class OceanOptics(Spectrometer):
             max_reported = max(counts)
             print(f'\tIntegration time: {int(integration_time)} micros')
             print(f'\tMaximum value: {max_reported}')
-            intgt = integration_time
 
         else:
-            # Initial parameters
+            # Initial parameters. The CCD is most linear between 80-90% 
+            # saturation.
             maximum_intensity = self.max_intensity
-            lower_intgt = None
-            upper_intgt = None
             lower_bound = maximum_intensity * .8
             upper_bound = maximum_intensity * .9
 
             # Start with the minimum integration time available
-            intgt = min(self.integration_time_micros_limits)
-            intgt_hist = []
+            integration_time = min(self.integration_time_micros_limits)
             max_reported = 0
 
             # Keep sampling with different integration times until the maximum
@@ -110,15 +107,13 @@ class OceanOptics(Spectrometer):
             # for the device
             while max_reported < lower_bound or max_reported > upper_bound:
                 
-                intgt_hist.append(intgt)
-
                 # If current integration time is greater than the upper limit,
-                # set it too the upper limit
-                if intgt >= self.integration_time_micros_limits[1]:
-                    intgt = self.integration_time_micros_limits[1]
+                # set it to the upper limit
+                if integration_time >= self.integration_time_micros_limits[1]:
+                    integration_time = self.integration_time_micros_limits[1]
 
                 # Set the spectrometer integration time
-                self.integration_time_micros(int(intgt))
+                self.integration_time_micros(int(integration_time))
                 sleep(.01)
 
                 # Obtain temperature measurements if available
@@ -131,50 +126,20 @@ class OceanOptics(Spectrometer):
 
                 # Get the maximum reported value
                 max_reported = max(counts)
-                print(f'\tIntegration time: {int(intgt)} micros')
+                print(f'\tIntegration time: {int(integration_time)} micros')
                 print(f'\tMaximum value: {max_reported}')
 
-                # If the integration time has reached the upper limit for the
-                # spectrometer, exit the while loop, having obtained the final
-                # measurement
-                if intgt == self.integration_time_micros_limits[1]:
-                    break
-
-                # If the max_reported value is less than the lower_bound and
-                # the upper_ingt is not yet known, update the lower_intgt and
-                # double intgt ready for the next iteration
-                elif max_reported < lower_bound and upper_intgt is None:
-                    lower_intgt = intgt
-                    intgt *= 2.0
-
-                # If the max_reported value is greater than the upper_bound,
-                # update the upper_intgt and subtract half of the difference
-                # between upper_intgt and lower_intgt from intgt ready for the
-                # next iteration
-                elif max_reported > upper_bound:
-                    upper_intgt = intgt
-                    intgt -= (upper_intgt - lower_intgt) / 2
-
-                # If the max_reported value is less than the lower_bound and
-                # the value of upper_intgt is known, update the lower_intgt and
-                # add half of the difference between upper_intgt and
-                # lower_intgt to intgt ready for the next iteration
-                elif max_reported < lower_bound and upper_intgt is not None:
-                    lower_intgt = intgt
-                    intgt += (upper_intgt - lower_intgt) / 2
-                
-                # TODO: fix
-                # Sometimes the algo gets stuck so we need to do something else
-                if len(intgt_hist) > 10:
-                    if all(val == intgt_hist[-1] for val in intgt_hist[-10:]):
-                        intgt = min(self.integration_time_micros_limits)
-                        intgt_hist = []
-                        max_reported = 0
+                # Adjust integration time for next iteration
+                multiplier = upper_bound / counts.max()
+                integration_time = integration_time * multiplier
                         
         info = {
             'board_temp': board_temp,
             'micro_temp': micro_temp,
-            'integration_time': int(intgt),
+            'integration_time': int(integration_time),
+            'max_reported': counts.max(),
+            'upper_bound': upper_bound,
+            'lower_bound': lower_bound,
             'model': self.model
         }
         info = {**info, **setting}
@@ -346,3 +311,13 @@ def calibrated_radiance(spectra: pd.DataFrame,
     w_per_m2_per_nm.columns = pd.Int64Index(new_wls)
 
     return w_per_m2_per_nm
+
+
+if __name__ == '__main__':
+    oo = OceanOptics.from_first_available()
+    try:
+        counts, _ = oo.measurement()
+    except KeyboardInterrupt:
+        print('Terminated by useer')
+    finally:
+        oo.close()    
