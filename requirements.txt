@@ -1,7 +1,7 @@
 matplotlib==3.3.4
 msgpack==1.0.2
 numexpr==2.7.2
-numpy==1.19.1
+numpy==1.22.0
 pandas==1.2.2
 pyzmq==22.0.2
 requests==2.24.0
