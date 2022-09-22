@@ -17,17 +17,17 @@ import serial
 
 
 class Spectraval:
-    """Interface to JETI Spectraval.
+    """Interface to JETI Spectraval."""
 
-    """
-
-    def __init__(self,
-                 port: str = '/dev/cu.usbserial-DJ5F3W9U',
-                 baudrate: int = 921600,
-                 bytesize: int = 8,
-                 stopbits: int = 1,
-                 parity: str = 'N',
-                 timeout: int = 240):
+    def __init__(
+        self,
+        port: str = "/dev/cu.usbserial-DJ5F3W9U",
+        baudrate: int = 921600,
+        bytesize: int = 8,
+        stopbits: int = 1,
+        parity: str = "N",
+        timeout: int = 240,
+    ):
 
         # open serial connection
         self.ser = serial.Serial(
@@ -36,7 +36,8 @@ class Spectraval:
             bytesize=bytesize,
             stopbits=stopbits,
             parity=parity,
-            timeout=timeout)
+            timeout=timeout,
+        )
 
     def measurement(self, setting: dict = None) -> Tuple[np.array, dict]:
         """Obtain a measurement with JETI Spectraval.
@@ -60,14 +61,14 @@ class Spectraval:
         """
 
         # Perform reference measurement and wait for acknowledgement.
-        self.ser.write(b'*MEAS:REFER 0 1 0\r')
+        self.ser.write(b"*MEAS:REFER 0 1 0\r")
         ack = self.ser.read(1)
-        while ack != b'\x07':
+        while ack != b"\x07":
             ack = self.ser.read(1)
 
         # Calculate spectral radiance and retrieve byte array as 32-bit float.
         # Note that the first two bytes are not part of the spectrum.
-        self.ser.write(b'*CALC:SPRAD\r')
+        self.ser.write(b"*CALC:SPRAD\r")
         data = self.ser.read(1606)
         spec = np.frombuffer(data[2:], dtype=np.float32)
 
@@ -75,7 +76,7 @@ class Spectraval:
         info = {}
         if setting is not None:
             if not isinstance(setting, dict):
-                raise TypeError('Setting must be of type dict')
+                raise TypeError("Setting must be of type dict")
             info = {**setting}
 
         return (spec, info)
@@ -85,7 +86,7 @@ class Spectraval:
 
 
 # Test
-if __name__ == '__main__':
+if __name__ == "__main__":
     device = Spectraval()
     specs = []
     for i in range(10):

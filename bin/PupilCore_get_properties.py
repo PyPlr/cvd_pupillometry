@@ -14,15 +14,17 @@ from pprint import pprint
 
 p = PupilCore()
 
-s = p.subscribe_to_topic(topic='notify.pupil_detector.properties')
+s = p.subscribe_to_topic(topic="notify.pupil_detector.properties")
 
-sleep(1.)
+sleep(1.0)
 
-p.notify({
-    'topic': 'notify.pupil_detector.broadcast_properties',
-    'subject': 'pupil_detector.broadcast_properties',
-    'eye_id': 0
-})
+p.notify(
+    {
+        "topic": "notify.pupil_detector.broadcast_properties",
+        "subject": "pupil_detector.broadcast_properties",
+        "eye_id": 0,
+    }
+)
 
 properties = p.recv_from_subscriber(s)
 pprint(properties)

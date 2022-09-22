@@ -23,7 +23,7 @@ def input_subject_id() -> str:
         Subject identifier.
 
     """
-    return input('Please enter subject ID: ')
+    return input("Please enter subject ID: ")
 
 
 def subject_dir(subject_id: str) -> str:
@@ -62,9 +62,9 @@ def new_record_id(subj_dir: str) -> str:
     """
     recording_id = 0
     for base, _, _ in os.walk(subj_dir):
-        if 'rec' + str(recording_id).zfill(3) == op.basename(base):
+        if "rec" + str(recording_id).zfill(3) == op.basename(base):
             recording_id += 1
-    return 'rec' + str(recording_id).zfill(3)
+    return "rec" + str(recording_id).zfill(3)
 
 
 def record_dir(subj_dir: str) -> str:
@@ -90,9 +90,9 @@ def record_dir(subj_dir: str) -> str:
     return rec_dir
 
 
-def timer(increment: int = 1,
-          seconds: int = 0,
-          message: str = 'Waiting...') -> None:
+def timer(
+    increment: int = 1, seconds: int = 0, message: str = "Waiting..."
+) -> None:
     """Count down to next event.
 
     Parameters
@@ -111,6 +111,6 @@ def timer(increment: int = 1,
     """
     print(message)
     while seconds > 0:
-        print(f'\t{seconds} seconds left...')
+        print(f"\t{seconds} seconds left...")
         sleep(increment)
         seconds -= increment

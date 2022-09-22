@@ -34,13 +34,14 @@ def pupil_preprocessing_figure(nrows, subject, **kwargs):
     """
 
     fig, axs = plt.subplots(
-        nrows=nrows, ncols=1, sharex=True, figsize=(14, 14), **kwargs)
+        nrows=nrows, ncols=1, sharex=True, figsize=(14, 14), **kwargs
+    )
 
     for ax in axs:
-        ax.set_ylabel('Pupil diameter')
-        ax.set_xlabel('Pupil timestamp')
+        ax.set_ylabel("Pupil diameter")
+        ax.set_xlabel("Pupil timestamp")
 
-    axs[0].legend(loc='upper right', labels=['pixels', 'mm'])
-    fig.suptitle('Preprocessing for subject: {}' .format(subject))
+    axs[0].legend(loc="upper right", labels=["pixels", "mm"])
+    fig.suptitle("Preprocessing for subject: {}".format(subject))
 
     return fig, axs

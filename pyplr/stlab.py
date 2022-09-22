@@ -67,25 +67,48 @@ class SpectraTuneLab:
     >>> d.play_video_file()
 
     """
+
     # Class attributes
-    config_fpath = op.abspath(op.join(op.expanduser('~'), '.stlabconfig'))
-    colors = ['blueviolet', 'royalblue', 'darkblue', 'blue', 'cyan',
-              'green', 'lime', 'orange', 'red', 'darkred']
-    rgb_colors = [[.220, .004, .773, 1.], [.095, .232, .808, 1.],
-                  [.098, .241, .822, 1.], [.114, .401, .755, 1.],
-                  [.194, .792, .639, 1.], [.215, .895, .489, 1.],
-                  [.599, .790, .125, 1.], [.980, .580, .005, 1.],
-                  [.975, .181, .174, 1.], [.692, .117, .092, 1.]]
+    config_fpath = op.abspath(op.join(op.expanduser("~"), ".stlabconfig"))
+
+    colors = [
+        "blueviolet",
+        "royalblue",
+        "darkblue",
+        "blue",
+        "cyan",
+        "green",
+        "lime",
+        "orange",
+        "red",
+        "darkred",
+    ]
+
+    rgb_colors = [
+        [0.220, 0.004, 0.773, 1.0],
+        [0.095, 0.232, 0.808, 1.0],
+        [0.098, 0.241, 0.822, 1.0],
+        [0.114, 0.401, 0.755, 1.0],
+        [0.194, 0.792, 0.639, 1.0],
+        [0.215, 0.895, 0.489, 1.0],
+        [0.599, 0.790, 0.125, 1.0],
+        [0.980, 0.580, 0.005, 1.0],
+        [0.975, 0.181, 0.174, 1.0],
+        [0.692, 0.117, 0.092, 1.0],
+    ]
+
     wlbins = [int(val) for val in np.linspace(380, 780, 81)]
     min_intensity = 0
     max_intensity = 4095
-        
+
     # Initializer / Instance Attributes
-    def __init__(self,
-                 password: str,
-                 username: str = 'admin',
-                 default_address: int = 1,
-                 lighthub_ip: str = '192.168.7.2') -> None:
+    def __init__(
+        self,
+        password: str,
+        username: str = "admin",
+        default_address: int = 1,
+        lighthub_ip: str = "192.168.7.2",
+    ) -> None:
         """Initialize connection with LightHub.
 
         Parameters
@@ -153,119 +176,130 @@ class SpectraTuneLab:
         self.lighthub_ip = lighthub_ip
 
         try:
-            response = self.login(password=self.password,
-                                  username=self.username,
-                                  lighthub_ip=self.lighthub_ip)
+            response = self.login(
+                password=self.password,
+                username=self.username,
+                lighthub_ip=self.lighthub_ip,
+            )
             cookiejar = response.cookies
 
         except requests.RequestException as err:
-            print('Login error: ', err)
+            print("Login error: ", err)
 
         else:
             self.info = {
-                'url': self.lighthub_ip,
-                'default_address': default_address,
-                'cookiejar': cookiejar,
+                "url": self.lighthub_ip,
+                "default_address": default_address,
+                "cookiejar": cookiejar,
             }
-            addresses = [val['address'] for val in self.get_luminaires()]
-            print('LIGHT HUB login success')
-            print(f'User authenticated as: {self.username}')
-            print(f'The following addresses are defined: {addresses}')
-            print('Call get_luminaires() / get_device_info() for more info')
+            addresses = [val["address"] for val in self.get_luminaires()]
+            print("LIGHT HUB login success")
+            print(f"User authenticated as: {self.username}")
+            print(f"The following addresses are defined: {addresses}")
+            print("Call get_luminaires() / get_device_info() for more info")
 
         finally:
             pass
-    
+
     def __repr__(self):
-        return (f'{self.__class__.__name__}' 
-               + f'("{self.password}", ' 
-               + f'"{self.username}", '
-               + f'{self.default_address}, ' 
-               + f'"{self.lighthub_ip}")')
-    
+        return (
+            f"{self.__class__.__name__}"
+            + f'("{self.password}", '
+            + f'"{self.username}", '
+            + f"{self.default_address}, "
+            + f'"{self.lighthub_ip}")'
+        )
+
+    # TODO: replace below with this method
+    @classmethod
+    def from_json(cls):
+        pass
+
     @classmethod
     def from_config(cls):
         """Initialise connection using config file in home directory.
-        
-        Makes life easier when working cross-platform. The file must be 
+
+        Makes life easier when working cross-platform. The file must be
         called ~/.stlabconfig and have the following structure:
-            
+
             password ***************
             username admin
             default_address 1
             lighthub_ip 192.168.6.2
-            
+
         Returns
         -------
         SpectraTuneLab instance
-        
+
         Raises
         ------
         FileNotFoundError if .stlabconfig does not exist
 
         """
         try:
-            with open(cls.config_fpath, 'r') as f:
-                for line in f.readlines(): 
-                    if 'password' in line:
-                        password = line.split()[1] 
-                    if 'username' in line:
-                        username = line.split()[1] 
-                    if 'default_address' in line:
-                        default_address = line.split()[1] 
-                    if 'lighthub_ip' in line:
-                        lighthub_ip = line.split()[1] 
+            with open(cls.config_fpath, "r") as f:
+                for line in f.readlines():
+                    if "password" in line:
+                        password = line.split()[1]
+                    if "username" in line:
+                        username = line.split()[1]
+                    if "default_address" in line:
+                        default_address = line.split()[1]
+                    if "lighthub_ip" in line:
+                        lighthub_ip = line.split()[1]
             return cls(password, username, default_address, lighthub_ip)
-        
+
         except FileNotFoundError:
-            raise FileNotFoundError('~/.stlabconfig does not exist...')
-            
+            raise FileNotFoundError("~/.stlabconfig does not exist...")
+
     def save_config(self) -> None:
         """Save current instance parameters to ~/.stlabconfig
-        
+
         Allows initialization with `cls.from_config()`.
-        
+
         Returns
         -------
         None
 
         """
-        lines = [f'password {self.password}\n',
-                 f'username {self.username}\n',
-                 f'default_address {self.default_address}\n',
-                 f'lighthub_ip {self.lighthub_ip}\n']
+        lines = [
+            f"password {self.password}\n",
+            f"username {self.username}\n",
+            f"default_address {self.default_address}\n",
+            f"lighthub_ip {self.lighthub_ip}\n",
+        ]
         if op.exists(self.config_fpath):
             exists = True
-            answer = input('~/.stlabconfig already exists. Overwrite? [y, n] ')
+            answer = input("~/.stlabconfig already exists. Overwrite? [y, n] ")
         else:
             exists = False
-            answer = 'y'
-        if answer=='y':
+            answer = "y"
+        if answer == "y":
             if exists:
                 os.remove(self.config_fpath)
-            with open(self.config_fpath, 'w') as f:
+            with open(self.config_fpath, "w") as f:
                 f.writelines(lines)
-            print('~/.stlabconfig overwritten with:\n', *lines, sep='\t')
-        elif answer=='n':
-            print('Cancelling operation')
+            print("~/.stlabconfig overwritten with:\n", *lines, sep="\t")
+        elif answer == "n":
+            print("Cancelling operation")
         else:
             self.save_config()
         return None
-            
+
     # Response checkers
     def _check_response_for_error(self, response: Response) -> Response:
         """Catch and raise errors from LIGHT HUB, if present."""
-        if 'error' in response.json():
-            raise LightHubError(response.json()['error'])
+        if "error" in response.json():
+            raise LightHubError(response.json()["error"])
         else:
             return response
 
     def _check_response_for_data(self, response: Response) -> Response:
         """Raise AttributeError if data is not present (when expected)."""
         try:
-            return response.json()['data']
+            return response.json()["data"]
         except:
-            err = 'No data in the response. Check connection / command.'
+            err = "No data in the response. Check connection / command."
             raise AttributeError(err)
 
     # Adress checker
@@ -288,14 +322,18 @@ class SpectraTuneLab:
         elif mode == 2:
             xy = get_CIE170_2_chromaticity_coordinates()
             for idx, row in xy.iterrows():
-                print(f'x={row.x}, y={row.y}')
+                print(f"x={row.x}, y={row.y}")
                 self.set_color(row.x, row.y, flux=1000)
 
         self.turn_off()
 
     # Functions wrapped from STLAB's RESTFUL_API (with relevant documentation)
-    def login(self, password: str, username: str = 'admin',
-              lighthub_ip: str = '192.168.7.2') -> Response:
+    def login(
+        self,
+        password: str,
+        username: str = "admin",
+        lighthub_ip: str = "192.168.7.2",
+    ) -> Response:
         """Authenticates the user into the LIGHT HUB.
 
         Note that specific username and password varies from device to device.
@@ -327,8 +365,8 @@ class SpectraTuneLab:
         requests.Response
 
         """
-        cmd_url = 'http://' + self.lighthub_ip + ':8181/api/login'
-        data = {'username': username, 'password': password}
+        cmd_url = "http://" + self.lighthub_ip + ":8181/api/login"
+        data = {"username": username, "password": password}
         response = requests.post(cmd_url, json=data, verify=False)
         return self._check_response_for_error(response)
 
@@ -340,7 +378,7 @@ class SpectraTuneLab:
         requests.Response
 
         """
-        cmd_url = 'http://' + self.lighthub_ip + ':8181/api/logout'
+        cmd_url = "http://" + self.lighthub_ip + ":8181/api/logout"
         response = requests.post(cmd_url, verify=False)
         return self._check_response_for_error(response)
 
@@ -367,14 +405,16 @@ class SpectraTuneLab:
             List of dicts with information related to the connected luminaires.
 
         """
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/luminaires'
+        cmd_url = "http://" + self.info["url"] + ":8181/api/gateway/luminaires"
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         response = self._check_response_for_error(response)
         return self._check_response_for_data(response)
 
-    def set_spectrum_a(self, intensity_values: List[int],
-                       address: int = None) -> Response:
+    def set_spectrum_a(
+        self, intensity_values: List[int], address: int = None
+    ) -> Response:
         """Executes a spectrum based on the intensity values provided for each
         of the channels. Each channel can be set between 0 and 4095 (only
         integer values).
@@ -393,15 +433,22 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': intensity_values}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_SPECTRUM_A'
+        data = {"arg": intensity_values}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_SPECTRUM_A"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
-    def set_spectrum_s(self, spectrum: List[int],
-                       address: int = None) -> Response:
+    def set_spectrum_s(
+        self, spectrum: List[int], address: int = None
+    ) -> Response:
         """Executes the given spectrum. The spectrum is defined by an array of
         81 elements that represents 5 nm wavelength bins from 380 nm to 780 nm.
         The values are an abstraction of the light intensity at each point
@@ -429,15 +476,22 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': spectrum}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_SPECTRUM_S'
+        data = {"arg": spectrum}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_SPECTRUM_S"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
-    def spectruma(self, intensity_values: List[int],
-                  address: int = None) -> Response:
+    def spectruma(
+        self, intensity_values: List[int], address: int = None
+    ) -> Response:
         """Executes a spectrum based on the intensity values provided for each
         of the channels. Each channel can be set between 0 and 4095. This is an
         alternative way to the command `set_spectrum_a` that allows setting a
@@ -458,15 +512,27 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/spectruma/' + spec
+        spec = "".join([str(val) + "," for val in intensity_values])[:-1]
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/spectruma/"
+            + spec
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_error(response)
 
-    def color_xy(self, intensity_values: List[int], x: float, y: float,
-                 address: int = None) -> Response:
+    def color_xy(
+        self,
+        intensity_values: List[int],
+        x: float,
+        y: float,
+        address: int = None,
+    ) -> Response:
         """Similar to the `spectruma` command, but allows setting a target
         `x, y` coordinates in the CIE1931 color space.
 
@@ -488,16 +554,27 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        spec = ''.join([str(val) + ',' for val in intensity_values])[:-1]
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/spectruma/' + spec + '/color/' + \
-            str(x) + '/' + str(y)
+        spec = "".join([str(val) + "," for val in intensity_values])[:-1]
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/spectruma/"
+            + spec
+            + "/color/"
+            + str(x)
+            + "/"
+            + str(y)
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_error(response)
 
-    def set_color(self, x: float, y: float, flux: int = None,
-                  address: int = None) -> Response:
+    def set_color(
+        self, x: float, y: float, flux: int = None, address: int = None
+    ) -> Response:
         """Executes a light color represented in the CIE1931 color space. The
         `x` and `y` coordinates are the mathematical index that represents the
         target color to be achieved. If the `x,y` provided values are not
@@ -524,13 +601,19 @@ class SpectraTuneLab:
         """
         address = self._get_address(address)
         if flux:
-            data = {'arg': [x, y, flux]}
+            data = {"arg": [x, y, flux]}
         else:
-            data = {'arg': [x, y]}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_COLOR'
+            data = {"arg": [x, y]}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_COLOR"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def turn_off(self, address: int = None) -> Response:
@@ -548,10 +631,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/TURN_OFF'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/TURN_OFF"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_error(response)
 
     def turn_on(self, address: int = None) -> Response:
@@ -572,10 +661,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/TURN_ON'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/TURN_ON"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_error(response)
 
     def set_blink(self, blink: int = 0, address: int = None) -> Response:
@@ -601,13 +696,19 @@ class SpectraTuneLab:
 
         """
         if blink < 0 or blink > 255:
-            raise ValueError('Blink must be in range 0-255')
+            raise ValueError("Blink must be in range 0-255")
         address = self._get_address(address)
-        data = {'arg': blink}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_BLINK'
+        data = {"arg": blink}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_BLINK"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_pcb_temperature(self, address: int = None) -> List:
@@ -631,10 +732,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_PCB_TEMPERATURE'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_PCB_TEMPERATURE"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         response = self._check_response_for_error(response)
         return self._check_response_for_data(response)
 
@@ -658,16 +765,22 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_SPECTRUM_A'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_SPECTRUM_A"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         response = self._check_response_for_error(response)
         return self._check_response_for_data(response)
 
     def get_spectrometer_spectrum(
-            self, norm: bool = False,
-            address: int = None) -> Tuple[float, np.array]:
+        self, norm: bool = False, address: int = None
+    ) -> Tuple[float, np.array]:
         """Returns the spectrum readout from the internal spectrometer.
 
         If the luminaire does only contain a colorimeter sensor, a theoretical
@@ -699,10 +812,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_SPECTROMETER_SPECTRUM'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_SPECTROMETER_SPECTRUM"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         data = self._check_response_for_data(response)
         rmv = data[0]
         spectrum = np.array(data[1:])
@@ -729,10 +848,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_LUMENS'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_LUMENS"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
     def get_led_calibration(self, address: int = None) -> List:
@@ -753,15 +878,21 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_LED_CALIBRATION'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_LED_CALIBRATION"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
-    def load_video_file(self,
-                        fname: str,
-                        return_vf_dict: bool = True) -> Union[dict, None]:
+    def load_video_file(
+        self, fname: str, return_vf_dict: bool = True
+    ) -> Union[dict, None]:
         """Uploads a video light sequence file to the LIGHT HUB. The video
         file must follow the LEDMOTIVE Dynamic Sequence File (.dsf) format.
         The uploaded file must be a json file (.dsf files are json files),
@@ -779,13 +910,14 @@ class SpectraTuneLab:
         dict if `return_vf_dict==True` else None.
 
         """
-        args = [('file', (fname, open(fname, 'rb'), 'application/json'))]
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/video'
+        args = [("file", (fname, open(fname, "rb"), "application/json"))]
+        cmd_url = "http://" + self.info["url"] + ":8181/api/gateway/video"
         response = requests.post(
-            cmd_url, files=args, cookies=self.info['cookiejar'], verify=False)
-        if 'data' not in response.json():
-            raise 'Upload file error'
-        print('video file loaded...')
+            cmd_url, files=args, cookies=self.info["cookiejar"], verify=False
+        )
+        if "data" not in response.json():
+            raise "Upload file error"
+        print("video file loaded...")
         if return_vf_dict:
             return video_file_to_dict(fname)
 
@@ -803,13 +935,14 @@ class SpectraTuneLab:
             The video file.
 
         """
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/gateway/video'
+        cmd_url = "http://" + self.info["url"] + ":8181/api/gateway/video"
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         try:
             return response.json()
         except:
-            raise LightHubError('No data.')
+            raise LightHubError("No data.")
 
     def play_video_file(self, fname: str, address: int = None) -> Response:
         """Starts the execution of a light video sequence in the specified
@@ -833,13 +966,19 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': fname}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/PLAY_VIDEO_FILE'
+        data = {"arg": fname}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/PLAY_VIDEO_FILE"
+        )
         response = requests.post(
-            cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, json=data, cookies=self.info["cookiejar"], verify=False
+        )
         response = self._check_response_for_error(response)
-        print(f'Playing video file at address: {address}')
+        print(f"Playing video file at address: {address}")
         return response
 
     def stop_video(self, address: int = None) -> Response:
@@ -876,13 +1015,19 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': None}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/PLAY_VIDEO_FILE'
+        data = {"arg": None}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/PLAY_VIDEO_FILE"
+        )
         response = requests.post(
-            cmd_url, json=data, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, json=data, cookies=self.info["cookiejar"], verify=False
+        )
         response = self._check_response_for_error(response)
-        print(f'Stopped video file from playing at address: {address}')
+        print(f"Stopped video file from playing at address: {address}")
         return response
 
     def get_video_playing(self, address: int = None) -> dict:
@@ -904,10 +1049,16 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_VIDEO_PLAYING'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_VIDEO_PLAYING"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
     def clear_video_cache(self, address: int = 1023) -> Response:
@@ -933,14 +1084,20 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/CLEAR_VIDEO_CACHE'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/CLEAR_VIDEO_CACHE"
+        )
         response = requests.post(
-            cmd_url, json={}, cookies=self.info['cookiejar'], verify=False)
-        if 'error' in response.json():
-            raise LightHubError(response.json()['error'])
+            cmd_url, json={}, cookies=self.info["cookiejar"], verify=False
+        )
+        if "error" in response.json():
+            raise LightHubError(response.json()["error"])
         else:
-            print('Cleared video cache...')
+            print("Cleared video cache...")
             return response
 
     def get_device_info(self, address: int = None) -> dict:
@@ -964,14 +1121,21 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_DEVICE_INFO'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_DEVICE_INFO"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
-    def set_colour_priority(self, colour_priority: bool = True,
-                            address: int = None) -> Response:
+    def set_colour_priority(
+        self, colour_priority: bool = True, address: int = None
+    ) -> Response:
         """Command the luminaire to always first approximate to the desired
         color of the spectrum to set before setting the spectrum channel
         values. This function is set to true or false (enabled or disabled).
@@ -990,11 +1154,17 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': colour_priority}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_COLOR_PRIORITY'
+        data = {"arg": colour_priority}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_COLOR_PRIORITY"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_colour_priority(self, address: int = None) -> bool:
@@ -1013,14 +1183,21 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_COLOR_PRIORITY'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_COLOR_PRIORITY"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
-    def set_use_feedback(self, use_feedback: bool,
-                         address: int = None) -> Response:
+    def set_use_feedback(
+        self, use_feedback: bool, address: int = None
+    ) -> Response:
         """Command the luminaire to use the feedback sensor to maintain the
         color through the PID algorithm. this function is set to true or false
         (enabled or disabled).
@@ -1037,11 +1214,17 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': use_feedback}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_USE_FEEDBACK'
+        data = {"arg": use_feedback}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_USE_FEEDBACK"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_use_feedback(self, address: int = None) -> bool:
@@ -1060,14 +1243,19 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_USE_FEEDBACK'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_USE_FEEDBACK"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
-    def get_spectrometer_integration_time(self,
-                                          address: int = None) -> int:
+    def get_spectrometer_integration_time(self, address: int = None) -> int:
         """Get the current integration time used by the spectrometer for
         gathering data.
 
@@ -1085,14 +1273,21 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_SPECTROMETER_INTEGRATION_TIME'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_SPECTROMETER_INTEGRATION_TIME"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
     def set_spectrometer_integration_time(
-            self, integration_time: int, address: int = None) -> Response:
+        self, integration_time: int, address: int = None
+    ) -> Response:
         """Sets the integration time of the spectrometer to gather data. Longer
         times will result in more light reaching the sensor (like exposure
         time in photography). Special attention should be taken to avoid
@@ -1113,11 +1308,17 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': integration_time}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_SPECTROMETER_INTEGRATION_TIME'
+        data = {"arg": integration_time}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_SPECTROMETER_INTEGRATION_TIME"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_input_power(self, address: int = None) -> int:
@@ -1137,14 +1338,21 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_INPUT_POWER'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_INPUT_POWER"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
-    def set_dimming_level(self, dimming_level: int,
-                          address: int = None) -> Response:
+    def set_dimming_level(
+        self, dimming_level: int, address: int = None
+    ) -> Response:
         """Sets an intensity dimmer. This percentage modulates the current
         intensity by multiplying the power count of each luminaire channel,
         i.e. if you send a spectrum where each channel count is at half level
@@ -1165,11 +1373,17 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        data = {'arg': dimming_level}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/SET_DIMMING_LEVEL'
+        data = {"arg": dimming_level}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/SET_DIMMING_LEVEL"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_dimming_level(self, address: int = None) -> int:
@@ -1189,16 +1403,22 @@ class SpectraTuneLab:
 
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_DIMMING_LEVEL'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_DIMMING_LEVEL"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
     def set_multicast_address(
-            self,
-            address: int = None,
-            multicast_address: List[Union[int, None]] = [999, None, None, None]
+        self,
+        address: int = None,
+        multicast_address: List[Union[int, None]] = [999, None, None, None],
     ) -> Response:
         """Sets an array of multicast addresses accepted by the luminaire. A
         multicast address can be shared by different luminaires. Thus, when
@@ -1227,15 +1447,22 @@ class SpectraTuneLab:
         requests.Response
 
         """
-        data = {'arg': multicast_address}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            str(address) + '/command/SET_MULTICAST_ADDRESS'
+        data = {"arg": multicast_address}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + str(address)
+            + "/command/SET_MULTICAST_ADDRESS"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_error(response)
 
     def get_multicast_address(
-            self, address: int = None) -> List[Union[int, None]]:
+        self, address: int = None
+    ) -> List[Union[int, None]]:
         """Returns the array of multicast addresses set in the luminaire. See
         `.set_multicast_address(...)` for more info.
 
@@ -1251,10 +1478,16 @@ class SpectraTuneLab:
             e.g., `[999, None, None, None]`
         """
         address = self._get_address(address)
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/' + \
-            address + '/command/GET_MULTICAST_ADDRESS'
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/"
+            + address
+            + "/command/GET_MULTICAST_ADDRESS"
+        )
         response = requests.get(
-            cmd_url, cookies=self.info['cookiejar'], verify=False)
+            cmd_url, cookies=self.info["cookiejar"], verify=False
+        )
         return self._check_response_for_data(response)
 
     def get_video_file_metadata(self, fname: str) -> dict:
@@ -1286,9 +1519,14 @@ class SpectraTuneLab:
             The metadata.
 
         """
-        data = {'arg': fname}
-        cmd_url = 'http://' + self.info['url'] + ':8181/api/luminaire/1023' + \
-            '/command/GET_VIDEO_FILE_METADATA'
+        data = {"arg": fname}
+        cmd_url = (
+            "http://"
+            + self.info["url"]
+            + ":8181/api/luminaire/1023"
+            + "/command/GET_VIDEO_FILE_METADATA"
+        )
         response = requests.post(
-            cmd_url, cookies=self.info['cookiejar'], json=data, verify=False)
+            cmd_url, cookies=self.info["cookiejar"], json=data, verify=False
+        )
         return self._check_response_for_data(response)

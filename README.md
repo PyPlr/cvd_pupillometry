@@ -3,7 +3,7 @@ PyPlr
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](./CODE_OF_CONDUCT.md) [![DOI](https://zenodo.org/badge/249983560.svg)](https://zenodo.org/badge/latestdoi/249983560) [![PyPI version](https://badge.fury.io/py/pyplr.svg)](https://badge.fury.io/py/pyplr) [![PyPi license](https://badgen.net/pypi/license/pip/)](https://pypi.com/project/pip/)
 
-![](https://github.com/PyPlr/cvd_pupillometry/blob/master/logo/orange_eye.png?raw=True)
+<img src="https://github.com/PyPlr/cvd_pupillometry/blob/master/logo/orange_eye.png?raw=True" alt="orange-eye" width="200"/>
 
 *PyPlr* is a Python library for researching the pupillary light reflex with the [Pupil Core](https://pupil-labs.com/products/core/ "Pupil Core eye tracking platform") eye tracking platform. Features include:
 

@@ -25,20 +25,21 @@ def main():
 
         # Turn each channel on at half power for 1 s
         for led in range(10):
-            spec = [MAXTENSITY / 2] * 10
+            spec = [0] * 10
+            spec[led] = int(MAXTENSITY / 2)
             d.set_spectrum_a(spec)
             sleep(1)
             d.turn_off()
             sleep(1)
 
     except KeyboardInterrupt:
-        print('> STLAB test terminated by user.')
+        print("> STLAB test terminated by user.")
 
     finally:
         d.turn_off()
         d.logout()
-        print('> Logging out of STLAB.')
+        print("> Logging out of STLAB.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

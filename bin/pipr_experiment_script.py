@@ -7,6 +7,7 @@ Created on Fri Mar 27 11:16:51 2020
 import STLAB_apy as stlab
 import zmq
 import msgpack as serializer
+
 # import numpy as np
 
 # stlab.set_spectrum_a(device,red)
@@ -22,7 +23,8 @@ if __name__ == "__main__":
 
     # set up light device
     device = stlab.setup_device(
-        username='admin', identity=1, password='83e47941d9e930f6')
+        username="admin", identity=1, password="83e47941d9e930f6"
+    )
 
     # red and blue lights
     blue = [0, 0, 4095, 4000, 1000, 0, 0, 0, 0, 0]
@@ -64,13 +66,15 @@ if __name__ == "__main__":
         pub_socket.send(payload)
 
     # Start the annotations plugin
-    notify({"subject": "start_plugin", "name": "Annotation_Capture", "args": {}})
+    notify(
+        {"subject": "start_plugin", "name": "Annotation_Capture", "args": {}}
+    )
     # notify({"subject": "start_plugin", "name": "Time_Sync", "args": {}}) # added this...?
 
     pupil_remote.send_string("R")
     pupil_remote.recv_string()
 
-    sleep(1.)  # sleep for a few seconds, can be less
+    sleep(1.0)  # sleep for a few seconds, can be less
 
     # Send a trigger with the current time
     # The annotation will be saved to annotation.pldata if a
@@ -83,42 +87,44 @@ if __name__ == "__main__":
             "label": label,
             "timestamp": time_fn(),
             "duration": duration,
-            "color": color
+            "color": color,
         }
 
     # make trigger labels
     label_on = "light_on"
     label_off = "light_off"
-    duration_on = 2.
-    duration_off = 0.
+    duration_on = 2.0
+    duration_off = 0.0
 
     # set up trial dict
     trials = {
-        '1': [red, 'red'],
-        '2': [blue, 'blue'],
-        '3': [red, 'red'],
-        '4': [blue, 'blue'],
-        '5': [red, 'red'],
-        '6': [blue, 'blue']
+        "1": [red, "red"],
+        "2": [blue, "blue"],
+        "3": [red, "red"],
+        "4": [blue, "blue"],
+        "5": [red, "red"],
+        "6": [blue, "blue"],
     }
 
     # baseline
-    sleep(20.)
+    sleep(20.0)
 
     # run trials
     for i, trial in trials.items():
-        sleep(10.)
+        sleep(10.0)
         on_trigger = new_trigger(
-            label_on, duration_on, trial[1])  # make on trigger
+            label_on, duration_on, trial[1]
+        )  # make on trigger
         send_trigger(on_trigger)  # send on trigger
         stlab.set_spectrum_a(device, trial[0])  # turn on the light
-        sleep(2.)  # two second light pulse
+        sleep(2.0)  # two second light pulse
         off_trigger = new_trigger(
-            label_off, duration_off, trial[1])  # make off trigger
+            label_off, duration_off, trial[1]
+        )  # make off trigger
         send_trigger(off_trigger)  # send off trigger
         stlab.turn_off(device)  # turn off the light
 
-        sleep(60.)  # give it a minute
+        sleep(60.0)  # give it a minute
 
     # stop recording
     pupil_remote.send_string("r")

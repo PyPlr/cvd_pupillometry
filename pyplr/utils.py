@@ -20,9 +20,9 @@ import numpy as np
 import pandas as pd
 
 
-def new_subject(rec_dir: str,
-                export: str = '000',
-                out_dir_nm: str = 'pyplr_analysis') -> dict:
+def new_subject(
+    rec_dir: str, export: str = "000", out_dir_nm: str = "pyplr_analysis"
+) -> dict:
     """Get a handle on a new subject for data analysis.
 
     Parameters
@@ -49,20 +49,21 @@ def new_subject(rec_dir: str,
     """
     if not op.isdir(rec_dir):
         raise FileNotFoundError(
-            '"{}" does not appear to exist.'.format(rec_dir))
+            '"{}" does not appear to exist.'.format(rec_dir)
+        )
     root = op.abspath(rec_dir)
     identifier = op.basename(rec_dir)
-    data_dir = op.abspath(op.join(rec_dir, 'exports', '', export, ''))
-    out_dir = op.abspath(op.join(rec_dir, out_dir_nm, ''))
+    data_dir = op.abspath(op.join(rec_dir, "exports", "", export, ""))
+    out_dir = op.abspath(op.join(rec_dir, out_dir_nm, ""))
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
     os.mkdir(out_dir)
-    print('{}\n{:*^60s}\n{}'.format('*'*60, ' ' + identifier + ' ', '*'*60))
+    print("{}\n{:*^60s}\n{}".format("*" * 60, " " + identifier + " ", "*" * 60))
     return {
-        'root': root,
-        'id': identifier,
-        'data_dir': data_dir,
-        'out_dir': out_dir
+        "root": root,
+        "id": identifier,
+        "data_dir": data_dir,
+        "out_dir": out_dir,
     }
 
 
@@ -75,18 +76,20 @@ def print_file_structure(rec_dir: str) -> None:
 
     """
     for root, dirs, files in os.walk(rec_dir):
-        level = root.replace(rec_dir, '').count(os.sep)
-        indent = ' ' * 4 * (level)
-        print(f'{indent}{os.path.basename(root)}/')
-        subindent = ' ' * 4 * (level + 1)
+        level = root.replace(rec_dir, "").count(os.sep)
+        indent = " " * 4 * (level)
+        print(f"{indent}{os.path.basename(root)}/")
+        subindent = " " * 4 * (level + 1)
         for f in sorted(files):
-            print(f'{subindent}{f}')
+            print(f"{subindent}{f}")
 
 
-def load_pupil(data_dir: str,
-               eye_id: str = 'best',
-               method: str = '3d c++',
-               cols: List[str] = None) -> pd.DataFrame:
+def load_pupil(
+    data_dir: str,
+    eye_id: str = "best",
+    method: str = "3d c++",
+    cols: List[str] = None,
+) -> pd.DataFrame:
     """Loads 'pupil_positions.csv' data exported from Pupil Player.
 
     Parameters
@@ -111,27 +114,28 @@ def load_pupil(data_dir: str,
         Pandas DataFrame containing requested samples.
 
     """
-    fname = op.join(data_dir, '', 'pupil_positions.csv')
+    fname = op.join(data_dir, "", "pupil_positions.csv")
     try:
         if cols is None:
-            samples = pd.read_csv(fname, index_col='pupil_timestamp')
+            samples = pd.read_csv(fname, index_col="pupil_timestamp")
         else:
             samples = pd.read_csv(
-                fname, usecols=cols, index_col='pupil_timestamp')
+                fname, usecols=cols, index_col="pupil_timestamp"
+            )
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
         samples = samples.loc[samples.method.str.contains(method)]
-        if eye_id == 'left':
+        if eye_id == "left":
             samples = samples[samples.eye_id == 1]
-        elif eye_id == 'right':
+        elif eye_id == "right":
             samples = samples[samples.eye_id == 0]
-        elif eye_id == 'best':
-            best = samples.groupby(['eye_id'])['confidence'].mean().idxmax()
+        elif eye_id == "best":
+            best = samples.groupby(["eye_id"])["confidence"].mean().idxmax()
             samples = samples[samples.eye_id == best]
         else:
             raise ValueError('Eye must be "left", "right" or "best".')
-        print('Loaded {} samples'.format(len(samples)))
+        print("Loaded {} samples".format(len(samples)))
         return samples
 
 
@@ -149,10 +153,10 @@ def load_annotations(data_dir: str) -> pd.DataFrame:
         Pandas DataFrame containing annotations / events.
 
     """
-    fname = op.join(data_dir, '', 'annotations.csv')
+    fname = op.join(data_dir, "", "annotations.csv")
     try:
-        events = pd.read_csv(fname, index_col='timestamp')
-        print('Loaded {} events'.format(len(events)))
+        events = pd.read_csv(fname, index_col="timestamp")
+        print("Loaded {} events".format(len(events)))
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
@@ -173,24 +177,30 @@ def load_blinks(data_dir: str) -> pd.DataFrame:
         Pandas DataFrame containing blink events.
 
     """
-    fname = op.join(data_dir, '', 'blinks.csv')
+    fname = op.join(data_dir, "", "blinks.csv")
     try:
-        blinks = pd.read_csv(fname, index_col='id')
-        print('{} blinks detected by Pupil Labs (mean dur = {:.3f} s)'.format(
-            len(blinks), blinks.duration.mean()))
+        blinks = pd.read_csv(fname, index_col="id")
+        print(
+            "{} blinks detected by Pupil Labs (mean dur = {:.3f} s)".format(
+                len(blinks), blinks.duration.mean()
+            )
+        )
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     else:
         return blinks
 
-#TODO: optimse and debug
+
+# TODO: optimse and debug
 
 
-def extract(samples: pd.DataFrame,
-            events: pd.DataFrame,
-            offset: int = 0,
-            duration: int = 0,
-            borrow_attributes: List[str] = []) -> pd.DataFrame:
+def extract(
+    samples: pd.DataFrame,
+    events: pd.DataFrame,
+    offset: int = 0,
+    duration: int = 0,
+    borrow_attributes: List[str] = [],
+) -> pd.DataFrame:
     """
     Extracts ranges from samples based on event timing and sample count.
 
@@ -222,21 +232,23 @@ def extract(samples: pd.DataFrame,
     """
     # negative duration should raise an exception
     if duration <= 0:
-        raise ValueError('Duration must be >0')
+        raise ValueError("Duration must be >0")
 
     # get the list of start time indices
     event_starts = events.index.to_series()
 
     # find the indexes of the event starts, and offset by sample count
-    range_idxs = np.searchsorted(
-        samples.index, event_starts.iloc[:], 'left') + offset
+    range_idxs = (
+        np.searchsorted(samples.index, event_starts.iloc[:], "left") + offset
+    )
     range_duration = duration
 
     # make a hierarchical index
-    samples['orig_idx'] = samples.index
+    samples["orig_idx"] = samples.index
     midx = pd.MultiIndex.from_product(
         [list(range(len(event_starts))), list(range(range_duration))],
-        names=['event', 'onset'])
+        names=["event", "onset"],
+    )
 
     # TODO: can add option for time index here
 
@@ -247,19 +259,20 @@ def extract(samples: pd.DataFrame,
         # get the start time and add the required number of indices
         end_idx = start_idx + range_duration - 1  # .loc indexing is inclusive
         new_df = deepcopy(
-            samples.loc[samples.index[start_idx]: samples.index[end_idx]])
+            samples.loc[samples.index[start_idx] : samples.index[end_idx]]
+        )
         for ba in borrow_attributes:
-            new_df[ba] = events.iloc[idx].get(ba, float('nan'))
+            new_df[ba] = events.iloc[idx].get(ba, float("nan"))
         df = pd.concat([df, new_df])
         idx += 1
     df.index = midx
-    print('Extracted ranges for {} events'.format(len(events)))
+    print("Extracted ranges for {} events".format(len(events)))
     return df
 
 
-def reject_bad_trials(ranges: pd.DataFrame,
-                      interp_thresh: int = 20,
-                      drop: bool = False) -> pd.DataFrame:
+def reject_bad_trials(
+    ranges: pd.DataFrame, interp_thresh: int = 20, drop: bool = False
+) -> pd.DataFrame:
     """Drop or markup trials which exceed a threshold of interpolated data.
 
     Parameters
@@ -281,23 +294,31 @@ def reject_bad_trials(ranges: pd.DataFrame,
 
     """
     if not isinstance(ranges.index, pd.MultiIndex):
-        raise ValueError('Index of ranges must be pd.MultiIndex')
+        raise ValueError("Index of ranges must be pd.MultiIndex")
 
-    pct_interp = ranges.groupby(by='event').agg(
-        {'interpolated': lambda x: float(x.sum())/len(x)*100})
-    print('Percentage of data interpolated for each trial (mean = {:.2f}): \
-          \n'.format(pct_interp.mean()[0]), pct_interp)
-    reject_idxs = (pct_interp.loc[pct_interp['interpolated'] > interp_thresh]
-                   .index.to_list())
-    ranges['reject'] = 0
+    pct_interp = ranges.groupby(by="event").agg(
+        {"interpolated": lambda x: float(x.sum()) / len(x) * 100}
+    )
+    print(
+        "Percentage of data interpolated for each trial (mean = {:.2f}): \
+          \n".format(
+            pct_interp.mean()[0]
+        ),
+        pct_interp,
+    )
+    reject_idxs = pct_interp.loc[
+        pct_interp["interpolated"] > interp_thresh
+    ].index.to_list()
+    ranges["reject"] = 0
     if reject_idxs:
-        ranges.loc[reject_idxs, 'reject'] = 1
+        ranges.loc[reject_idxs, "reject"] = 1
     if drop:
         ranges = ranges.drop(index=reject_idxs)
-        print('{} trials were dropped from the DataFrame'.format(
-            len(reject_idxs)))
+        print(
+            "{} trials were dropped from the DataFrame".format(len(reject_idxs))
+        )
     else:
-        print('{} trials were marked for rejection'.format(len(reject_idxs)))
+        print("{} trials were marked for rejection".format(len(reject_idxs)))
     return ranges
 
 
@@ -305,8 +326,7 @@ def unpack_data_numpy(data: dict, what: str) -> np.array:
     return np.array([entry[what] for entry in data])
 
 
-def unpack_data_pandas(data: dict,
-                       cols: List[str] = ['timestamp', 'diameter']
-                       ) -> pd.DataFrame:
-    return (pd.DataFrame(data)
-            .set_index('timestamp'))
+def unpack_data_pandas(
+    data: dict, cols: List[str] = ["timestamp", "diameter"]
+) -> pd.DataFrame:
+    return pd.DataFrame(data).set_index("timestamp")

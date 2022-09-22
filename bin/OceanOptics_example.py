@@ -25,7 +25,7 @@ from pyplr.stlab import SpectraTuneLab
 class SpectraTuneLabSampler(SpectraTuneLab):
     """Subclass of `stlab.SpectraTuneLab` with added sampling methods.
 
-    Optional support for concurrent samples with external spectrometer.
+    Optional support for concurrent measurements with external spectrometer.
 
     """
 
@@ -43,9 +43,9 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         Parameters
         ----------
         external : Class, optional
-            Acquire concurrent samples with an external spectrometer.
-            Must be a device class with `.sample(...)` method that returns
-            `pd.Series` and `dict`. See `pyplr.oceanops.OceanOptics`
+            Acquire concurrent measurements with an external spectrometer.
+            Must be a device class with ``.measurement(...)`` and
+            ``.wavelengths(...)`` methods. See `pyplr.oceanops.OceanOptics`
             for an example.
 
         Returns
@@ -65,52 +65,57 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.ex_spectra = []
             self.ex_info = []
 
-    def make_dfs(self) -> None:
-        """Turn cached samples into DataFrames.
+    def make_dfs(
+        self, save_csv: bool = False, external_fname: str = None
+    ) -> None:
+        """Turn cached data and info into pandas DataFrames.
 
         Parameters
         ----------
-        stlab_prefix : str
-            Prefix for stlab data.
-        external_prefix : str
-            Prefix for external data.
+        save_csv : bool
+            Optionally save to csv format in the current working directory.
+        external_fname : str
+            Prefix for filenames containing data from external spectrometer.
 
         Returns
         -------
         None.
 
         """
-        self.stlab_info = pd.DataFrame(self.stlab_info).set_index(
-            ["Primary", "Setting"]
-        )
+        if external_fname is None:
+            external_fname = "external"
+
         self.stlab_spectra = pd.DataFrame(self.stlab_spectra)
         self.stlab_spectra.columns = pd.Int64Index(self.wlbins)
-        self.stlab_spectra.index = self.stlab_info.index
+        self.stlab_info = pd.DataFrame(self.stlab_info)
+        if "Primary" in self.stlab_info.columns:
+            self.stlab_spectra["Primary"] = self.stlab_info["Primary"]
+            self.stlab_spectra["Setting"] = self.stlab_info["Setting"]
 
         if self.external is not None:
-            self.ex_info = pd.DataFrame(self.ex_info).set_index(
-                ["Primary", "Setting"]
-            )
             self.ex_spectra = pd.DataFrame(self.ex_spectra)
             self.ex_spectra.columns = self.external.wavelengths()
-            self.ex_spectra.index = self.ex_info.index
+            self.ex_info = pd.DataFrame(self.ex_info)
+            if "Primary" in self.ex_info.columns:
+                self.ex_spectra["Primary"] = self.ex_info["Primary"]
+                self.ex_spectra["Setting"] = self.ex_info["Setting"]
 
-    def save_samples(self, stlab_prefix: str = "stlab", external_prefix: str = "external") -> None:
-        self.stlab_spectra.to_csv(
-            op.join(os.getcwd(), f"{stlab_prefix}_spectra.csv"), index=True
-        )
-        self.stlab_info.to_csv(
-            op.join(os.getcwd(), f"{stlab_prefix}_info.csv"), index=True
-        )
-        if self.external is not None:
-            self.ex_spectra.to_csv(
-                op.join(os.getcwd(), f"{external_prefix}_spectra.csv"),
-                index=True,
+        if save_csv:
+            self.stlab_spectra.to_csv(
+                op.join(os.getcwd(), "stlab_spectra.csv"), index=False
             )
-            self.ex_info.to_csv(
-                op.join(os.getcwd(), f"{external_prefix}_info.csv"),
-                index=True,
+            self.stlab_info.to_csv(
+                op.join(os.getcwd(), "stlab_info.csv"), index=False
             )
+            if self.external is not None:
+                self.ex_spectra.to_csv(
+                    op.join(os.getcwd(), f"{external_fname}_spectra.csv"),
+                    index=False,
+                )
+                self.ex_info.to_csv(
+                    op.join(os.getcwd(), f"{external_fname}_info.csv"),
+                    index=False,
+                )
 
     def full_readout(
         self, norm: bool = False, setting: dict = {}
@@ -165,12 +170,12 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         """Sample a set of LEDs individually at a range of specified
         intensities using STLABs on-board spectrometer. Alternatively, sample
         a set of pre-defined spectra. Option to also obtain concurrent
-        samples with an external Ocean Optics spectrometer. Data are
+        measurements with an external Ocean Optics spectrometer. Data are
         stored in class lists.
 
         Parameters
         ----------
-        leds : list
+        leds : list, optional
             List of unique integers from 0-9 representing the LEDs to sample.
             The default is [0].
         intensities : list, optional
@@ -181,7 +186,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             leds or intensities. The default is None.
         wait_before_sample : float, optional
             Time in seconds to wait after setting a spectrum before acquiring
-            a sample from the spectrometer(s). The default is .2.
+            a measurement from the spectrometer(s). The default is .2.
         randomise : bool, optional
             Whether to randomise the order in which the LED-intensity settings
             or spectra are sampled. The default is False.
@@ -197,31 +202,32 @@ class SpectraTuneLabSampler(SpectraTuneLab):
                 "leds and intensities must be None when specifying spectra"
             )
 
-        # Clear the cache
+        # clear the cache
         self._ready_cache()
 
-        # Off spectrum
+        # off spectrum
         leds_off = [0] * 10
 
-        # Turn stlab off if it's on
+        # turn stlab off if it's on
         self.set_spectrum_a(leds_off)
 
-        # Generate the settings
-        if spectra is not None:
+        # generate the settings
+        if spectra:
             settings = spectra
-            print(f"Sampling {len(spectra)} spectra: {spectra}")
+            print("Sampling {} spectra: {}".format(len(spectra), spectra))
         else:
             settings = [(l, i) for l in leds for i in intensities]
             print(
-                "Sampling {len(leds)} primaries at the following settings: "
-                + f"{intensities}\n"
+                "Sampling {} primaries at the following settings: {}".format(
+                    len(leds), intensities
+                )
             )
 
-        # Shuffle
+        # shuffle
         if randomise:
             shuffle(settings)
 
-        # Begin sampling
+        # begin sampling
         for i, s in enumerate(settings):
             if not spectra:
                 led, intensity = s[0], s[1]
@@ -229,26 +235,30 @@ class SpectraTuneLabSampler(SpectraTuneLab):
                 s = [0] * 10
                 s[led] = intensity
                 print(
-                    f"Sample: {i+1} / {len(settings)}, Primary: {led}, "
-                    + f"Setting: {intensity}"
+                    "Measurement: {} / {}, Primary: {}, Setting: {}".format(
+                        i + 1, len(settings), led, intensity
+                    )
                 )
             else:
                 setting = {"intensities": s}
-                print(f"Sample: {i+1} / {len(settings)}, spectrum: {s}")
+                print(
+                    "Measurement: {} / {}, spectrum: {}".format(
+                        i + 1, len(settings), s
+                    )
+                )
 
-            # Set the spectrum
+            # set the spectrum
             self.set_spectrum_a(s)
             sleep(wait_before_sample)
 
-            # Full readout from STLAB
+            # full readout from STLAB
             stlab_spec, stlab_info_dict = self.full_readout(setting=setting)
             self.stlab_spectra.append(stlab_spec)
             self.stlab_info.append(stlab_info_dict)
 
-            # Readout with external, if using
             if self.external is not None:
-                ex_spec, ex_info_dict = self.external.sample(
-                    sample_id=setting, **external_kwargs
+                ex_spec, ex_info_dict = self.external.measurement(
+                    setting=setting, **external_kwargs
                 )
                 self.ex_spectra.append(ex_spec)
                 self.ex_info.append(ex_info_dict)
@@ -257,5 +267,5 @@ class SpectraTuneLabSampler(SpectraTuneLab):
             self.set_spectrum_a(leds_off)
             sleep(1)
 
-        # Turn off
+        # turn off
         self.turn_off()

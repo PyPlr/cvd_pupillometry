@@ -7,14 +7,16 @@ Created on Fri Mar 27 11:16:51 2020
 import restful_apy as apy
 import zmq
 import msgpack as serializer
-#import random
+
+# import random
 
 if __name__ == "__main__":
     from time import sleep, time
 
     # set up light device
     device = apy.setup_device(
-        username='admin', identity=1, password='83e47941d9e930f6')
+        username="admin", identity=1, password="83e47941d9e930f6"
+    )
 
     # background spectrum
     bg = [204, 2047, 2047, 2047, 2047, 2047, 2047, 2047, 2047, 2047]
@@ -55,13 +57,15 @@ if __name__ == "__main__":
         pub_socket.send(payload)
 
     # Start the annotations plugin
-    notify({"subject": "start_plugin", "name": "Annotation_Capture", "args": {}})
+    notify(
+        {"subject": "start_plugin", "name": "Annotation_Capture", "args": {}}
+    )
     # notify({"subject": "start_plugin", "name": "Time_Sync", "args": {}}) # added this...?
 
     pupil_remote.send_string("R")
     pupil_remote.recv_string()
 
-    sleep(1.)  # sleep for a few seconds, can be less
+    sleep(1.0)  # sleep for a few seconds, can be less
 
     # Send a trigger with the current time
     # The annotation will be saved to annotation.pldata if a
@@ -74,14 +78,12 @@ if __name__ == "__main__":
             "label": label,
             "timestamp": time_fn(),
             "duration": duration,
-            "stim": stim
+            "stim": stim,
         }
 
     # video files
-    trials = ["f1dur60.dsf",
-              "f0.5dur60.dsf",
-              "f0.05dur60.dsf"]
-    trials = trials*2
+    trials = ["f1dur60.dsf", "f0.5dur60.dsf", "f0.05dur60.dsf"]
+    trials = trials * 2
 
     # make trigger labels
     label_start = "video_start"
@@ -89,10 +91,10 @@ if __name__ == "__main__":
     label_mod = "modulation_start"
     video_dur = 70
     mod_dur = 60
-    duration_off = 0.
+    duration_off = 0.0
 
     # baseline
-    sleep(10.)
+    sleep(10.0)
 
     # run trials
     for i, trial in enumerate(trials):
@@ -100,25 +102,27 @@ if __name__ == "__main__":
         # adapt to background spectrum before first trial
         if i == 0:
             apy.set_spectrum_a(device, bg)
-            sleep(10.)
+            sleep(10.0)
 
         apy.load_video_file(device, trial)
-        sleep(5.)
+        sleep(5.0)
         t1 = time()
         on_trigger = new_trigger(
-            label_start, video_dur, trial)  # make on trigger
+            label_start, video_dur, trial
+        )  # make on trigger
         send_trigger(on_trigger)  # send on trigger
         apy.play_video_file(device)
         t2 = time()
-        sleep(10. - (t2-t1))
+        sleep(10.0 - (t2 - t1))
         # make mod start trigger
         mod_trigger = new_trigger(label_mod, mod_dur, trial)
         send_trigger(mod_trigger)  # send mod start trigger
         sleep(60)
         off_trigger = new_trigger(
-            label_stop, duration_off, trial)  # make off trigger
+            label_stop, duration_off, trial
+        )  # make off trigger
         send_trigger(off_trigger)  # send off trigger
-        sleep(5.)
+        sleep(5.0)
 
     # stop recording
     pupil_remote.send_string("r")
