@@ -89,7 +89,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
         if self.external is not None:
             self.ex_info = pd.DataFrame(self.ex_info).set_index(
-                ["Primary", "Setting"]
+                ["Primary", "Setting", "Measurement"]
             )
             self.ex_spectra = pd.DataFrame(self.ex_spectra)
             self.ex_spectra.columns = self.external.wavelengths()
@@ -160,6 +160,7 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         spectra: List = None,
         wait_before_sample: float = 0.3,
         randomise: bool = False,
+        collect_dark_spectra: bool = False,
         **external_kwargs,
     ) -> None:
         """Sample a set of LEDs individually at a range of specified
@@ -185,6 +186,9 @@ class SpectraTuneLabSampler(SpectraTuneLab):
         randomise : bool, optional
             Whether to randomise the order in which the LED-intensity settings
             or spectra are sampled. The default is False.
+        collect_dark_spectra : bool
+            If `True`, will collect a dark spectrum after each light spectrum
+            using the same integration time. The default is `False`.
 
 
         Returns
@@ -247,11 +251,26 @@ class SpectraTuneLabSampler(SpectraTuneLab):
 
             # Readout with external, if using
             if self.external is not None:
+                print("~~~ Light spectrum ~~~")
+                setting.update({'Measurement': 'light'})
                 ex_spec, ex_info_dict = self.external.sample(
                     sample_id=setting, **external_kwargs
                 )
                 self.ex_spectra.append(ex_spec)
                 self.ex_info.append(ex_info_dict)
+
+                # Turn off for dark counts
+                if collect_dark_spectra:
+                    print("~~~ Dark spectrum ~~~")
+                    self.set_spectrum_a(leds_off)
+                    sleep(.01)
+                    setting.update({'Measurement': 'dark'})
+                    ex_dark, ex_dark_info = self.external.sample(
+                        integration_time=ex_info_dict['integration_time'],
+                        sample_id=setting, **external_kwargs
+                    )
+                    self.ex_spectra.append(ex_dark)
+                    self.ex_info.append(ex_dark_info)
 
             sleep(1)
             self.set_spectrum_a(leds_off)

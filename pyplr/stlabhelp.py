@@ -86,9 +86,9 @@ def get_sinusoid_time_vector(duration):
     return np.arange(0, (duration * 1000), 10).astype("int")
 
 
-def sinusoid_modulation(f, duration, Fs=100):
+def sinusoid_modulation(f, duration, Fs=100, theta=0):
     x = np.arange(duration * Fs)
-    return np.sin(2 * np.pi * f * x / Fs)
+    return np.sin((2 * np.pi * f * x + theta) / Fs)
 
 
 def modulate_intensity_amplitude(sm, background, amplitude):

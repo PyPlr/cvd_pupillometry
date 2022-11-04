@@ -41,7 +41,7 @@ class OceanOptics(Spectrometer):
         return (board_temp, micro_temp)
 
     def _print_sample_details(self, integration_time, max_reported):
-        print(f"\t> Integration time: {int(integration_time) / 1e6} seconds")
+        print(f"\t> Integration time: {int(integration_time / 1e6)} seconds")
         print(f"\t> Maximum reported value: {int(max_reported)}")
 
     def get_wavelength_spread(self, wls):
@@ -58,6 +58,7 @@ class OceanOptics(Spectrometer):
         correct_dark_counts: Optional[bool] = False,
         correct_nonlinearity: Optional[bool] = False,
         wavelengths: Optional[npt.NDArray] = None,
+        ignore_pixels: Optional[list] = None,  # TODO
         sample_id: Union[str, dict] = None,
         **kwargs,
     ) -> Tuple[pd.Series, dict]:
@@ -127,8 +128,8 @@ class OceanOptics(Spectrometer):
             )
 
             # Get the maximum reported value
-            max_reported = max(counts)
-            self._print_sample_details(integration_time, max_reported)
+            self._print_sample_details(integration_time, counts.max())
+            max_reported = counts.max()
 
         else:
             # Initial parameters. The CCD is most linear between 80-90%
@@ -166,14 +167,20 @@ class OceanOptics(Spectrometer):
                 )
                 sleep(0.01)
 
+                # TODO: code here to compute dark counts for integration time
+
                 # Get the maximum reported value
-                max_reported = max(counts)
-                self._print_sample_details(integration_time, max_reported)
+                #counts[ignore_pixels] = 0
 
                 # Adjust integration time for next iteration
                 multiplier = target / counts.max()
                 integration_time = integration_time * multiplier
-                
+
+                # Print
+                self._print_sample_details(integration_time, counts.max())
+
+                max_reported = counts.max()
+
         if scans_to_average > 1:
             print(f"> Computing average of {scans_to_average} scans")
 
@@ -198,7 +205,7 @@ class OceanOptics(Spectrometer):
         if wavelengths is not None:
             counts.index = wavelengths
         counts.index.name = "Wavelength"
-        
+
         # Prepare info dict
         info = {
             "board_temp": board_temp,
@@ -254,7 +261,6 @@ class PostProcessor:
         self.calibration = calibration
         self.collection_area = collection_area
 
-
     @staticmethod
     def smooth_spectrum_boxcar(spectrum, boxcar_width: int = 0) -> npt.NDArray:
         """Boxcar smoothing with zero-order savitsky golay filter."""
@@ -285,7 +291,11 @@ class PostProcessor:
         integration_time /= 1e6
         return (spectrum - dark_counts) * (  # Already dark corrected
             self.calibration_file
-            / (integration_time * self.collection_area * self.wavelength_spread)
+            / (
+                integration_time
+                * self.collection_area
+                * self.wavelength_spread
+            )
         )
 
 
