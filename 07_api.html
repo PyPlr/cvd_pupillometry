@@ -1619,51 +1619,42 @@ basic spectrometer feature of the provided SeaBreezeDevice.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyplr.oceanops.OceanOptics.measurement">
-<span class="sig-name descname"><span class="pre">measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integration_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics.measurement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Obtain a measurement with an Ocean Optics spectrometer.</p>
-<p>If <cite>integration_time</cite> is not specified, will use an adaptive procedure
-that avoids saturation by aiming for a maximum reported value of
-80-90% of the maximum intensity value for the device. Can take up to a
-maximum of ~3.5 mins for lower light levels, though this could be
-reduced somewhat by optimising the algorithm.</p>
+<dt class="sig sig-object py" id="pyplr.oceanops.OceanOptics.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integration_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scans_to_average</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_car_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_dark_counts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_nonlinearity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a sample with an Ocean Optics spectrometer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>integration_time</strong> (<em>int</em>) – The integration time to use for the measurement. Leave as None to
-adaptively set the integration time based on spectral measurements.</p></li>
-<li><p><strong>correct_dark_counts</strong> (<em>bool</em><em>, </em><em>optional</em>) – Pass True to remove the noise floor in measurements</p></li>
-<li><p><strong>setting</strong> (<em>dict</em><em>, </em><em>optional</em>) – Current setting of the light source (if known), to be included in
-the <cite>info</cite>. For example <code class="docutils literal notranslate"><span class="pre">{'led'</span> <span class="pre">:</span> <span class="pre">5,</span> <span class="pre">'intensity'</span> <span class="pre">:</span> <span class="pre">3000}</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">{'intensities'</span> <span class="pre">:</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">300,</span> <span class="pre">4000,</span> <span class="pre">200,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]}</span></code>.
-The default is <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
+<li><p><strong>integration_time</strong> (<em>int</em>) – The integration time to use when obtaining the sample. If <cite>None</cite>,
+<cite>integration_time</cite> is adapted until the reported counts are 80-90%
+of the maximum intensity value for the device (where the response
+of the sensor is most linear). The default is <cite>None</cite>.</p></li>
+<li><p><strong>scans_to_average</strong> (<em>int</em>) – The number of scans to average before returning the sample. More
+scans increases the signal-to-noise-ratio, but also the overall
+sampling time. The default is 1.</p></li>
+<li><p><strong>box_car_width</strong> (<em>int</em>) – <p>Width of moving window for boxcar smoothing. Reduces noise by
+averaging the values of adjacent pixels, but at the expense of
+optical resolutio, which is to say that higher values may wash out
+spectral features). The implemented is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">box_car_width</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Which ensures that averaging only happens if there is at least one
+observation in the window. The default is 1.</p>
+</p></li>
+<li><p><strong>correct_dark_counts</strong> (<em>bool</em><em>, </em><em>optional</em>) – Pass <cite>True</cite> to remove the noise floor in measurements, if the spectrometer
+supports this feature. The default is <cite>False</cite>.</p></li>
+<li><p><strong>correct_nonlinearity</strong> (<em>bool</em><em>, </em><em>optional</em>) – Correct the sample for non-linearty using on-board coefficients,
+if the spectrometer supports this feature. The default is <cite>False</cite>.</p></li>
+<li><p><strong>sample_id</strong> (<em>str</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – Information identifying the sample, to be included in <cite>info</cite>. For
+example, <cite>“daylight_spectrum”</cite>, or <cite>{‘Primary’ : 5, ‘intensity’ :
+3000}</cite>. The default is <cite>None</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>counts</strong> (<em>np.array</em>) – Raw intensity counts from the Ocean Optics spectrometer.</p></li>
+<li><p><strong>counts</strong> (<em>pd.Series</em>) – The sample intensity counts.</p></li>
 <li><p><strong>info</strong> (<em>dict</em>) – Companion info for measurement.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyplr.oceanops.OceanOptics.dark_measurement">
-<span class="sig-name descname"><span class="pre">dark_measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integration_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[3000]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyplr.oceanops.OceanOptics.dark_measurement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample the dark spectrum with a range of integration times.</p>
-<p>Do this for a range of temperatures to map the relationship between
-temperature and integration time.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>integration_times</strong> (<em>list</em><em>, </em><em>optional</em>) – List of integers representing integration times in microseconds.
-The default is [1000].</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>data</strong> (<cite>pandas.DataFrame</cite>) – Dark counts.</p></li>
-<li><p><strong>info</strong> (<cite>pandas.DataFrame</cite>) – Companion info.</p></li>
 </ul>
 </p>
 </dd>
@@ -1683,7 +1674,7 @@ The default is [1000].</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spectra_info</strong> (<em>pd.DataFrame</em>) – Spectra companion info containing the ‘board_temp’ and
 ‘integration_time’ variables.</p></li>
-<li><p><strong>darkcal</strong> (<cite>pandas.DataFrame</cite>) – Parameters accounting for the relationship between PCB temperature and
+<li><p><strong>darkcal</strong> (<em>pd.DataFrame</em>) – Parameters accounting for the relationship between PCB temperature and
 integration time and their effect on raw pixel counts. Currently
 generated in MATLAB.</p></li>
 </ul>

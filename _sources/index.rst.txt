@@ -15,10 +15,10 @@ a sister project offering Python support for the method of silent substitution.
 
 *PyPlr's* features include:
 
--  User-friendly and feature-rich interfaces to Pupil Core (Pupil Labs
-   GmbH, Berlin, Germany), Spectra Tune Lab (STLAB: LEDMOTIVE
-   Technologies, LLC, Barcelona, Spain) light engine and Ocean Optics
-   (Ocean Insight Inc., Oxford, UK) spectrometers
+-  User-friendly and feature-rich interfaces to:
+    -  Pupil Core (Pupil Labs GmbH, Berlin, Germany)
+    -  Spectra Tune Lab (STLAB: LEDMOTIVE Technologies, LLC, Barcelona, Spain) light engine
+    -  Ocean Optics (Ocean Insight Inc., Oxford, UK) spectrometers
 -  Flexible support for alternative stimulus delivery and measurement
    systems
 -  Scripting tools to facilitate stimulus design, optimisation and
