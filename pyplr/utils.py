@@ -261,8 +261,8 @@ def extract(
         new_df = deepcopy(
             samples.loc[samples.index[start_idx] : samples.index[end_idx]]
         )
-        for ba in borrow_attributes:
-            new_df[ba] = events.iloc[idx].get(ba, float("nan"))
+        #for ba in borrow_attributes:
+            #new_df[ba] = events.iloc[idx].get(ba, float("nan"))
         df = pd.concat([df, new_df])
         idx += 1
     df.index = midx
